@@ -6,7 +6,7 @@ import random
 jokereply=["Your Mom","Your Mum","Your Face","not True lol","I have brought peace, freedom, justice, and security to my new empire! Your New Empire?"]
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
-super_secret_code = b'\x59\x4e\x45\x3f'
+super_secret_code = b'' #put your own code here
 print(f"Super secret code is: {super_secret_code}")
 commands = {
     b'\x8eb':    'noop',
