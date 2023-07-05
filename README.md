@@ -1,7 +1,7 @@
 # flight_controller_software
 Software for the flight controller board in the PROVES Kit. 
 - **boot.py** This is the code that runs on boot and initializes the stack limit
-- **cdh.py** This is the code that handles all the commands
+- **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
 - **detumble.py** This code implements the B-dot algorithm and returns outputs that allow the system to do a controlled detumble with the satellite's embedded magnetourquer coils
 - **main.py** This code tasks all the functions the satellite should do in a semi-asynchronous manner utilizing the asyncio library
