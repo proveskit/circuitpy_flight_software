@@ -63,34 +63,36 @@ class Satellite:
     #Turns all of the Faces On (Defined before init because this fuction is called by the init)
     def all_faces_on(self):
         #Faces MUST init in this order or the uController will brown out. Cause unknown
-        self.Face0.duty_cycle = 0xffff
-        self.hardware['Face0']=True
-        self.Face1.duty_cycle = 0xffff
-        self.hardware['Face1']=True
-        self.Face2.duty_cycle = 0xffff
-        self.hardware['Face2']=True
-        self.Face3.duty_cycle = 0xffff
-        self.hardware['Face3']=True
-        self.Face4.duty_cycle = 0xffff
-        self.hardware['Face4']=True
+        if self.hardware['FLD']:
+            self.Face0.duty_cycle = 0xffff
+            self.hardware['Face0']=True
+            self.Face1.duty_cycle = 0xffff
+            self.hardware['Face1']=True
+            self.Face2.duty_cycle = 0xffff
+            self.hardware['Face2']=True
+            self.Face3.duty_cycle = 0xffff
+            self.hardware['Face3']=True
+            self.Face4.duty_cycle = 0xffff
+            self.hardware['Face4']=True
 
     def all_faces_off(self):
         #De-Power Faces
-        self.Face0.duty_cycle = 0x0000
-        time.sleep(0.1)
-        self.hardware['Face0']=False
-        self.Face1.duty_cycle = 0x0000
-        time.sleep(0.1)
-        self.hardware['Face1']=False
-        self.Face2.duty_cycle = 0x0000
-        time.sleep(0.1)
-        self.hardware['Face2']=False
-        self.Face3.duty_cycle = 0x0000
-        time.sleep(0.1)
-        self.hardware['Face3']=False
-        self.Face4.duty_cycle = 0x0000
-        time.sleep(0.1)
-        self.hardware['Face4']=False
+        if self.hardware['FLD']:
+            self.Face0.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.hardware['Face0']=False
+            self.Face1.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.hardware['Face1']=False
+            self.Face2.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.hardware['Face2']=False
+            self.Face3.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.hardware['Face3']=False
+            self.Face4.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.hardware['Face4']=False
 
     def debug_print(self,statement):
         if self.debug:
@@ -100,7 +102,7 @@ class Satellite:
         """
         Big init routine as the whole board is brought up.
         """
-        self.debug=False #Define verbose output here. True or False
+        self.debug=True #Define verbose output here. True or False
         self.BOOTTIME= 1577836800
         self.debug_print(f'Boot time: {self.BOOTTIME}s')
         self.CURRENTTIME=self.BOOTTIME
@@ -213,7 +215,8 @@ class Satellite:
         self.radio1_DIO4.switch_to_input()
 
         # Define Heater Pins
-        self.heater = self.faces.channels[5]
+        if self.hardware['FLD']:
+            self.heater = self.faces.channels[5]
 
 
         # Initialize SD card (always init SD before anything else on spi bus)
@@ -578,28 +581,30 @@ class Satellite:
             self.micro.nvm[_TOUTS] += 1
 
     def heater_on(self):
-        self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-        if self.f_brownout:
-            pass
-        else:
-            self.f_brownout=True
-            self.heating=True
-            self._relayA.value = 1
-            self.RGB=(255,165,0)
-            # Pause to ensure relay is open
-            time.sleep(0.5)
-            self.heater.duty_cycle = 0x7fff
+        if self.hardware['FLD']:
+            self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
+            if self.f_brownout:
+                pass
+            else:
+                self.f_brownout=True
+                self.heating=True
+                self._relayA.value = 1
+                self.RGB=(255,165,0)
+                # Pause to ensure relay is open
+                time.sleep(0.5)
+                self.heater.duty_cycle = 0x7fff
 
 
     def heater_off(self):
-        self.heater.duty_cycle = 0x0000
-        self._relayA.value = 0
-        self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-        if self.heating==True:
-            self.heating=False
-            self.f_brownout=False
-            self.debug_print("Battery Heater off!")
-            self.RGB=(0,0,0)
+        if self.hardware['FLD']:
+            self.heater.duty_cycle = 0x0000
+            self._relayA.value = 0
+            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+            if self.heating==True:
+                self.heating=False
+                self.f_brownout=False
+                self.debug_print("Battery Heater off!")
+                self.RGB=(0,0,0)
         
 
     #Function is designed to read battery data and take some action to maintaint

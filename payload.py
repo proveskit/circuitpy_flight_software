@@ -10,7 +10,6 @@ import busio
 import traceback
 from debugcolor import co
 import adafruit_bno055
-import adafruit_mcp9600     #Thermocouple
 
 class PAYLOAD:
     def debug_print(self,statement):
@@ -69,11 +68,6 @@ class PAYLOAD:
             self.debug_print("Initialization of BNO complete without error!")
         except Exception as e:
             self.debug_print("ERROR Initializing BNO sensor: " + ''.join(traceback.format_exception(e)))
-        try:
-            self.mcp = adafruit_mcp9600.MCP9600(i2c)
-            self.debug_print("Initialization of MCP complete without error!")
-        except Exception as e:
-            self.debug_print("ERROR Initializing MCP sensor: " + ''.join(traceback.format_exception(e)))
     
     def reinit(self,data=[]):
         try:
