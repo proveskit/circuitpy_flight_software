@@ -14,7 +14,10 @@ import adafruit_mcp9808     #temperature sensor
 import adafruit_tca9548a    #I2C multiplexer
 import adafruit_veml7700    #light sensor
 import adafruit_drv2605     #Coil motor driver
-import adafruit_mcp9600     #Thermocouple
+
+#Thermoucouple ADC
+import adafruit_ads1x15.ads1015 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 
 
 class Face:
@@ -105,7 +108,7 @@ class Face:
         #Initialize Thermocouple
         if "COUPLE" in senlist:
             try:
-                self.couple = adafruit_mcp9600.MCP9600(self.tca[address],address=96,tctype="K",tcfilter=1) 
+                self.couple = ADS.ADS1015(self.tca[address], address=0x48)
                 self.sensors['COUPLE'] = True
                 self.debug_print('[ACTIVE][Thermocouple]')
             except Exception as e:
@@ -130,14 +133,6 @@ class Face:
             return self.mcp.temperature
         else:
             self.debug_print('[WARNING]Temperature sensor not initialized')
-
-    # @property #Light Sensor Color Data Getter
-    # def color_data(self): 
-    #     if self.sensors['ADPS']:
-    #         r1, g1, b1, c1 = self.light1.color_data
-    #         return r1, g1, b1, c1
-    #     else:
-    #         self.debug_print('[WARNING]Light sensor not initialized')
 
     @property #Light Sensor Color Data Getter
     def lux_data(self): 
@@ -181,10 +176,9 @@ class Face:
     @property #Thermocouple Getter 
     def couple_data(self): 
         if self.sensors['COUPLE']:
-            amb = self.couple.ambient_temperature
-            tip = self.couple.temperature
-            dif = self.couple.delta_temperature
-            return amb, tip, dif #Note return is a tuple 
+            chan = AnalogIn(self.couple, ADS.P1)
+            tip = (chan.voltage-1.25)/0.005
+            return tip
         else:
             self.debug_print('[WARNING]Thermocouple not initialized')  
 
@@ -253,7 +247,7 @@ class Face:
                 self.debug_print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
             elif self.position == "z-":
                 self.debug_print('[ERROR]Thermocouple Failure')
-                self.datalist.append((None,None,None))
+                self.datalist.append(None)
             else:
                 pass
 
@@ -366,7 +360,7 @@ class AllFaces:
     
     
     def Get_Thermo_Data(self):
-        f1t=self.Face4.couple_data[1]
+        f1t=self.Face4.couple_data
         return f1t
         
     def __del__(self):

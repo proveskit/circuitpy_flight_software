@@ -13,13 +13,11 @@ import functions
 from debugcolor import co
 def debug_print(statement):
     if c.debug:
-        print(co("[MAIN]" + statement, 'blue', 'bold'))
+        print(co("[MAIN]" + str(statement), 'blue', 'bold'))
 f=functions.functions(c)
 try:
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
-    #setup global vars below:
-    lora_beacon = "KN6NAT Hello I am Yearling! IHBPFJASTMNE! KN6NAT"
 
     #power cycle faces to ensure sensors are on:
     c.all_faces_off()

@@ -15,15 +15,14 @@ from debugcolor import co
 import gc
 
 # Hardware Specific Libs
-import pysquared_rfm9x # Radio
-import neopixel # RGB LED
+import pysquared_rfm9x  # Radio
+import neopixel         # RGB LED
 import adafruit_pca9685 # LED Driver
-import adafruit_vl6180x # LiDAR Distance Sensor for Antenna
-import adafruit_ina219 # Power Monitor
-import payload
-
-
 import adafruit_tca9548a # I2C Multiplexer
+import adafruit_pct2075 # Temperature Sensor
+import adafruit_vl6180x # LiDAR Distance Sensor for Antenna
+import adafruit_ina219  # Power Monitor
+import payload
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -96,7 +95,7 @@ class Satellite:
 
     def debug_print(self,statement):
         if self.debug:
-            print(co("[pysquared]" + statement, "red", "bold"))
+            print(co("[pysquared]" + str(statement), "red", "bold"))
 
     def __init__(self):
         """
@@ -137,8 +136,10 @@ class Satellite:
                        'SDcard': False,
                        'LiDAR':  False,
                        'WDT':    False,
+                       'SOLAR':  False,
                        'PWR':    False,
                        'FLD':    False,
+                       'TEMP':   False,
                        'Face0':  False,
                        'Face1':  False,
                        'Face2':  False,
@@ -156,11 +157,11 @@ class Satellite:
 
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
-            self.i2c0  = busio.I2C(board.SCL0,board.SDA0,timeout=5)
-            self.spi0   = busio.SPI(board.SPI0_SCK,board.SPI0_MOSI,board.SPI0_MISO)
-            self.i2c1  = busio.I2C(board.SCL1,board.SDA1,timeout=5,frequency=100000)
-            self.spi1   = busio.SPI(board.SPI1_SCK,board.SPI1_MOSI,board.SPI1_MISO)
-            self.uart  = busio.UART(board.TX,board.RX,baudrate=self.urate)
+            self.i2c0 = busio.I2C(board.SCL0,board.SDA0,timeout=5)
+            self.spi0 = busio.SPI(board.SPI0_SCK,board.SPI0_MOSI,board.SPI0_MISO)
+            self.i2c1 = busio.I2C(board.SCL1,board.SDA1,timeout=5,frequency=100000)
+            self.spi1 = busio.SPI(board.SPI1_SCK,board.SPI1_MOSI,board.SPI1_MISO)
+            self.uart = busio.UART(board.TX,board.RX,baudrate=self.urate)
         except Exception as e:
             self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
 
@@ -183,13 +184,10 @@ class Satellite:
         except Exception as e:
             self.debug_print("ERROR INITIALIZING FACES: " + ''.join(traceback.format_exception(e)))
 
-        # Define filesystem stuff
-        self.logfile="/error/log.txt"
-        self.Facelogfile="/data/FaceData.txt"
-
-        """ # Define I2C Reset
+        #Define I2C Reset
         self._i2c_reset = digitalio.DigitalInOut(board.I2C_RESET)
-        self._i2c_reset.switch_to_output(value=True) """
+        self._i2c_reset.switch_to_output(value=True)
+
         if self.c_boot > 200:
             self.c_boot=0
 
@@ -219,7 +217,7 @@ class Satellite:
             self.heater = self.faces.channels[5]
 
 
-        # Initialize SD card (always init SD before anything else on spi bus)
+        # Initialize SD card
         try:
             # Baud rate depends on the card, 4MHz should be safe
             _sd = sdcardio.SDCard(self.spi1, board.SPI1_CS, baudrate=4000000)
@@ -253,13 +251,21 @@ class Satellite:
         except Exception as e:
             self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
 
-        # Initialize Power Monitor update to utilize multiplexer on BIG_DATA
+        # Initialize Power Monitor
         try:
             time.sleep(1)
             self.pwr = adafruit_ina219.INA219(self.i2c0,addr=int(0x40))
             self.hardware['PWR'] = True
         except Exception as e:
             self.debug_print('[ERROR][Power Monitor]' + ''.join(traceback.format_exception(e)))
+
+        # Initialize Solar Power Monitor
+        try:
+            time.sleep(1)
+            self.solar = adafruit_ina219.INA219(self.i2c0,addr=int(0x44))
+            self.hardware['SOLAR'] = True
+        except Exception as e:
+            self.debug_print('[ERROR][SOLAR Power Monitor]' + ''.join(traceback.format_exception(e)))
 
         # Initialize TCA
         try:
@@ -301,23 +307,26 @@ class Satellite:
 
         self.enable_rf.value = False
 
+        # Initialize PCT2075 Temperature Sensor
+        try:
+            self.pct = adafruit_pct2075.PCT2075(self.i2c0, address=0x4F)
+            self.hardware['TEMP'] = True
+        except:
+            self.debug_print('[ERROR][TEMP SENSOR]' + ''.join(traceback.format_exception(e)))
 
-        # Prints init state of PyCubed hardware
+        # Prints init state of PySquared hardware
         self.debug_print(str(self.hardware))
 
         # set PyCubed power mode
         self.power_mode = 'normal'
 
     def reinit(self,dev):
-        dev=dev.lower()
         if dev=='pwr':
             self.pwr.__init__(self.i2c0)
         elif dev=='fld':
             self.faces.__init__(self.i2c0)
         elif dev=='lidar':
             self.LiDAR.__init__(self.i2c1)
-        elif dev=='imu':
-            self.IMU.__init__(self.debug,self.i2c1,self.data)
         else:
             self.debug_print('Invalid Device? ->' + str(dev))
 
@@ -352,18 +361,21 @@ class Satellite:
 
     @Face0_state.setter
     def Face0_state(self,value):
-        if value:
-            try:
-                self.Face0 = 0xFFFF
-                self.hardware['Face0'] = True
-                self.debug_print("z Face Powered On")
-            except Exception as e:
-                self.debug_print('[WARNING][Face0]' + ''.join(traceback.format_exception(e)))
+        if self.hardware['FLD']:
+            if value:
+                try:
+                    self.Face0 = 0xFFFF
+                    self.hardware['Face0'] = True
+                    self.debug_print("z Face Powered On")
+                except Exception as e:
+                    self.debug_print('[WARNING][Face0]' + ''.join(traceback.format_exception(e)))
+                    self.hardware['Face0'] = False
+            else:
+                self.Face0 = 0x0000
                 self.hardware['Face0'] = False
+                self.debug_print("z+ Face Powered Off")
         else:
-            self.Face0 = 0x0000
-            self.hardware['Face0'] = False
-            self.debug_print("z+ Face Powered Off")
+            self.debug_print('[WARNING] LED Driver not initialized')
 
     @property
     def Face1_state(self):
@@ -371,18 +383,21 @@ class Satellite:
 
     @Face1_state.setter
     def Face1_state(self,value):
-        if value:
-            try:
-                self.Face1 = 0xFFFF
-                self.hardware['Face1'] = True
-                self.debug_print("z- Face Powered On")
-            except Exception as e:
-                self.debug_print('[WARNING][Face1]' + ''.join(traceback.format_exception(e)))
+        if self.hardware['FLD']:
+            if value:
+                try:
+                    self.Face1 = 0xFFFF
+                    self.hardware['Face1'] = True
+                    self.debug_print("z- Face Powered On")
+                except Exception as e:
+                    self.debug_print('[WARNING][Face1]' + ''.join(traceback.format_exception(e)))
+                    self.hardware['Face1'] = False
+            else:
+                self.Face1 = 0x0000
                 self.hardware['Face1'] = False
+                self.debug_print("z- Face Powered Off")
         else:
-            self.Face1 = 0x0000
-            self.hardware['Face1'] = False
-            self.debug_print("z- Face Powered Off")
+            self.debug_print('[WARNING] LED Driver not initialized')
 
     @property
     def Face2_state(self):
@@ -390,18 +405,21 @@ class Satellite:
 
     @Face2_state.setter
     def Face2_state(self,value):
-        if value:
-            try:
-                self.Face2 = 0xFFFF
-                self.hardware['Face2'] = True
-                self.debug_print("y+ Face Powered On")
-            except Exception as e:
-                self.debug_print('[WARNING][Face2]' + ''.join(traceback.format_exception(e)))
+        if self.hardware['FLD']:
+            if value:
+                try:
+                    self.Face2 = 0xFFFF
+                    self.hardware['Face2'] = True
+                    self.debug_print("y+ Face Powered On")
+                except Exception as e:
+                    self.debug_print('[WARNING][Face2]' + ''.join(traceback.format_exception(e)))
+                    self.hardware['Face2'] = False
+            else:
+                self.Face2 = 0x0000
                 self.hardware['Face2'] = False
+                self.debug_print("y+ Face Powered Off")
         else:
-            self.Face2 = 0x0000
-            self.hardware['Face2'] = False
-            self.debug_print("y+ Face Powered Off")
+            self.debug_print('[WARNING] LED Driver not initialized')
 
     @property
     def Face3_state(self):
@@ -409,18 +427,21 @@ class Satellite:
 
     @Face3_state.setter
     def Face3_state(self,value):
-        if value:
-            try:
-                self.Face3 = 0xFFFF
-                self.hardware['Face3'] = True
-                self.debug_print("x- Face Powered On")
-            except Exception as e:
-                self.debug_print('[WARNING][Face3]' + ''.join(traceback.format_exception(e)))
+        if self.hardware['FLD']:
+            if value:
+                try:
+                    self.Face3 = 0xFFFF
+                    self.hardware['Face3'] = True
+                    self.debug_print("x- Face Powered On")
+                except Exception as e:
+                    self.debug_print('[WARNING][Face3]' + ''.join(traceback.format_exception(e)))
+                    self.hardware['Face3'] = False
+            else:
+                self.Face3 = 0x0000
                 self.hardware['Face3'] = False
+                self.debug_print("x- Face Powered Off")
         else:
-            self.Face3 = 0x0000
-            self.hardware['Face3'] = False
-            self.debug_print("x- Face Powered Off")
+            self.debug_print('[WARNING] LED Driver not initialized')
 
     @property
     def Face4_state(self):
@@ -428,18 +449,21 @@ class Satellite:
 
     @Face4_state.setter
     def Face4_state(self,value):
-        if value:
-            try:
-                self.Face4 = 0xFFFF
-                self.hardware['Face4'] = True
-                self.debug_print("x+ Face Powered On")
-            except Exception as e:
-                self.debug_print('[WARNING][Face4]' + ''.join(traceback.format_exception(e)))
+        if self.hardware['FLD']:
+            if value:
+                try:
+                    self.Face4 = 0xFFFF
+                    self.hardware['Face4'] = True
+                    self.debug_print("x+ Face Powered On")
+                except Exception as e:
+                    self.debug_print('[WARNING][Face4]' + ''.join(traceback.format_exception(e)))
+                    self.hardware['Face4'] = False
+            else:
+                self.Face4 = 0x0000
                 self.hardware['Face4'] = False
+                self.debug_print("x+ Face Powered Off")
         else:
-            self.Face4 = 0x0000
-            self.hardware['Face4'] = False
-            self.debug_print("x+ Face Powered Off")
+            self.debug_print('[WARNING] LED Driver not initialized')
 
     @property
     def RGB(self):
@@ -450,7 +474,9 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.debug_print('[WARNING]' + ''.join(traceback.format_exception(e)))
+                self.debug_print('[ERROR]' + ''.join(traceback.format_exception(e)))
+        else:
+            self.debug_print('[WARNING] neopixel not initialized')
 
     @property
     def battery_voltage(self):
@@ -480,10 +506,6 @@ class Satellite:
 
     @property
     def current_draw(self):
-        """
-        current draw from batteries
-        NOT accurate if powered via USB
-        """
         if self.hardware['PWR']:
             idraw=0
             try:
@@ -496,20 +518,30 @@ class Satellite:
             self.debug_print('[WARNING] Power monitor not initialized')
 
     @property
-    def charge_current(self):
-        """
-        LTC4121 solar charging IC with charge current monitoring
-        See Programming the Charge Current section
-        """
-        _charge = 0
-        if self.solar_charging:
-            _charge = self._ichrg.value * 3.3 / 65536
-            _charge = ((_charge*988)/3010)*1000
-        return _charge # mA
+    def charge_voltage(self):
+        if self.hardware['SOLAR']:
+            voltage=0
+            try:
+                for _ in range(50):
+                    voltage += self.solar.bus_voltage
+                return voltage/50 + 0.2 # volts and corection factor
+            except Exception as e:
+                self.debug_print('[WARNING][SOLAR PWR Monitor]' + ''.join(traceback.format_exception(e)))
+        else:
+            self.debug_print('[WARNING] SOLAR Power monitor not initialized')
 
     @property
-    def solar_charging(self):
-        return not self._chrg.value
+    def charge_current(self):
+        if self.hardware['SOLAR']:
+            ichrg=0
+            try:
+                for _ in range(50): # average 50 readings
+                    ichrg+=self.solar.current
+                return (ichrg/50)
+            except Exception as e:
+                self.debug_print('[WARNING][SOLAR PWR Monitor]' + ''.join(traceback.format_exception(e)))
+        else:
+            self.debug_print('[WARNING] SOLAR Power monitor not initialized')
 
     @property
     def uptime(self):
@@ -519,37 +551,49 @@ class Satellite:
     @property
     def reset_vbus(self):
         # unmount SD card to avoid errors
-        '''if self.hardware['SDcard']:
+        if self.hardware['SDcard']:
             try:
                 umount('/sd')
                 self.spi.deinit()
                 time.sleep(3)
             except Exception as e:
-                print('vbus reset error?' + ''.join(traceback.format_exception(e)))
-                pass'''
-        self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
-        self._resetReg.value=1
+                self.debug_print('error unmounting SD card' + ''.join(traceback.format_exception(e)))
+        try:
+            self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
+            self._resetReg.value=1
+        except Exception as e:
+            self.debug_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
+    
+    @property
+    def internal_temperature(self):
+        return self.pct.temperature
 
     def distance(self):
-        distance_mm = 0
-        for _ in range(10):
-            distance_mm += self.LiDAR.range
-            time.sleep(0.01)
-        self.debug_print('distance measured = {0}mm'.format(distance_mm/10))
-        return distance_mm/10
+        if self.hardware['LiDAR']:
+            try:
+                distance_mm = 0
+                for _ in range(10):
+                    distance_mm += self.LiDAR.range
+                    time.sleep(0.01)
+                self.debug_print('distance measured = {0}mm'.format(distance_mm/10))
+                return distance_mm/10
+            except Exception as e:
+                self.debug_print('LiDAR error: ' + ''.join(traceback.format_exception(e)))
+        else:
+            self.debug_print('[WARNING] LiDAR not initialized')
+        return 0
 
-    def log(self, msg):
+    def log(self,filedir,msg):
         if self.hardware['SDcard']:
-            with open(self.logfile, "a+") as f:
-                t=int(time.monotonic())
-                f.write('{}, {}\n'.format(t,msg))
-
-    def Face_log(self, msg):
-        if self.hardware['SDcard']:
-            with open(self.Facelogfile, "a+") as f:
-                t=int(time.monotonic())
-                for face in msg:
-                    f.write('{}, {}\n'.format(t,face))
+            try:
+                self.debug_print(f"writing {msg} to {filedir}")
+                with open(filedir, "a+") as f:
+                    t=int(time.monotonic())
+                    f.write('{}, {}\n'.format(t,msg))
+            except Exception as e:
+                self.debug_print('SD CARD error: ' + ''.join(traceback.format_exception(e)))
+        else:
+            self.debug_print('[WARNING] SD Card not initialized')
     
     def check_reboot(self):
         self.UPTIME=self.uptime
@@ -558,53 +602,76 @@ class Satellite:
             self.reset_vbus()
 
     def print_file(self,filedir=None,binary=False):
-        if filedir==None:
-            return
-        self.debug_print('\n--- Printing File: {} ---'.format(filedir))
-        if binary:
-            with open(filedir, "rb") as file:
-                self.debug_print(file.read())
-                self.debug_print('')
-        else:
-            with open(filedir, "r") as file:
-                for line in file:
-                    self.debug_print(line.strip())
-
-    def timeout_handler(self):
-        self.debug_print('Incrementing timeout register')
-        if (self.micro.nvm[_TOUTS] + 1) >= 255:
-            self.micro.nvm[_TOUTS]=0
-            # soft reset
-            self.micro.on_next_reset(self.micro.RunMode.NORMAL)
-            self.micro.reset()
-        else:
-            self.micro.nvm[_TOUTS] += 1
+        try:
+            if filedir==None:
+                raise Exception("file directory is empty")
+            self.debug_print(f'--- Printing File: {filedir} ---')
+            if binary:
+                with open(filedir, "rb") as file:
+                    self.debug_print(file.read())
+                    self.debug_print('')
+            else:
+                with open(filedir, "r") as file:
+                    for line in file:
+                        self.debug_print(line.strip())
+        except Exception as e:
+            self.debug_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
+    
+    def read_file(self,filedir=None,binary=False):
+        try:
+            if filedir==None:
+                raise Exception("file directory is empty")
+            self.debug_print(f'--- reading File: {filedir} ---')
+            if binary:
+                with open(filedir, "rb") as file:
+                    self.debug_print(file.read())
+                    self.debug_print('')
+                    return file.read()
+            else:
+                with open(filedir, "r") as file:
+                    for line in file:
+                        self.debug_print(line.strip())
+                    return file
+        except Exception as e:
+            self.debug_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
 
     def heater_on(self):
         if self.hardware['FLD']:
-            self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-            if self.f_brownout:
-                pass
-            else:
-                self.f_brownout=True
-                self.heating=True
-                self._relayA.value = 1
-                self.RGB=(255,165,0)
-                # Pause to ensure relay is open
-                time.sleep(0.5)
-                self.heater.duty_cycle = 0x7fff
+            try:
+                self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
+                if self.f_brownout:
+                    pass
+                else:
+                    self.f_brownout=True
+                    self.heating=True
+                    self._relayA.value = 1
+                    self.RGB=(255,165,0)
+                    # Pause to ensure relay is open
+                    time.sleep(0.25)
+                    self.heater.duty_cycle = 0x7fff
+            except Exception as e:
+                self.debug_print('[ERROR] Cant turn on heater: ' + ''.join(traceback.format_exception(e)))
+                self.heater.duty_cycle = 0x0000
+        else:
+            self.debug_print('[WARNING] LED Driver not initialized')
 
 
     def heater_off(self):
         if self.hardware['FLD']:
-            self.heater.duty_cycle = 0x0000
-            self._relayA.value = 0
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-            if self.heating==True:
-                self.heating=False
-                self.f_brownout=False
-                self.debug_print("Battery Heater off!")
-                self.RGB=(0,0,0)
+            try:
+                self.heater.duty_cycle = 0x0000
+                self._relayA.value = 0
+                self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+                if self.heating==True:
+                    self.heating=False
+                    self.f_brownout=False
+                    self.debug_print("Battery Heater off!")
+                    self.RGB=(0,0,0)
+            except Exception as e:
+                self.debug_print('[ERROR] Cant turn off heater: ' + ''.join(traceback.format_exception(e)))
+                self.heater.duty_cycle = 0x0000
+        else:
+            self.debug_print('[WARNING] LED Driver not initialized')
         
 
     #Function is designed to read battery data and take some action to maintaint
@@ -612,8 +679,9 @@ class Satellite:
     def battery_manager(self):
         self.debug_print(f'Started to manage battery')
         try:
+            vchrg=self.charge_voltage
             vbatt=self.battery_voltage
-            #ichrg=self.charge_current
+            ichrg=self.charge_current
             idraw=self.current_draw
             vsys=self.system_voltage
             micro_temp=self.micro.cpu.temperature
@@ -624,11 +692,11 @@ class Satellite:
             self.debug_print("Error obtaining battery data: " + ''.join(traceback.format_exception(e)))
 
         try:
-            #self.debug_print(f"charge current: ",ichrg, "A, and battery voltage: ",vbatt, "V")
+            self.debug_print(f"charge current: {ichrg}mA, and charge voltage: {vbatt}V")
             self.debug_print("draw current: {}mA, and battery voltage: {}V".format(idraw,vbatt))
             self.debug_print("system voltage: {}V".format(vsys))
-            # if idraw>ichrg:
-            #     self.debug_print("Beware! The Satellite is drawing more power than receiving")
+            if idraw>ichrg:
+                self.debug_print("Beware! The Satellite is drawing more power than receiving")
 
             if vbatt < self.CRITICAL_BATTERY_VOLTAGE:
                 self.powermode('crit')
@@ -651,25 +719,28 @@ class Satellite:
         Configure the hardware for minimum or normal power consumption
         Add custom modes for mission-specific control
         """
-        if 'crit' in mode:
-            self.neopixel.brightness=0
-            self.enable_rf.value = False
-            self.power_mode = 'critical'
+        try:
+            if 'crit' in mode:
+                self.neopixel.brightness=0
+                self.enable_rf.value = False
+                self.power_mode = 'critical'
 
-        elif 'min' in mode:
-            self.neopixel.brightness=0
-            self.enable_rf.value = False
+            elif 'min' in mode:
+                self.neopixel.brightness=0
+                self.enable_rf.value = False
 
-            self.power_mode = 'minimum'
+                self.power_mode = 'minimum'
 
-        elif 'norm' in mode:
-            self.enable_rf.value = True
-            self.power_mode = 'normal'
-            # don't forget to reconfigure radios, gps, etc...
+            elif 'norm' in mode:
+                self.enable_rf.value = True
+                self.power_mode = 'normal'
+                # don't forget to reconfigure radios, gps, etc...
 
-        elif 'max' in mode:
-            self.enable_rf.value = True
-            self.power_mode = 'maximum'
+            elif 'max' in mode:
+                self.enable_rf.value = True
+                self.power_mode = 'maximum'
+        except Exception as e:
+            self.debug_print("Error in changing operations of powermode: " + ''.join(traceback.format_exception(e)))
 
 
     def new_file(self,substring,binary=False):
@@ -679,34 +750,40 @@ class Satellite:
         int padded with zeros will be appended to the last found file
         '''
         if self.hardware['SDcard']:
-            ff=''
-            n=0
-            _folder=substring[:substring.rfind('/')+1]
-            _file=substring[substring.rfind('/')+1:]
-            self.debug_print('Creating new file in directory: /sd{} with file prefix: {}'.format(_folder,_file))
-            try: chdir('/sd'+_folder)
-            except OSError:
-                self.debug_print('Directory {} not found. Creating...'.format(_folder))
-                try: mkdir('/sd'+_folder)
-                except Exception as e:
-                    self.debug_print("Error with creating new file: " + ''.join(traceback.format_exception(e)))
-                    return None
-            for i in range(0xFFFF):
-                ff='/sd{}{}{:05}.txt'.format(_folder,_file,(n+i)%0xFFFF)
-                try:
-                    if n is not None:
-                        stat(ff)
-                except:
-                    n=(n+i)%0xFFFF
-                    # print('file number is',n)
-                    break
-            self.debug_print('creating file...'+str(ff))
-            if binary: b='ab'
-            else: b='a'
-            with open(ff,b) as f:
-                f.tell()
-            chdir('/')
-            return ff
+            try:
+                ff=''
+                n=0
+                _folder=substring[:substring.rfind('/')+1]
+                _file=substring[substring.rfind('/')+1:]
+                self.debug_print('Creating new file in directory: /sd{} with file prefix: {}'.format(_folder,_file))
+                try: chdir('/sd'+_folder)
+                except OSError:
+                    self.debug_print('Directory {} not found. Creating...'.format(_folder))
+                    try: mkdir('/sd'+_folder)
+                    except Exception as e:
+                        self.debug_print("Error with creating new file: " + ''.join(traceback.format_exception(e)))
+                        return None
+                for i in range(0xFFFF):
+                    ff='/sd{}{}{:05}.txt'.format(_folder,_file,(n+i)%0xFFFF)
+                    try:
+                        if n is not None:
+                            stat(ff)
+                    except:
+                        n=(n+i)%0xFFFF
+                        # print('file number is',n)
+                        break
+                self.debug_print('creating file...'+str(ff))
+                if binary: b='ab'
+                else: b='a'
+                with open(ff,b) as f:
+                    f.tell()
+                chdir('/')
+                return ff
+            except Exception as e:
+                self.debug_print("Error creating file: " + ''.join(traceback.format_exception(e)))
+                return None
+        else:
+            self.debug_print('[WARNING] SD Card not initialized')
 
     def burn(self,burn_num,dutycycle=0,freq=1000,duration=1):
         """

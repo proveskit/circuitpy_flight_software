@@ -15,61 +15,16 @@ class functions:
 
     def debug_print(self,statement):
         if self.debug:
-            print(co("[Functions]" + statement, 'green', 'bold'))
+            print(co("[Functions]" + str(statement), 'green', 'bold'))
     def __init__(self,cubesat):
         self.cubesat = cubesat
         self.debug = cubesat.debug
         self.debug_print("Initializing Functionalities")
         self.Errorcount=0
         self.facestring=[]
-        self.jokes=["Hey Its pretty cold up here, did someone forget to pay the electric bill?",
-                    "Connect with me on LinkedIn: https://www.linkedin.com/in/ernesto-montes/",
-                    "Connect with me on LinkedIn: https://www.linkedin.com/in/ali-i-malik/",
-                    "Hey Hey Ho Ho, Coleys got to go",
-                    "https://www.proveskit.space",
-                    "Sorry, Dr. Ahmadi this satellite has not been wind tunnel tested!",
-                    "KN6NAQ did it first lol",
-                    "KN6NAQ forgot to save the file",
-                    "Hello New York City! Catch you up here later!",
-                    "Go Mets!",
-                    "Insert one liner here",
-                    "Sometimes maybe gabba, sometimes maybe gool",
-                    "I saw the BLV from up here, he was waving to me :)",
-                    "I cost 20.83 percent of a 1977 Porsche 924 to make",
-                    "This is a BroncoSpace educational product. For instructional use only",
-                    "PROP65 WARNING: This product is known to the state of California to contain materials that may cause cancer or birth defects.",
-                    "s/o my boi Mikey B",
-                    "it is 12:14am in da lab rn",
-                    "Help, I am falling and I cannot get up",
-                    "You have 7 degrees and none of them are in chemistry",
-                    "Launcher? I hardly know her",
-                    "With all this radiation, when do I turn into the Hulk?",
-                    "I would not be possible without 60 grit sandpaper",
-                    "Big smallsats during the week, small smallsats during the weekend",
-                    "so Im getting paid for this, right?",
-                    "Yeah, so like building smallsats is really just a hobby for me. If I dont want to do it, I dont have to",
-                    "Just dodged a gamma ray lol",
-                    "Wherever you go, there you are",
-                    "And on the third day, the satellite rose again! Whats up Vatican City!",
-                    "Be Aware of Snake, Traveller Snake No Harm You, Snake Aware of You",
-                    "Hey guys, I just checked and the world is round!",
-                    "Hey Siri, play We are Finally Landing By Home",
-                    "Did you know: Crowbars were invented in 1748. Before then crows mostly drank alone",
-                    "I had a long fungi joke, but I dont have enough SHROOM to downlink it",
-                    "What is a mushrooms favorite thing to bring camping? Spores!",
-                    "Im throwing a party in space. Can you help me planet?",
-                    "What happens when someone slaps you at a high frequency? It Hertz!",
-                    "Uke, I am your father - an acoustic guitar to a ukelele",
-                    "I went through 20Gs of vibration for this!?",
-                    "What is your purpose? you tell us your temperature... Oh My God ",
-                    "What kind of sharks do carpenters like best? The hammerhead and saw shark!",
-                    "I checked out a book on anti-gravity, now I cant put it down!",
-                    "Whats E.T. short for? He has little legs",
-                    "Did you hear the moon needs money? Its on its last quarter",
-                    "In another life, I would have really loved just doing laundry and taxes with you",
-                    "What do astronomers do when they finish calculating the time from sun up to sun down? They call it a day!",
-                    "Is this enough social distancing? This feels a little far"]
+        self.jokes=["Hey Its pretty cold up here, did someone forget to pay the electric bill?"]
         self.last_battery_temp = 20
+        self.callsign="Callsign"
         self.state_bool=False
         self.face_data_baton = False
         self.detumble_enable_z = True
@@ -91,59 +46,43 @@ class functions:
         forever, so a time based stop is implemented
         """
         try:
-            
-            ThermoTemp=self.cubesat.IMU.mcp.temperature
-            
-            if ThermoTemp < self.cubesat.NORMAL_BATT_TEMP:
+            try:
+                import Big_Data
+                a = Big_Data.AllFaces(self.debug,self.cubesat.tca)
+                
+                self.last_battery_temp = a.Get_Thermo_Data()
+            except Exception as e:
+                self.debug_print("[ERROR] couldn't get thermocouple data!" + ''.join(traceback.format_exception(e)))
+                raise Exception("Thermocouple failure!")
+
+            if self.last_battery_temp < self.cubesat.NORMAL_BATT_TEMP:
                 end_time=0
                 self.cubesat.heater_on()
-                while ThermoTemp < self.cubesat.NORMAL_BATT_TEMP+4 and end_time<5:
+                while self.last_battery_temp < self.cubesat.NORMAL_BATT_TEMP+4 and end_time<5:
                     time.sleep(1)
-                    ThermoTemp=self.cubesat.IMU.mcp.temperature
+                    self.last_battery_temp = a.Get_Thermo_Data()
                     end_time+=1
-                    self.debug_print(str(f"Heater has been on for {end_time} seconds and the battery temp is {ThermoTemp}C"))
+                    self.debug_print(str(f"Heater has been on for {end_time} seconds and the battery temp is {self.last_battery_temp}C"))
                 self.cubesat.heater_off()
+                del a
+                del Big_Data
                 return True
             else: 
                 self.debug_print("Battery is already warm enough")
+                del a
+                del Big_Data
                 return False
         except Exception as e:
             self.cubesat.heater_off()
             self.debug_print("Error Initiating Battery Heater" + ''.join(traceback.format_exception(e)))
+            del a
+            del Big_Data
             return False
         finally:
             self.cubesat.heater_off()
     
     def current_check(self):
         return self.cubesat.current_draw
-    
-    def test_faces(self):    
-        try:
-            self.cubesat.all_faces_on()
-            a = self.all_face_data()
-            
-            self.last_battery_temp= a[4][2][0]-a[4][2][2]
-            if self.last_battery_temp is not None:
-                
-                #Iterate through a and determine if any of the values are None
-                #Add a counter to keep track of which iternation we are on
-                count = 0 
-                for face in a:
-                    if len(face) == 0:
-                        self.debug_print("Face " + str(count) + " is None")
-                        self.cubesat.hardware[f'Face{count}'] = False
-                        count += 1
-                    else:
-                        self.cubesat.hardware[f'Face{count}'] = True
-                        count += 1
-                
-                self.debug_print(str(self.cubesat.hardware))
-            else:
-                self.debug_print("Battery temperature is not valid")
-            
-            del a
-        except Exception as e:
-            self.debug_print("An Error occured while trying to test faces: " + ''.join(traceback.format_exception(e)))
 
     '''
     Radio Functions
@@ -156,7 +95,7 @@ class functions:
         """
         import Field
         self.field = Field.Field(self.cubesat,self.debug)
-        message="KN6NAT " + str(msg) + " KN6NAT"
+        message=f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.f_fsk:
             self.cubesat.radio1.cw(message)
@@ -168,10 +107,10 @@ class functions:
         """Calls the RFM9x to send a beacon. """
         import Field
         try:
-            lora_beacon = "KN6NAT Hello I am Yearling^2! I am in: " + str(self.cubesat.power_mode) +" power mode. V_Batt = " + str(self.cubesat.battery_voltage) + "V. IHBPFJASTMNE! KN6NAT"
+            lora_beacon = f"{self.callsign} Hello I am Yearling^2! I am in: " + str(self.cubesat.power_mode) +" power mode. V_Batt = " + str(self.cubesat.battery_voltage) + f"V. IHBPFJASTMNE! {self.callsign}"
         except Exception as e:
             self.debug_print("Error with obtaining power data: " + ''.join(traceback.format_exception(e)))
-            lora_beacon = "KN6NAT Hello I am Yearling^2! I am in: " + "an unidentified" +" power mode. V_Batt = " + "Unknown" + ". IHBPFJASTMNE! KN6NAT"
+            lora_beacon = f"{self.callsign} Hello I am Yearling^2! I am in: " + "an unidentified" +" power mode. V_Batt = " + "Unknown" + f". IHBPFJASTMNE! {self.callsign}"
 
         self.field = Field.Field(self.cubesat,self.debug)
         self.field.Beacon(lora_beacon)
@@ -194,13 +133,14 @@ class functions:
                 f"PM:{self.cubesat.power_mode}",
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
+                f"IC:{self.cubesat.charge_current}",
                 f"VS:{self.cubesat.system_voltage}",
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.cubesat.radio1.former_temperature}",
-                f"AT:{self.cubesat.IMU.mcp.ambient_temperature}",
-                f"BT:{self.cubesat.IMU.mcp.temperature}",
+                f"AT:{self.cubesat.internal_temperature}",
+                f"BT:{self.last_battery_temp}",
                 f"AB:{int(self.cubesat.burned)}",
                 f"BO:{int(self.cubesat.f_brownout)}",
                 f"FK:{int(self.cubesat.f_fsk)}"
@@ -210,14 +150,14 @@ class functions:
         
         self.field = Field.Field(self.cubesat,self.debug)
         if not self.state_bool:
-            self.field.Beacon("KN6NAT Yearling^2 State of Health 1/2" + str(self.state_list)+ "KN6NAT")
+            self.field.Beacon(f"{self.callsign} Yearling^2 State of Health 1/2" + str(self.state_list)+ f"{self.callsign}")
             if self.cubesat.f_fsk:
-                self.cubesat.radio1.cw("KN6NAT Yearling^2 State of Health 1/2" + str(self.state_list)+ "KN6NAT")
+                self.cubesat.radio1.cw(f"{self.callsign} Yearling^2 State of Health 1/2" + str(self.state_list)+ f"{self.callsign}")
             self.state_bool=True
         else:
-            self.field.Beacon("KN6NAT YSOH 2/2" + str(self.cubesat.hardware) +"KN6NAT")
+            self.field.Beacon(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +"{self.callsign}")
             if self.cubesat.f_fsk:
-                self.cubesat.radio1.cw("KN6NAT YSOH 2/2" + str(self.cubesat.hardware) +"KN6NAT")
+                self.cubesat.radio1.cw(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +"{self.callsign}")
             self.state_bool=False
         del self.field
         del Field
@@ -228,25 +168,11 @@ class functions:
         import Field
         self.field = Field.Field(self.cubesat,self.debug)
         self.debug_print("Sending Face Data")
-        self.field.Beacon(f'KN6NAT Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} KN6NAT')
+        self.field.Beacon(f'{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}')
         if self.cubesat.f_fsk:
-                self.cubesat.radio1.cw(f'KN6NAT Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} KN6NAT')
+                self.cubesat.radio1.cw(f'{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}')
         del self.field
         del Field
-    
-    def send_face_data_small(self):
-        self.debug_print("Trying to get the data! ")
-        data = self.all_face_data()
-        i = 0
-        try:
-            for face in data:
-                self.debug_print(face)
-                self.cubesat.radio1.send("Face Data: " + str(i) + " " + str(face))
-                i+=1
-            return True
-        except Exception as e:
-            self.debug_print("Error sending face data: " + ''.join(traceback.format_exception(e)))
-            return False
     
     def listen(self):
         import cdh
@@ -339,10 +265,10 @@ class functions:
         
         self.debug_print("Logging Face Data")
         try:
-                self.cubesat.Face_log(data)
+                self.cubesat.log("/faces.txt",data)
         except:
             try:
-                self.cubesat.new_file(self.cubesat.Facelogfile)
+                self.cubesat.new_file("/faces.txt")
             except Exception as e:
                 self.debug_print('SD error: ' + ''.join(traceback.format_exception(e)))
         
@@ -350,10 +276,10 @@ class functions:
         
         self.debug_print("Logging Error Data")
         try:
-                self.cubesat.log(data)
+                self.cubesat.log("/error.txt",data)
         except:
             try:
-                self.cubesat.new_file(self.cubesat.logfile)
+                self.cubesat.new_file("/error.txt")
             except Exception as e:
                 self.debug_print('SD error: ' + ''.join(traceback.format_exception(e)))
     
