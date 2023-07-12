@@ -107,6 +107,7 @@ class Satellite:
         self.CURRENTTIME=self.BOOTTIME
         self.UPTIME=0
         self.heating=False
+        self.is_licensed=False
         self.NORMAL_TEMP=20
         self.NORMAL_BATT_TEMP=1#Set to 0 BEFORE FLIGHT!!!!!
         self.NORMAL_MICRO_TEMP=20
@@ -687,7 +688,7 @@ class Satellite:
             micro_temp=self.micro.cpu.temperature
 
             self.debug_print('MICROCONTROLLER Temp: {} C'.format(micro_temp))
-            self.debug_print(f'Battery Temperature: {self.IMU.mcp.temperature} C')
+            self.debug_print(f'Internal Temperature: {self.internal_temperature} C')
         except Exception as e:
             self.debug_print("Error obtaining battery data: " + ''.join(traceback.format_exception(e)))
 

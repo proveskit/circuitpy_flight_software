@@ -99,7 +99,10 @@ class functions:
         self.field.Beacon(message)
         if self.cubesat.f_fsk:
             self.cubesat.radio1.cw(message)
-        self.debug_print(f"Sent Packet: " + message)
+        if self.cubesat.is_licensed:
+            self.debug_print(f"Sent Packet: " + message)
+        else:
+            self.debug_print("Failed to send packet")
         del self.field
         del Field
 
@@ -125,7 +128,6 @@ class functions:
 
     def state_of_health(self):
         import Field
-        self.test_faces()
         self.state_list=[]
         #list of state information 
         try:
@@ -155,9 +157,9 @@ class functions:
                 self.cubesat.radio1.cw(f"{self.callsign} Yearling^2 State of Health 1/2" + str(self.state_list)+ f"{self.callsign}")
             self.state_bool=True
         else:
-            self.field.Beacon(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +"{self.callsign}")
+            self.field.Beacon(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +f"{self.callsign}")
             if self.cubesat.f_fsk:
-                self.cubesat.radio1.cw(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +"{self.callsign}")
+                self.cubesat.radio1.cw(f"{self.callsign} YSOH 2/2" + str(self.cubesat.hardware) +f"{self.callsign}")
             self.state_bool=False
         del self.field
         del Field
