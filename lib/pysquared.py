@@ -268,6 +268,13 @@ class Satellite:
         except Exception as e:
             self.debug_print('[ERROR][SOLAR Power Monitor]' + ''.join(traceback.format_exception(e)))
 
+        # Initialize PCT2075 Temperature Sensor
+        try:
+            self.pct = adafruit_pct2075.PCT2075(self.i2c0, address=0x4F)
+            self.hardware['TEMP'] = True
+        except Exception as e:
+            self.debug_print('[ERROR][TEMP SENSOR]' + ''.join(traceback.format_exception(e)))
+
         # Initialize TCA
         try:
             self.tca = adafruit_tca9548a.TCA9548A(self.i2c0,address=int(0x77))
@@ -303,17 +310,9 @@ class Satellite:
             self.radio1.ack_delay=0.2
             if self.radio1.spreading_factor > 9: self.radio1.preamble_length = self.radio1.spreading_factor
             self.hardware['Radio1'] = True
+            self.enable_rf.value = False
         except Exception as e:
             self.debug_print('[ERROR][RADIO 1]' + ''.join(traceback.format_exception(e)))
-
-        self.enable_rf.value = False
-
-        # Initialize PCT2075 Temperature Sensor
-        try:
-            self.pct = adafruit_pct2075.PCT2075(self.i2c0, address=0x4F)
-            self.hardware['TEMP'] = True
-        except:
-            self.debug_print('[ERROR][TEMP SENSOR]' + ''.join(traceback.format_exception(e)))
 
         # Prints init state of PySquared hardware
         self.debug_print(str(self.hardware))
