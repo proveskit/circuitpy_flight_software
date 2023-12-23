@@ -186,6 +186,7 @@ class functions:
         except Exception as e:
             self.debug_print("An Error has occured while listening: " + ''.join(traceback.format_exception(e)))
             received=None
+
         try:
             if received is not None:
                 self.debug_print("Recieved Packet: "+str(received))
@@ -193,7 +194,8 @@ class functions:
                 return True
         except Exception as e:
             self.debug_print("An Error has occured while handling command: " + ''.join(traceback.format_exception(e)))
-        del cdh
+        finally:
+            del cdh
         
         return False
     
@@ -202,7 +204,7 @@ class functions:
             self.debug_print("Listening")
             self.cubesat.radio1.receive_timeout=10
             received = self.cubesat.radio1.receive(keep_listening=True)
-            if "HAHAHAHAHA!" in received:
+            if received is not None and "HAHAHAHAHA!" in received:
                 return True
             else:
                 return False
