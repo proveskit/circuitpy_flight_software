@@ -1,0 +1,50 @@
+.program blink
+;PIO runs at clk freq of 133MHz, Led will blink five times a second.
+;below is a total of 400 cycles and to run at 5 Hz will require a resultant 2KHz clock (this is the minimum freq!)
+
+.wrap_target
+    set pins, 1 [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    set pins, 0 [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+    nop         [19]
+.wrap
+
+% c-sdk {
+
+    //Helper Function for use in C program to initialize this PIO program
+    void blink_program_init(PIO pio, uint sm, uint offset, uint pin, float div){
+        // Sets up state machine and wrap target. This function is auto generated in blink.pio.h
+        pio_sm_config cfg=blink_program_get_default_config(offset);
+
+        //allow PIO to control GPIO pin as output
+        pio_gpio_init(pio,pin);
+
+        // Set the pin direction to output (in PIO)
+        pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+        //connect pin to SET pin (control with 'set' instruction)
+        sm_config_set_set_pins(&cfg, pin, 1);
+
+        // Set the clock divider for the state machine
+        sm_config_set_clkdiv(&cfg, div);
+
+        // Load configuration and jump to start of the program
+        pio_sm_init(pio, sm, offset, &cfg);
+    }
+%}

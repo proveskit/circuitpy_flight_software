@@ -1,0 +1,11 @@
+if (NOT PICO_NO_HARDWARE)
+    add_subdirectory(lib)
+    add_subdirectory(boot)
+endif ()
+
+target_include_directories(main PUBLIC lib)
+target_include_directories(neopixel PUBLIC lib)
+target_include_directories(tools PUBLIC lib)
+target_include_directories(pysquared PUBLIC lib)
+target_include_directories(lsm303agr PUBLIC lib)
+target_include_directories(functions PUBLIC lib)

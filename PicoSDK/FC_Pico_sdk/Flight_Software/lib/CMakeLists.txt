@@ -1,0 +1,13 @@
+add_library(main main/main.h main/main.cpp)
+add_library(neopixel neopixel/neopixel.h neopixel/neopixel.cpp)
+add_library(tools tools/tools.h tools/tools.cpp)
+add_library(pysquared pysquared/pysquared.h pysquared/pysquared.cpp)
+add_library(functions functions/functions.h functions/functions.cpp)
+add_library(lsm303agr device_drivers/LSM303AGR.h device_drivers/LSM303AGR.cpp)
+
+target_link_libraries(main PRIVATE pico_stdlib neopixel hardware_pio hardware_i2c tools pysquared)
+target_link_libraries(neopixel PRIVATE hardware_pio pico_stdlib)
+target_link_libraries(tools PRIVATE pico_stdlib hardware_i2c)
+target_link_libraries(pysquared PRIVATE pico_stdlib hardware_pio hardware_gpio hardware_i2c neopixel tools functions lsm303agr)
+target_link_libraries(lsm303agr PRIVATE pico_stdlib hardware_i2c)
+target_link_libraries(functions PRIVATE pico_stdlib hardware_pio hardware_gpio hardware_i2c neopixel tools pysquared)
