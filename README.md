@@ -1,6 +1,7 @@
 # flight_controller_software
-Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. 
+Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the CircuitPy (for Circuit Python software) or PicoSDK (For C++ Software) as needed! 
 
+## General Structure: 
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
