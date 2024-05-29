@@ -1,6 +1,8 @@
 # flight_controller_software
 Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed! 
 
+Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software! 
+
 ## General Structure: 
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
