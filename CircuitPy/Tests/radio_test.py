@@ -115,20 +115,20 @@ def handle_ping():
         cubesat.radio1.send('Nothing Received')
         print("Echo Sent")
 
-    while True:
-        print( 
-        ''' 
-        ======================================= 
-        |                                     | 
-        |        Beginning Radio Test         | 
-        |       Radio Test Version 1.0        |
-        |                                     |
-        =======================================
-        '''
-            )
-        if device_selection == 'A':
-            time.sleep(1)
-            device_under_test()
-        if device_selection == 'B':
-            time.sleep(1)
-            receiver()
+while True:
+    print( 
+    ''' 
+    ======================================= 
+    |                                     | 
+    |        Beginning Radio Test         | 
+    |       Radio Test Version 1.0        |
+    |                                     |
+    =======================================
+    '''
+        )
+    if device_selection == 'A':
+        time.sleep(1)
+        device_under_test()
+    if device_selection == 'B':
+        time.sleep(1)
+        receiver()
