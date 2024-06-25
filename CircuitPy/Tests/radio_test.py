@@ -19,6 +19,8 @@ radio_cfg = {
     'enable_crc': False
 }
 
+options = ['A', 'B']
+
 # Setting the Radio
 cubesat.radio1.spreading_factor=radio_cfg['spreading_factor']
 if cubesat.radio1.spreading_factor>8:
@@ -47,9 +49,21 @@ print(
 
 device_selection = input()
 
-if device_selection != 'A' or 'B':
+if device_selection not in options:
     print("Invalid Selection.")
     print("Please refresh the device and try again.")
+
+else: 
+    print(
+    ''' 
+    ======================================= 
+    |                                     | 
+    |        Beginning Radio Test         | 
+    |       Radio Test Version 1.0        |
+    |                                     |
+    =======================================
+    '''
+        )
 
 def device_under_test():
 
@@ -116,19 +130,10 @@ def handle_ping():
         print("Echo Sent")
 
 while True:
-    print( 
-    ''' 
-    ======================================= 
-    |                                     | 
-    |        Beginning Radio Test         | 
-    |       Radio Test Version 1.0        |
-    |                                     |
-    =======================================
-    '''
-        )
+
     if device_selection == 'A':
         time.sleep(1)
         device_under_test()
-    if device_selection == 'B':
+    elif device_selection == 'B':
         time.sleep(1)
         receiver()
