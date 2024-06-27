@@ -59,40 +59,6 @@ class Satellite:
     f_burned    = bitFlag(register=_FLAG,bit=6)
     f_fsk       = bitFlag(register=_FLAG,bit=7)
 
-    #Turns all of the Faces On (Defined before init because this fuction is called by the init)
-    def all_faces_on(self):
-        #Faces MUST init in this order or the uController will brown out. Cause unknown
-        if self.hardware['FLD']:
-            self.Face0.duty_cycle = 0xffff
-            self.hardware['Face0']=True
-            self.Face1.duty_cycle = 0xffff
-            self.hardware['Face1']=True
-            self.Face2.duty_cycle = 0xffff
-            self.hardware['Face2']=True
-            self.Face3.duty_cycle = 0xffff
-            self.hardware['Face3']=True
-            self.Face4.duty_cycle = 0xffff
-            self.hardware['Face4']=True
-
-    def all_faces_off(self):
-        #De-Power Faces
-        if self.hardware['FLD']:
-            self.Face0.duty_cycle = 0x0000
-            time.sleep(0.1)
-            self.hardware['Face0']=False
-            self.Face1.duty_cycle = 0x0000
-            time.sleep(0.1)
-            self.hardware['Face1']=False
-            self.Face2.duty_cycle = 0x0000
-            time.sleep(0.1)
-            self.hardware['Face2']=False
-            self.Face3.duty_cycle = 0x0000
-            time.sleep(0.1)
-            self.hardware['Face3']=False
-            self.Face4.duty_cycle = 0x0000
-            time.sleep(0.1)
-            self.hardware['Face4']=False
-
     def debug_print(self,statement):
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
