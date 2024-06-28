@@ -17,12 +17,6 @@ import gc
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
 import neopixel         # RGB LED
-import adafruit_pca9685 # LED Driver
-import adafruit_tca9548a # I2C Multiplexer
-import adafruit_pct2075 # Temperature Sensor
-import adafruit_vl6180x # LiDAR Distance Sensor for Antenna
-import adafruit_ina219  # Power Monitor
-import payload
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -114,14 +108,6 @@ class Satellite:
                        'Face4':  False,
                        }
 
-
-        # Define burn wires:
-        self._relayA = digitalio.DigitalInOut(board.BURN_RELAY)
-        self._relayA.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
-        self._resetReg = digitalio.DigitalInOut(board.VBUS_RESET)
-        self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
-
-
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
             self.i2c0 = busio.I2C(board.SCL0,board.SDA0,timeout=5)
@@ -131,25 +117,6 @@ class Satellite:
             self.uart = busio.UART(board.TX,board.RX,baudrate=self.urate)
         except Exception as e:
             self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
-
-        # Initialize LED Driver
-        try:
-            self.faces = adafruit_pca9685.PCA9685(self.i2c0, address=int(0x56))
-            self.faces.frequency = 2000
-            self.hardware['FLD'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][LED Driver]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize all of the Faces and their sensors
-        try:
-            self.Face0 = self.faces.channels[0]
-            self.Face1 = self.faces.channels[1]
-            self.Face2 = self.faces.channels[2]
-            self.Face3 = self.faces.channels[3]
-            self.Face4 = self.faces.channels[4]
-            self.all_faces_on()
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING FACES: " + ''.join(traceback.format_exception(e)))
 
         #Define I2C Reset
         self._i2c_reset = digitalio.DigitalInOut(board.I2C_RESET)
@@ -179,11 +146,6 @@ class Satellite:
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
 
-        # Define Heater Pins
-        if self.hardware['FLD']:
-            self.heater = self.faces.channels[5]
-
-
         # Initialize SD card
         try:
             # Baud rate depends on the card, 4MHz should be safe
@@ -207,58 +169,6 @@ class Satellite:
             self.debug_print('[WARNING][Neopixel]' + ''.join(traceback.format_exception(e)))
 
         # Initialize IMU
-        try:
-            self.data=[
-                "acceleration",
-                "gyroscope",
-                "magnetometer",
-            ]
-            self.IMU = payload.PAYLOAD(self.debug,self.i2c1,self.data)
-            self.hardware['IMU'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize Power Monitor
-        try:
-            time.sleep(1)
-            self.pwr = adafruit_ina219.INA219(self.i2c0,addr=int(0x40))
-            self.hardware['PWR'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][Power Monitor]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize Solar Power Monitor
-        try:
-            time.sleep(1)
-            self.solar = adafruit_ina219.INA219(self.i2c0,addr=int(0x44))
-            self.hardware['SOLAR'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][SOLAR Power Monitor]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize PCT2075 Temperature Sensor
-        try:
-            self.pct = adafruit_pct2075.PCT2075(self.i2c0, address=0x4F)
-            self.hardware['TEMP'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][TEMP SENSOR]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize TCA
-        try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0,address=int(0x77))
-            for channel in range(8):
-                if self.tca[channel].try_lock():
-                    self.debug_print("Channel {}:".format(channel))
-                    addresses = self.tca[channel].scan()
-                    print([hex(address) for address in addresses if address != 0x70])
-                    self.tca[channel].unlock()
-        except Exception as e:
-            self.debug_print("[ERROR][TCA]" + ''.join(traceback.format_exception(e)))
-
-        # Initialize LiDAR
-        try:
-            self.LiDAR = adafruit_vl6180x.VL6180X(self.i2c1,offset=0)
-            self.hardware['LiDAR'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][LiDAR]' + ''.join(traceback.format_exception(e)))
 
         # Initialize radio #1 - UHF
         try:
@@ -283,16 +193,13 @@ class Satellite:
         # Prints init state of PySquared hardware
         self.debug_print(str(self.hardware))
 
-        # set PyCubed power mode
+        # set power mode
         self.power_mode = 'normal'
 
+    # This fuction might not be needed anymore
     def reinit(self,dev):
         if dev=='pwr':
             self.pwr.__init__(self.i2c0)
-        elif dev=='fld':
-            self.faces.__init__(self.i2c0)
-        elif dev=='lidar':
-            self.LiDAR.__init__(self.i2c1)
         else:
             self.debug_print('Invalid Device? ->' + str(dev))
 
@@ -315,123 +222,6 @@ class Satellite:
         self.f_burned = value
 
     @property
-    def dist(self):
-        return self.c_distance
-    @dist.setter
-    def dist(self, value):
-        self.c_distance = int(value)
-
-    @property
-    def Face0_state(self):
-        return self.hardware['Face0']
-
-    @Face0_state.setter
-    def Face0_state(self,value):
-        if self.hardware['FLD']:
-            if value:
-                try:
-                    self.Face0 = 0xFFFF
-                    self.hardware['Face0'] = True
-                    self.debug_print("z Face Powered On")
-                except Exception as e:
-                    self.debug_print('[WARNING][Face0]' + ''.join(traceback.format_exception(e)))
-                    self.hardware['Face0'] = False
-            else:
-                self.Face0 = 0x0000
-                self.hardware['Face0'] = False
-                self.debug_print("z+ Face Powered Off")
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-    @property
-    def Face1_state(self):
-        return self.hardware['Face1']
-
-    @Face1_state.setter
-    def Face1_state(self,value):
-        if self.hardware['FLD']:
-            if value:
-                try:
-                    self.Face1 = 0xFFFF
-                    self.hardware['Face1'] = True
-                    self.debug_print("z- Face Powered On")
-                except Exception as e:
-                    self.debug_print('[WARNING][Face1]' + ''.join(traceback.format_exception(e)))
-                    self.hardware['Face1'] = False
-            else:
-                self.Face1 = 0x0000
-                self.hardware['Face1'] = False
-                self.debug_print("z- Face Powered Off")
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-    @property
-    def Face2_state(self):
-        return self.hardware['Face2']
-
-    @Face2_state.setter
-    def Face2_state(self,value):
-        if self.hardware['FLD']:
-            if value:
-                try:
-                    self.Face2 = 0xFFFF
-                    self.hardware['Face2'] = True
-                    self.debug_print("y+ Face Powered On")
-                except Exception as e:
-                    self.debug_print('[WARNING][Face2]' + ''.join(traceback.format_exception(e)))
-                    self.hardware['Face2'] = False
-            else:
-                self.Face2 = 0x0000
-                self.hardware['Face2'] = False
-                self.debug_print("y+ Face Powered Off")
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-    @property
-    def Face3_state(self):
-        return self.hardware['Face3']
-
-    @Face3_state.setter
-    def Face3_state(self,value):
-        if self.hardware['FLD']:
-            if value:
-                try:
-                    self.Face3 = 0xFFFF
-                    self.hardware['Face3'] = True
-                    self.debug_print("x- Face Powered On")
-                except Exception as e:
-                    self.debug_print('[WARNING][Face3]' + ''.join(traceback.format_exception(e)))
-                    self.hardware['Face3'] = False
-            else:
-                self.Face3 = 0x0000
-                self.hardware['Face3'] = False
-                self.debug_print("x- Face Powered Off")
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-    @property
-    def Face4_state(self):
-        return self.hardware['Face4']
-
-    @Face4_state.setter
-    def Face4_state(self,value):
-        if self.hardware['FLD']:
-            if value:
-                try:
-                    self.Face4 = 0xFFFF
-                    self.hardware['Face4'] = True
-                    self.debug_print("x+ Face Powered On")
-                except Exception as e:
-                    self.debug_print('[WARNING][Face4]' + ''.join(traceback.format_exception(e)))
-                    self.hardware['Face4'] = False
-            else:
-                self.Face4 = 0x0000
-                self.hardware['Face4'] = False
-                self.debug_print("x+ Face Powered Off")
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-    @property
     def RGB(self):
         return self.neopixel[0]
     @RGB.setter
@@ -443,71 +233,6 @@ class Satellite:
                 self.debug_print('[ERROR]' + ''.join(traceback.format_exception(e)))
         else:
             self.debug_print('[WARNING] neopixel not initialized')
-
-    @property
-    def battery_voltage(self):
-        if self.hardware['PWR']:
-            voltage=0
-            try:
-                for _ in range(50):
-                    voltage += self.pwr.bus_voltage
-                return voltage/50 + 0.2 # volts and corection factor
-            except Exception as e:
-                self.debug_print('[WARNING][PWR Monitor]' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] Power monitor not initialized')
-
-    @property
-    def system_voltage(self):
-        if self.hardware['PWR']:
-            voltage=0
-            try:
-                for _ in range(50):
-                    voltage += (self.pwr.bus_voltage+self.pwr.shunt_voltage)
-                return voltage/50 # volts
-            except Exception as e:
-                self.debug_print('[WARNING][PWR Monitor]' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] Power monitor not initialized')
-
-    @property
-    def current_draw(self):
-        if self.hardware['PWR']:
-            idraw=0
-            try:
-                for _ in range(50): # average 50 readings
-                    idraw+=self.pwr.current
-                return (idraw/50)
-            except Exception as e:
-                self.debug_print('[WARNING][PWR Monitor]' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] Power monitor not initialized')
-
-    @property
-    def charge_voltage(self):
-        if self.hardware['SOLAR']:
-            voltage=0
-            try:
-                for _ in range(50):
-                    voltage += self.solar.bus_voltage
-                return voltage/50 + 0.2 # volts and corection factor
-            except Exception as e:
-                self.debug_print('[WARNING][SOLAR PWR Monitor]' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] SOLAR Power monitor not initialized')
-
-    @property
-    def charge_current(self):
-        if self.hardware['SOLAR']:
-            ichrg=0
-            try:
-                for _ in range(50): # average 50 readings
-                    ichrg+=self.solar.current
-                return (ichrg/50)
-            except Exception as e:
-                self.debug_print('[WARNING][SOLAR PWR Monitor]' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] SOLAR Power monitor not initialized')
 
     @property
     def uptime(self):
@@ -529,25 +254,6 @@ class Satellite:
             self._resetReg.value=1
         except Exception as e:
             self.debug_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
-    
-    @property
-    def internal_temperature(self):
-        return self.pct.temperature
-
-    def distance(self):
-        if self.hardware['LiDAR']:
-            try:
-                distance_mm = 0
-                for _ in range(10):
-                    distance_mm += self.LiDAR.range
-                    time.sleep(0.01)
-                self.debug_print('distance measured = {0}mm'.format(distance_mm/10))
-                return distance_mm/10
-            except Exception as e:
-                self.debug_print('LiDAR error: ' + ''.join(traceback.format_exception(e)))
-        else:
-            self.debug_print('[WARNING] LiDAR not initialized')
-        return 0
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
@@ -600,85 +306,6 @@ class Satellite:
                     return file
         except Exception as e:
             self.debug_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
-
-    def heater_on(self):
-        if self.hardware['FLD']:
-            try:
-                self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-                if self.f_brownout:
-                    pass
-                else:
-                    self.f_brownout=True
-                    self.heating=True
-                    self._relayA.value = 1
-                    self.RGB=(255,165,0)
-                    # Pause to ensure relay is open
-                    time.sleep(0.25)
-                    self.heater.duty_cycle = 0x7fff
-            except Exception as e:
-                self.debug_print('[ERROR] Cant turn on heater: ' + ''.join(traceback.format_exception(e)))
-                self.heater.duty_cycle = 0x0000
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-
-
-    def heater_off(self):
-        if self.hardware['FLD']:
-            try:
-                self.heater.duty_cycle = 0x0000
-                self._relayA.value = 0
-                self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-                if self.heating==True:
-                    self.heating=False
-                    self.f_brownout=False
-                    self.debug_print("Battery Heater off!")
-                    self.RGB=(0,0,0)
-            except Exception as e:
-                self.debug_print('[ERROR] Cant turn off heater: ' + ''.join(traceback.format_exception(e)))
-                self.heater.duty_cycle = 0x0000
-        else:
-            self.debug_print('[WARNING] LED Driver not initialized')
-        
-
-    #Function is designed to read battery data and take some action to maintaint
-
-    def battery_manager(self):
-        self.debug_print(f'Started to manage battery')
-        try:
-            vchrg=self.charge_voltage
-            vbatt=self.battery_voltage
-            ichrg=self.charge_current
-            idraw=self.current_draw
-            vsys=self.system_voltage
-            micro_temp=self.micro.cpu.temperature
-
-            self.debug_print('MICROCONTROLLER Temp: {} C'.format(micro_temp))
-            self.debug_print(f'Internal Temperature: {self.internal_temperature} C')
-        except Exception as e:
-            self.debug_print("Error obtaining battery data: " + ''.join(traceback.format_exception(e)))
-
-        try:
-            self.debug_print(f"charge current: {ichrg}mA, and charge voltage: {vbatt}V")
-            self.debug_print("draw current: {}mA, and battery voltage: {}V".format(idraw,vbatt))
-            self.debug_print("system voltage: {}V".format(vsys))
-            if idraw>ichrg:
-                self.debug_print("Beware! The Satellite is drawing more power than receiving")
-
-            if vbatt < self.CRITICAL_BATTERY_VOLTAGE:
-                self.powermode('crit')
-                self.debug_print('CONTEXT SHIFT INTO CRITICAL POWER MODE: Attempting to shutdown ALL systems...')
-            elif vbatt < self.NORMAL_BATTERY_VOLTAGE:
-                self.powermode('min')
-                self.debug_print('CONTEXT SHIFT INTO MINIMUM POWER MODE: Attempting to shutdown unnecessary systems...')
-            elif vbatt > self.NORMAL_BATTERY_VOLTAGE+.5:
-                self.powermode('max')
-                self.debug_print('CONTEXT SHIFT INTO MAXIMUM POWER MODE: Attempting to revive all systems...')
-            elif vbatt < self.NORMAL_BATTERY_VOLTAGE+.3 and self.power_mode=='maximum':
-                self.powermode('norm')
-                self.debug_print('CONTEXT SHIFT INTO NORMAL POWER MODE: Attempting to revive necessary systems...')
-
-        except Exception as e:
-            self.debug_print("Error in Battery Manager: " + ''.join(traceback.format_exception(e)))
 
     def powermode(self,mode):
         """
@@ -750,178 +377,6 @@ class Satellite:
                 return None
         else:
             self.debug_print('[WARNING] SD Card not initialized')
-
-    def burn(self,burn_num,dutycycle=0,freq=1000,duration=1):
-        """
-        Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
-        has been installed.
-
-        IMPORTANT: See "Burn Wire Info & Usage" of https://pycubed.org/resources
-        before attempting to use this function!
-
-        burn_num:  (string) which burn wire circuit to operate, must be either '1' or '2'
-        dutycycle: (float) duty cycle percent, must be 0.0 to 100
-        freq:      (float) frequency in Hz of the PWM pulse, default is 1000 Hz
-        duration:  (float) duration in seconds the burn wire should be on
-        """
-        try:
-            # convert duty cycle % into 16-bit fractional up time
-            dtycycl=int((dutycycle/100)*(0xFFFF))
-            self.debug_print('----- BURN WIRE CONFIGURATION -----')
-            self.debug_print('\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})\n\tDuration of {}sec'.format(freq,(100*dtycycl/0xFFFF),dtycycl,duration))
-            # create our PWM object for the respective pin
-            # not active since duty_cycle is set to 0 (for now)
-            if '1' in burn_num:
-                burnwire = pwmio.PWMOut(board.BURN_ENABLE, frequency=freq, duty_cycle=0)
-            else:
-                return False
-            # Configure the relay control pin & open relay
-            self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-            self._relayA.value = 1
-            self.RGB=(255,165,0)
-            # Pause to ensure relay is open
-            time.sleep(0.5)
-            # Set the duty cycle over 0%
-            # This starts the burn!
-            burnwire.duty_cycle=dtycycl
-            time.sleep(duration)
-            # Clean up
-            self._relayA.value = 0
-            burnwire.duty_cycle=0
-            self.RGB=(0,0,0)
-            #burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-            return True
-        except Exception as e:
-            self.debug_print("Error with Burn Wire: " + ''.join(traceback.format_exception(e)))
-            return False
-        finally:
-            self._relayA.value = 0
-            burnwire.duty_cycle=0
-            self.RGB=(0,0,0)
-            burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-
-    def smart_burn(self,burn_num,dutycycle=0.1):
-        """
-        Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
-        has been installed.
-
-        IMPORTANT: See "Burn Wire Info & Usage" of https://pycubed.org/resources
-        before attempting to use this function!
-
-        burn_num:  (string) which burn wire circuit to operate, must be either '1' or '2'
-        dutycycle: (float) duty cycle percent, must be 0.0 to 100
-        freq:      (float) frequency in Hz of the PWM pulse, default is 1000 Hz
-        duration:  (float) duration in seconds the burn wire should be on
-        """
-
-        freq = 1000
-
-        distance1=0
-        distance2=0
-        #self.dist=self.distance()
-
-        try:
-            # convert duty cycle % into 16-bit fractional up time
-            dtycycl=int((dutycycle/100)*(0xFFFF))
-            self.debug_print('----- SMART BURN WIRE CONFIGURATION -----')
-            self.debug_print('\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})'.format(freq,(100*dtycycl/0xFFFF),dtycycl))
-            # create our PWM object for the respective pin
-            # not active since duty_cycle is set to 0 (for now)
-            if '1' in burn_num:
-                burnwire = pwmio.PWMOut(board.BURN_ENABLE, frequency=freq, duty_cycle=0)
-            else:
-                return False
-
-
-            try:
-                distance1=self.distance()
-                self.debug_print(str(distance1))
-                if distance1 > self.dist+2 and distance1 > 4 or self.f_triedburn == True:
-                    self.burned = True
-                    self.f_brownout = True
-                    raise TypeError("Wire seems to have burned and satellite browned out")
-                else:
-                    self.dist=int(distance1)
-                    self.burnarm=True
-                if self.burnarm:
-                    self.burnarm=False
-                    self.f_triedburn = True
-
-                    # Configure the relay control pin & open relay
-                    self.RGB=(0,165,0)
-
-                    self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-                    self.RGB=(255,165,0)
-                    self._relayA.value = 1
-
-                    # Pause to ensure relay is open
-                    time.sleep(0.5)
-
-                    #Start the Burn
-                    burnwire.duty_cycle=dtycycl
-
-                    #Burn Timer
-                    start_time = time.monotonic()
-
-                    #Monitor the burn
-                    while not self.burned:
-                        distance2=self.distance()
-                        self.debug_print(str(distance2))
-                        if distance2 > distance1+1 or distance2 > 10:
-                            self._relayA.value = 0
-                            burnwire.duty_cycle = 0
-                            self.burned=True
-                            self.f_triedburn = False
-                        else:
-                            distance1=distance2
-                            time_elapsed = time.monotonic() - start_time
-                            print("Time Elapsed: " + str(time_elapsed))
-                            if time_elapsed > 4:
-                                self._relayA.value = 0
-                                burnwire.duty_cycle = 0
-                                self.burned=False
-                                self.RGB=(0,0,255)
-                                time.sleep(10)
-                                self.f_triedburn = False
-                                break
-
-                    time.sleep(5)
-                    distance2=self.distance()
-                else:
-                    pass
-                if distance2 > distance1+2 or distance2 > 10:
-                    self.burned=True
-                    self.f_triedburn = False
-            except Exception as e:
-                self.debug_print("Error in Burn Sequence: " + ''.join(traceback.format_exception(e)))
-                self.debug_print("Error: " + str(e))
-                if "no attribute 'LiDAR'" in str(e):
-                    self.debug_print("Burning without LiDAR")
-                    time.sleep(120) #Set to 120 for flight
-                    self.burnarm=False
-                    self.burned=True
-                    self.f_triedburn=True
-                    self.burn("1",dutycycle,freq,4)
-                    time.sleep(5)
-
-            # Clean up
-            self._relayA.value = 0
-            burnwire.duty_cycle = 0
-            self.RGB=(0,0,0)
-            #burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
-            return True
-        except Exception as e:
-            self.debug_print("Error with Burn Wire: " + ''.join(traceback.format_exception(e)))
-            return False
-        finally:
-            self._relayA.value = 0
-            burnwire.duty_cycle=0
-            self.RGB=(0,0,0)
-            burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
 
 
 
