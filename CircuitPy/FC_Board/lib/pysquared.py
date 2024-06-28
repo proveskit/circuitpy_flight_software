@@ -110,10 +110,11 @@ class Satellite:
 
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
-            self.i2c0 = busio.I2C(board.SCL0,board.SDA0,timeout=5)
+            self.i2c0 = busio.I2C(board.I2C0_SCL,board.I2C0_SDA,timeout=5)
             self.spi0 = busio.SPI(board.SPI0_SCK,board.SPI0_MOSI,board.SPI0_MISO)
-            self.i2c1 = busio.I2C(board.SCL1,board.SDA1,timeout=5,frequency=100000)
-            self.spi1 = busio.SPI(board.SPI1_SCK,board.SPI1_MOSI,board.SPI1_MISO)
+
+            self.i2c1 = busio.I2C(board.I2C1_SCL,board.I2C1_SDA,timeout=5,frequency=100000)
+
             self.uart = busio.UART(board.TX,board.RX,baudrate=self.urate)
         except Exception as e:
             self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
@@ -133,11 +134,11 @@ class Satellite:
             self.f_softboot=False
 
         # Define radio
-        _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS)
-        _rf_rst1 = digitalio.DigitalInOut(board.RF_RESET)
-        self.enable_rf = digitalio.DigitalInOut(board.ENABLE_RF)
-        self.radio1_DIO0=digitalio.DigitalInOut(board.RF_IO0)
-        self.radio1_DIO4=digitalio.DigitalInOut(board.RF_IO4)
+        _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
+        _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
+        self.enable_rf = digitalio.DigitalInOut(board.RF_ENABLE)
+        self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
+        self.radio1_DIO4=digitalio.DigitalInOut(board.RF1_IO4)
 
         # self.enable_rf.switch_to_output(value=False) # if U21
         self.enable_rf.switch_to_output(value=True) # if U7
@@ -149,7 +150,7 @@ class Satellite:
         # Initialize SD card
         try:
             # Baud rate depends on the card, 4MHz should be safe
-            _sd = sdcardio.SDCard(self.spi1, board.SPI1_CS, baudrate=4000000)
+            _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
             _vfs = VfsFat(_sd)
             mount(_vfs, "/sd")
             self.fs=_vfs
@@ -160,7 +161,7 @@ class Satellite:
 
         # Initialize Neopixel
         try:
-            self.neopwr = digitalio.DigitalInOut(board.NEOPIXEL_POWER)
+            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
             self.neopwr.switch_to_output(value=True)
             self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB)
             self.neopixel[0] = (0,0,255)
