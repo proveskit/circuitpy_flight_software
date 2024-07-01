@@ -1,18 +1,14 @@
-'''
-In this method the PyCubed will wait a pre-allotted loiter time before proceeding to execute
-main. This loiter time is to allow for a keyboard interupt if needed. 
-
-Authors: Nicole Maggard and Michael Pham
-'''
-
+# This is where the magic happens! 
 import time
-import microcontroller
+
+print("Hello World!")
 
 try:
+    for i in range(10):
+        print(f"Code Starting in {10-i} seconds") 
+        time.sleep(1)
+    
     import main
 
-except Exception as e:    
+except Exception as e:
     print(e)
-    time.sleep(10)
-    microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
-    microcontroller.reset()
