@@ -30,56 +30,10 @@ class functions:
         self.detumble_enable_z = True
         self.detumble_enable_x = True
         self.detumble_enable_y = True
-        try:
-            self.cubesat.all_faces_on()
-        except Exception as e:
-            self.debug_print("Couldn't turn faces on: " + ''.join(traceback.format_exception(e)))
     
     '''
     Satellite Management Functions
     '''
-    def battery_heater(self):
-        """
-        Battery Heater Function reads temperature at the end of the thermocouple and tries to 
-        warm the batteries until they are roughly +4C above what the batteries should normally sit(this 
-        creates a band stop in which the battery heater never turns off) The battery heater should not run
-        forever, so a time based stop is implemented
-        """
-        try:
-            try:
-                import Big_Data
-                a = Big_Data.AllFaces(self.debug,self.cubesat.tca)
-                
-                self.last_battery_temp = a.Get_Thermo_Data()
-            except Exception as e:
-                self.debug_print("[ERROR] couldn't get thermocouple data!" + ''.join(traceback.format_exception(e)))
-                raise Exception("Thermocouple failure!")
-
-            if self.last_battery_temp < self.cubesat.NORMAL_BATT_TEMP:
-                end_time=0
-                self.cubesat.heater_on()
-                while self.last_battery_temp < self.cubesat.NORMAL_BATT_TEMP+4 and end_time<5:
-                    time.sleep(1)
-                    self.last_battery_temp = a.Get_Thermo_Data()
-                    end_time+=1
-                    self.debug_print(str(f"Heater has been on for {end_time} seconds and the battery temp is {self.last_battery_temp}C"))
-                self.cubesat.heater_off()
-                del a
-                del Big_Data
-                return True
-            else: 
-                self.debug_print("Battery is already warm enough")
-                del a
-                del Big_Data
-                return False
-        except Exception as e:
-            self.cubesat.heater_off()
-            self.debug_print("Error Initiating Battery Heater" + ''.join(traceback.format_exception(e)))
-            del a
-            del Big_Data
-            return False
-        finally:
-            self.cubesat.heater_off()
     
     def current_check(self):
         return self.cubesat.current_draw
@@ -217,29 +171,17 @@ class functions:
     Big_Data Face Functions
     change to remove fet values, move to pysquared
     '''  
-    def face_toggle(self,face,state):
-        dutycycle = 0x0000
-        if state:
-            duty_cycle=0xffff
-        
-        if   face == "Face0": self.cubesat.Face0.duty_cycle = duty_cycle      
-        elif face == "Face1": self.cubesat.Face0.duty_cycle = duty_cycle
-        elif face == "Face2": self.cubesat.Face0.duty_cycle = duty_cycle      
-        elif face == "Face3": self.cubesat.Face0.duty_cycle = duty_cycle           
-        elif face == "Face4": self.cubesat.Face0.duty_cycle = duty_cycle          
-        elif face == "Face5": self.cubesat.Face0.duty_cycle = duty_cycle
     
     def all_face_data(self):
         
-        self.cubesat.all_faces_on()
+        # self.cubesat.all_faces_on()
         try:
-            import Big_Data
-            a = Big_Data.AllFaces(self.debug,self.cubesat.tca)
-            
-            self.facestring = a.Face_Test_All()
-            
-            del a
-            del Big_Data
+            print("New Function Needed!")
+
+
+
+
+
         except Exception as e:
             self.debug_print("Big_Data error" + ''.join(traceback.format_exception(e)))
         
@@ -247,7 +189,6 @@ class functions:
     
     def get_imu_data(self):
         
-        self.cubesat.all_faces_on()
         try:
             data=[]
             data.append(self.cubesat.IMU.Acceleration)
@@ -348,11 +289,11 @@ class functions:
         self.debug_print("Short Hybernation Coming UP")
         gc.collect()
         #all should be off from cubesat powermode
-        self.cubesat.all_faces_off()
+
         self.cubesat.enable_rf.value=False
         self.cubesat.f_softboot=True
         time.sleep(120)
-        self.cubesat.all_faces_on()
+
         self.cubesat.enable_rf.value=True
         return True
     
@@ -360,11 +301,11 @@ class functions:
         self.debug_print("LONG Hybernation Coming UP")
         gc.collect()
         #all should be off from cubesat powermode
-        self.cubesat.all_faces_off()
+
         self.cubesat.enable_rf.value=False
         self.cubesat.f_softboot=True
         time.sleep(600)
-        self.cubesat.all_faces_on()
+
         self.cubesat.enable_rf.value=True
         return True
     
