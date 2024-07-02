@@ -61,7 +61,7 @@ def normal_power_operations():
     def check_power():
         gc.collect()
 
-        f.battery_heater()
+        print("Implement a New Function Here!")
         c.check_reboot()
 
         
@@ -93,7 +93,7 @@ def normal_power_operations():
         
         while check_power():
             try:
-                print("Pass Consdier Adding a New Function Here")
+                print("Pass Consider Adding a New check_power Function Here")
                 
             except Exception as e:
                 debug_print('Outta time! ' + ''.join(traceback.format_exception(e)))
