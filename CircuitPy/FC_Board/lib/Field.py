@@ -35,7 +35,7 @@ class Field():
                 self.debug_print("I am beaconing: " + str(msg))
                 self.cubesat.radio1.send(msg)
             else:
-                self.debug_print("Please toggle licensed variable in code once you obtain an ameteur radio license")
+                self.debug_print("Please toggle licensed variable in code once you obtain an amateur radio license")
         except Exception as e:
             self.debug_print("Tried Beaconing but encountered error: ".join(traceback.format_exception(e)))
 

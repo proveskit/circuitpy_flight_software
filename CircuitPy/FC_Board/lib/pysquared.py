@@ -74,6 +74,8 @@ class Satellite:
         self.NORMAL_CHARGE_CURRENT=0.5
         self.NORMAL_BATTERY_VOLTAGE=6.9#6.9
         self.CRITICAL_BATTERY_VOLTAGE=6.6#6.6
+        self.battery_voltage = 3.3                              # default value for testing REPLACE WITH REAL VALUE
+        self.current_draw = 255                                 # default value for testing REPLACE WITH REAL VALUE
         self.data_cache={}
         self.filenumbers={}
         self.image_packets=0

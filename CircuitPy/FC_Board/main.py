@@ -19,72 +19,13 @@ try:
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 
-    #power cycle faces to ensure sensors are on:
-    c.all_faces_off()
-    time.sleep(1)
-    c.all_faces_on()
-    #test the battery:
-    c.battery_manager()
     f.beacon()
     f.listen()
-    distance1=0
-    distance2=0
-    tries=0
-    loiter_time = 270
-    dutycycle=0.2
-    done=True
-    debug_print("Burn attempt status: " + str(c.burnarm))
-    debug_print("Burn status: " + str(c.burned))
-    while c.burned is False and tries < 3:
-        debug_print("Burn attempt try: " + str(tries+1))
-        if tries == 0:
-            debug_print("Loitering for " + str(loiter_time) + " seconds")
-            try:
-                c.neopixel[0] = (0,0,0)
-                
-                purple = (200, 8, 200)
-                led_off = (0,0,0)
-                
-                for step in range(0,loiter_time):
-                    
-                    c.neopixel[0] = purple
-                    time.sleep(0.5)
-                    c.neopixel[0] = led_off
-                    time.sleep(0.5)
-                    debug_print(f"Entering full flight software in... {loiter_time-step} seconds")
-            except Exception as e:
-                debug_print("Error in Loiter Sequence: " + ''.join(traceback.format_exception(e)))
-        try:
-            dutycycle=dutycycle+0.02
-            done=c.smart_burn('1',dutycycle)
-            tries+=1
-        except:
-            debug_print("couldnt burn on try " + str(tries+1))
-        if done is True:
-            debug_print("attempt passed without error!")
-            if c.burned is False and tries>=2:
-                debug_print("Ran Out of Smart Burn Attempts. Will Attempt automated burn...")
-                wait=0
-                while(wait<5):
-                    wait+=1
-                    time.sleep(1)
-                c.burn('1',0.28,1000,2)
-            else:
-                pass
-        else:
-            debug_print("burn failed miserably!")
-            break
-        
-
 
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
-
-    c.battery_manager()
-    f.battery_heater()
-    c.battery_manager() #Second check to make sure we have enough power to continue
 
     f.beacon()
     f.listen()
@@ -93,8 +34,7 @@ try:
 except Exception as e:
     debug_print("Error in Boot Sequence: " + ''.join(traceback.format_exception(e)))
 finally:
-    debug_print("All Faces off!")
-    c.all_faces_off()
+    debug_print("Something went wrong!")
 
 def critical_power_operations():
     f.beacon()
@@ -120,10 +60,10 @@ def normal_power_operations():
     #Defining L1 Tasks
     def check_power():
         gc.collect()
-        c.battery_manager()
-        f.battery_heater()
+
+        print("Implement a New Function Here!")
         c.check_reboot()
-        c.battery_manager() #Second check to make sure we have enough power to continue
+
         
         if c.power_mode == 'normal' or c.power_mode == 'maximum': 
             pwr = True
@@ -152,14 +92,8 @@ def normal_power_operations():
     async def g_face_data():
         
         while check_power():
-
-            FaceData=[]
-
             try:
-                debug_print("Getting face data...")
-                FaceData = f.all_face_data()
-                for _ in range(0, len(FaceData)):
-                    debug_print("Face " + str(_) + ": " + str(FaceData[_]))
+                print("Pass Consider Adding a New check_power Function Here")
                 
             except Exception as e:
                 debug_print('Outta time! ' + ''.join(traceback.format_exception(e)))
@@ -257,10 +191,9 @@ def normal_power_operations():
 
 ######################### MAIN LOOP ##############################
 try:
-    c.all_faces_on()
+
     while True:
         #L0 automatic tasks no matter the battery level
-        c.battery_manager()
         c.check_reboot()
         
         if c.power_mode == 'critical':
@@ -281,12 +214,13 @@ try:
             
         else:
             f.listen()
+
 except Exception as e:
     debug_print("Error in Main Loop: " + ''.join(traceback.format_exception(e)))
     time.sleep(10)
     microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
     microcontroller.reset()
 finally:
-    debug_print("All Faces off!")
-    c.all_faces_off()
+    debug_print("Going Neutral!")
+
     c.RGB=(0,0,0)
