@@ -145,10 +145,10 @@ class Satellite:
 
         # Initialize Accelerometer
         try:
-            self.accel = adafruit_lsm303_accel.LSM303_Accel(self.i2c1)
-            self.hardware['Accel'] = True
+            self.accelerometer = adafruit_lsm303_accel.LSM303_Accel(self.i2c1)
+            self.hardware['Accelerometer'] = True
         except Exception as e:
-            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+            self.debug_print('[ERROR][Accelerometer]' + ''.join(traceback.format_exception(e)))
 
 
         # Define radio
@@ -271,6 +271,34 @@ class Satellite:
             self._resetReg.value=1
         except Exception as e:
             self.debug_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def gyro(self):
+        try:
+            return self.imu.gyro
+        except Exception as e:
+            self.debug_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def imu_accel(self):
+        try:
+            return self.imu.acceleration
+        except Exception as e:
+            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def temp(self):
+        try:
+            return self.imu.temperature
+        except Exception as e:
+            self.debug_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def accel(self):
+        try:
+            return self.accelerometer.acceleration
+        except Exception as e:
+            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
