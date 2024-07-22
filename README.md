@@ -3,7 +3,20 @@ Software for the flight controller board in the PROVES Kit. We recent updated th
 
 Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software! 
 
-## General Structure: 
+# Usage
+Depending on whether you are trying to use the CircuitPython or PicoSDK software, there are some different steps you need to follow. 
+
+For CircuitPython load new software by doing the following: 
+1. Clone the branch you wish to put on your board to your local machine.
+2. Connect to the target board so it mounts as an external drive.
+3. Access the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
+  ```py
+  import storage
+  storage.erase_filesystem()
+  ```
+4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo. 
+
+# General Structure: 
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
