@@ -18,7 +18,7 @@ import gc
 import pysquared_rfm9x  # Radio
 import neopixel         # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX # IMU
-import adafruit_lsm303_accel # Accelerometer
+import adafruit_lis2mdl # Magnetometer
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -64,6 +64,7 @@ class Satellite:
         Big init routine as the whole board is brought up.
         """
         self.debug=True #Define verbose output here. True or False
+        self.legacy=False
         self.BOOTTIME= 1577836800
         self.debug_print(f'Boot time: {self.BOOTTIME}s')
         self.CURRENTTIME=self.BOOTTIME
@@ -97,7 +98,7 @@ class Satellite:
         }
         self.hardware = {
                        'IMU':    False,
-                       'Accel':  False,
+                       'Mag':    False,
                        'Radio1': False,
                        'SDcard': False,
                        'LiDAR':  False,
@@ -124,10 +125,8 @@ class Satellite:
         except Exception as e:
             self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
 
-        #Define I2C Reset
-        self._i2c_reset = digitalio.DigitalInOut(board.I2C_RESET)
-        self._i2c_reset.switch_to_output(value=True)
 
+        # Definites c.boot roll over
         if self.c_boot > 200:
             self.c_boot=0
 
@@ -145,23 +144,32 @@ class Satellite:
         except Exception as e:
             self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
 
-        # Initialize Accelerometer
+        # Initialize Magnetometer
         try:
-            self.accelerometer = adafruit_lsm303_accel.LSM303_Accel(self.i2c1)
-            self.hardware['Accelerometer'] = True
+            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
+            self.hardware['Mag'] = True
         except Exception as e:
-            self.debug_print('[ERROR][Accelerometer]' + ''.join(traceback.format_exception(e)))
+            self.debug_print('[ERROR][Magnetometer]' + ''.join(traceback.format_exception(e)))
 
 
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
-        self.enable_rf = digitalio.DigitalInOut(board.RF_ENABLE)
+
+        ### Temporary Fix for RF_ENAB ###
+
+        if self.legacy:
+            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
+            self.enable_rf.switch_to_output(value=True) # if U7
+        else:
+            self.enable_rf= True
+        
+        ### Temporary Fix for RF_ENAB ###
+
         self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
         self.radio1_DIO4=digitalio.DigitalInOut(board.RF1_IO4)
 
         # self.enable_rf.switch_to_output(value=False) # if U21
-        self.enable_rf.switch_to_output(value=True) # if U7
         _rf_cs1.switch_to_output(value=True)
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
@@ -183,7 +191,7 @@ class Satellite:
         try:
             self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
             self.neopwr.switch_to_output(value=True)
-            self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB)
+            self.neopixel = neopixel.NeoPixel(board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB)
             self.neopixel[0] = (0,0,255)
             self.hardware['Neopixel'] = True
         except Exception as e:
@@ -205,7 +213,10 @@ class Satellite:
             self.radio1.ack_delay=0.2
             if self.radio1.spreading_factor > 9: self.radio1.preamble_length = self.radio1.spreading_factor
             self.hardware['Radio1'] = True
-            self.enable_rf.value = False
+
+            if self.legacy:
+                self.enable_rf.value = False
+                
         except Exception as e:
             self.debug_print('[ERROR][RADIO 1]' + ''.join(traceback.format_exception(e)))
 
@@ -282,25 +293,25 @@ class Satellite:
             self.debug_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def imu_accel(self):
+    def accel(self):
         try:
             return self.imu.acceleration
         except Exception as e:
             self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def temp(self):
+    def imu_temp(self):
         try:
             return self.imu.temperature
         except Exception as e:
             self.debug_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def accel(self):
+    def mag(self):
         try:
-            return self.accelerometer.acceleration
+            return self.mangetometer.magnetic
         except Exception as e:
-            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+            self.debug_print('[ERROR][mag]' + ''.join(traceback.format_exception(e)))
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
