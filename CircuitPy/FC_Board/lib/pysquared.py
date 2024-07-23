@@ -17,6 +17,8 @@ import gc
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
 import neopixel         # RGB LED
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX # IMU
+import adafruit_lsm303_accel # Accelerometer
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -96,6 +98,7 @@ class Satellite:
         }
         self.hardware = {
                        'IMU':    False,
+                       'Accel':  False,
                        'Radio1': False,
                        'SDcard': False,
                        'LiDAR':  False,
@@ -133,6 +136,21 @@ class Satellite:
         
         if self.f_softboot:
             self.f_softboot=False
+
+        # Initialize IMU
+        try:
+            self.imu = LSM6DSOX(self.i2c1)
+            self.hardware['IMU'] = True
+        except Exception as e:
+            self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
+
+        # Initialize Accelerometer
+        try:
+            self.accelerometer = adafruit_lsm303_accel.LSM303_Accel(self.i2c1)
+            self.hardware['Accelerometer'] = True
+        except Exception as e:
+            self.debug_print('[ERROR][Accelerometer]' + ''.join(traceback.format_exception(e)))
+
 
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
@@ -178,8 +196,6 @@ class Satellite:
             self.hardware['Neopixel'] = True
         except Exception as e:
             self.debug_print('[WARNING][Neopixel]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize IMU
 
         # Initialize radio #1 - UHF
         try:
@@ -268,6 +284,34 @@ class Satellite:
             self._resetReg.value=1
         except Exception as e:
             self.debug_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def gyro(self):
+        try:
+            return self.imu.gyro
+        except Exception as e:
+            self.debug_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def imu_accel(self):
+        try:
+            return self.imu.acceleration
+        except Exception as e:
+            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def temp(self):
+        try:
+            return self.imu.temperature
+        except Exception as e:
+            self.debug_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
+
+    @property
+    def accel(self):
+        try:
+            return self.accelerometer.acceleration
+        except Exception as e:
+            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
