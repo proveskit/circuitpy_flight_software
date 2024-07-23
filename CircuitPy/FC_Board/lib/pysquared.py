@@ -18,7 +18,7 @@ import gc
 import pysquared_rfm9x  # Radio
 import neopixel         # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX # IMU
-import adafruit_lsm303_accel # Accelerometer
+import adafruit_lis2mdl # Magnetometer
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -98,7 +98,7 @@ class Satellite:
         }
         self.hardware = {
                        'IMU':    False,
-                       'Accel':  False,
+                       'Mag':    False,
                        'Radio1': False,
                        'SDcard': False,
                        'LiDAR':  False,
@@ -144,19 +144,19 @@ class Satellite:
         except Exception as e:
             self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
 
-        # Initialize Accelerometer
+        # Initialize Magnetometer
         try:
-            self.accelerometer = adafruit_lsm303_accel.LSM303_Accel(self.i2c1)
-            self.hardware['Accelerometer'] = True
+            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
+            self.hardware['Mag'] = True
         except Exception as e:
-            self.debug_print('[ERROR][Accelerometer]' + ''.join(traceback.format_exception(e)))
+            self.debug_print('[ERROR][Magnetometer]' + ''.join(traceback.format_exception(e)))
 
 
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
 
-        ### Temporary Fix for RF_ENAB
+        ### Temporary Fix for RF_ENAB ###
 
         if self.legacy:
             self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
@@ -164,7 +164,7 @@ class Satellite:
         else:
             self.enable_rf= True
         
-        ### Temporary Fix for RF_ENAB
+        ### Temporary Fix for RF_ENAB ###
 
         self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
         self.radio1_DIO4=digitalio.DigitalInOut(board.RF1_IO4)
@@ -293,25 +293,25 @@ class Satellite:
             self.debug_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def imu_accel(self):
+    def accel(self):
         try:
             return self.imu.acceleration
         except Exception as e:
             self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def temp(self):
+    def imu_temp(self):
         try:
             return self.imu.temperature
         except Exception as e:
             self.debug_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
 
     @property
-    def accel(self):
+    def mag(self):
         try:
-            return self.accelerometer.acceleration
+            return self.mangetometer.magnetic
         except Exception as e:
-            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+            self.debug_print('[ERROR][mag]' + ''.join(traceback.format_exception(e)))
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
