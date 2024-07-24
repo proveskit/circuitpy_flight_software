@@ -170,7 +170,6 @@ _LSM6DS_FUNC_CFG_BANK_EMBED = const(2)
 
 
 class LSM6DS:  # pylint: disable=too-many-instance-attributes
-
     """Driver for the LSM6DSOX 6-axis accelerometer and gyroscope.
 
     :param ~busio.I2C i2c_bus: The I2C bus the LSM6DSOX is connected to.

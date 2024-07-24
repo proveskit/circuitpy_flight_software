@@ -22,7 +22,7 @@ cs = digitalio.DigitalInOut(board.D10)
 spi_bus = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 MAC = (0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE)
 # Initialize ethernet interface
-eth = pysquared_w5500.WIZNET5500(spi_bus, cs,mac=MAC,debug=True)
+eth = pysquared_w5500.WIZNET5500(spi_bus, cs, mac=MAC, debug=True)
 
 # Initialize a socket for our server
 pysquared_w5500.set_interface(eth)
