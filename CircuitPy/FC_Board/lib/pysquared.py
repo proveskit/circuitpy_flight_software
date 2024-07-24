@@ -7,12 +7,15 @@ Library Repo:
 * Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 # Common CircuitPython Libs
+import gc
 import board, microcontroller
 import busio, time, sys, traceback
 from storage import mount,umount,VfsFat
 import digitalio, sdcardio, pwmio
+from os import listdir,stat,statvfs,mkdir,chdir
+from bitflags import bitFlag,multiBitFlag,multiByte
+from micropython import const
 from debugcolor import co
-import gc
 
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
@@ -20,11 +23,6 @@ import neopixel         # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX # IMU
 import adafruit_lis2mdl # Magnetometer
 import adafruit_tca9548a         # I2C Multiplexer
-
-# Common CircuitPython Libs
-from os import listdir,stat,statvfs,mkdir,chdir
-from bitflags import bitFlag,multiBitFlag,multiByte
-from micropython import const
 
 
 # NVM register numbers
@@ -60,6 +58,10 @@ class Satellite:
     f_fsk       = bitFlag(register=_FLAG,bit=7)
 
     def debug_print(self,statement):
+        if self.debug:
+            print(co("[pysquared]" + str(statement), "green", "bold"))
+    
+    def error_print(self,statement):
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -122,53 +124,23 @@ class Satellite:
                         'Mag':    False,
                         'Radio1': False,
                         'SDcard': False,
-                        'LiDAR':  False,
+                        'NEOPIX': False,
                         'WDT':    False,
                         'SOLAR':  False,
                         'PWR':    False,
-                        'FLD':    False,
                         'TEMP':   False,
                         'TCA':    False,
+                        'CAN':    False,
                         'Face0':  False,
                         'Face1':  False,
                         'Face2':  False,
                         'Face3':  False,
                         'Face4':  False,
                        }
-
+       
         """
-        Intializing Communication Buses
+        NVM Parameter Resets
         """
-        try:
-            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-            self.hardware['I2C0'] = True
-
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e)))
-        
-        try:
-            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
-            self.hardware['SPI0'] = True
-
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e)))
-        
-        try:
-            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
-            self.hardware['I2C1'] = True
-
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e)))
-
-        try:
-            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
-            self.hardware['UART'] = True
-
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e)))
-
-
-        # Definites c.boot roll over
         if self.c_boot > 200:
             self.c_boot=0
 
@@ -179,21 +151,51 @@ class Satellite:
         if self.f_softboot:
             self.f_softboot=False
 
-        # Initialize IMU
+        """
+        Intializing Communication Buses
+        """
         try:
-            self.imu = LSM6DSOX(self.i2c1)
-            self.hardware['IMU'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
+            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+            self.hardware['I2C0'] = True
 
-        # Initialize Magnetometer
+        except Exception as e:
+            self.error_print("ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e)))
+        
         try:
-            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
-            self.hardware['Mag'] = True
+            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+            self.hardware['SPI0'] = True
+
         except Exception as e:
-            self.debug_print('[ERROR][Magnetometer]' + ''.join(traceback.format_exception(e)))
+            self.error_print("ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e)))
+        
+        try:
+            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
+            self.hardware['I2C1'] = True
 
+        except Exception as e:
+            self.error_print("ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e)))
 
+        try:
+            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+            self.hardware['UART'] = True
+
+        except Exception as e:
+            self.error_print("ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e)))
+
+        ######## Temporary Fix for RF_ENAB ########
+        #                                         #
+        if self.legacy: 
+            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
+            # self.enable_rf.switch_to_output(value=False) # if U21
+            self.enable_rf.switch_to_output(value=True)  # if U7
+        else:
+            self.enable_rf = True
+        #                                         #
+        ######## Temporary Fix for RF_ENAB ########
+
+        """
+        Radio 1 Initialization
+        """
         # Define Radio Ditial IO Pins
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
@@ -207,41 +209,6 @@ class Satellite:
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
 
-
-        ######## Temporary Fix for RF_ENAB ########
-        #                                         #
-        if self.legacy: 
-            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
-            # self.enable_rf.switch_to_output(value=False) # if U21
-            self.enable_rf.switch_to_output(value=True)  # if U7
-        else:
-            self.enable_rf = True
-        #                                         #
-        ######## Temporary Fix for RF_ENAB ########
-
-        # Initialize SD card
-        try:
-            # Baud rate depends on the card, 4MHz should be safe
-            _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
-            _vfs = VfsFat(_sd)
-            mount(_vfs, "/sd")
-            self.fs=_vfs
-            sys.path.append("/sd")
-            self.hardware['SDcard'] = True
-        except Exception as e:
-            self.debug_print('[ERROR][SD Card]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize Neopixel
-        try:
-            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
-            self.neopwr.switch_to_output(value=True)
-            self.neopixel = neopixel.NeoPixel(board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB)
-            self.neopixel[0] = (0,0,255)
-            self.hardware['Neopixel'] = True
-        except Exception as e:
-            self.debug_print('[WARNING][Neopixel]' + ''.join(traceback.format_exception(e)))
-
-        # Initialize radio #1 - UHF
         try:
             self.radio1 = pysquared_rfm9x.RFM9x(self.spi0, _rf_cs1, _rf_rst1,self.radio_cfg['freq'],code_rate=8,baudrate=1320000)
             # Default LoRa Modulation Settings
@@ -262,24 +229,86 @@ class Satellite:
                 self.enable_rf.value = False
                 
         except Exception as e:
-            self.debug_print('[ERROR][RADIO 1]' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR][RADIO 1]' + ''.join(traceback.format_exception(e)))
+
+        """
+        IMU Initialization
+        """
+        try:
+            self.imu = LSM6DSOX(self.i2c1)
+            self.hardware['IMU'] = True
+        except Exception as e:
+            self.error_print('[ERROR][IMU]' + ''.join(traceback.format_exception(e)))
+
+        # Initialize Magnetometer
+        try:
+            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
+            self.hardware['Mag'] = True
+        except Exception as e:
+            self.error_print('[ERROR][Magnetometer]')
+            traceback.print_exception(None, e, e.__traceback__)
+
+        """
+        SD Card Initialization
+        """
+        try:
+            # Baud rate depends on the card, 4MHz should be safe
+            _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
+            _vfs = VfsFat(_sd)
+            mount(_vfs, "/sd")
+            self.fs=_vfs
+            sys.path.append("/sd")
+            self.hardware['SDcard'] = True
+        except Exception as e:
+            self.error_print('[ERROR][SD Card]' + ''.join(traceback.format_exception(e)))
+
+        """
+        Neopixel Initialization
+        """
+        try:
+            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
+            self.neopwr.switch_to_output(value=True)
+            self.neopixel = neopixel.NeoPixel(board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB)
+            self.neopixel[0] = (0,0,255)
+            self.hardware['NEOPIX'] = True
+        except Exception as e:
+            self.error_print('[WARNING][NEOPIX]' + ''.join(traceback.format_exception(e)))
+
+        """
+        TCA Multiplexer Initialization
+        """
+        try:
+            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0)
+            self.hardware['TCA'] = True
+        except Exception as e:
+            self.error_print('[ERROR][TCA]' + ''.join(traceback.format_exception(e)))
+
+        """
+        TCA Multiplexer Initialization
+        """
 
         # Prints init state of PySquared hardware
-        self.debug_print(str(self.hardware))
+        self.debug_print("PySquared Hardware Initialization Complete!")
+        
+        if self.debug:
+            # Find the length of the longest key
+            max_key_length = max(len(key) for key in self.hardware.keys())
 
+            print('='*16)
+            print("Device  | Status")
+            for key, value in self.hardware.items():
+                padded_key = key + ' ' * (max_key_length - len(key))
+                if value: 
+                    print(co(f"|{padded_key} | {value} |", "green"))
+                else:
+                    print(co(f"|{padded_key} | {value}|", "red")) 
+            print('='*16)
         # set power mode
         self.power_mode = 'normal'
 
-    # This fuction might not be needed anymore
-    def reinit(self,dev):
-        if dev=='pwr':
-            self.pwr.__init__(self.i2c0)
-        else:
-            self.debug_print('Invalid Device? ->' + str(dev))
-
     """
     Code to call satellite parameters
-    """
+    """ 
 
     @property
     def burnarm(self):
@@ -304,9 +333,9 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.debug_print('[ERROR]' + ''.join(traceback.format_exception(e)))
+                self.error_print('[ERROR]' + ''.join(traceback.format_exception(e)))
         else:
-            self.debug_print('[WARNING] neopixel not initialized')
+            self.error_print('[WARNING] neopixel not initialized')
 
     @property
     def uptime(self):
@@ -322,40 +351,40 @@ class Satellite:
                 self.spi.deinit()
                 time.sleep(3)
             except Exception as e:
-                self.debug_print('error unmounting SD card' + ''.join(traceback.format_exception(e)))
+                self.error_print('error unmounting SD card' + ''.join(traceback.format_exception(e)))
         try:
             self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
             self._resetReg.value=1
         except Exception as e:
-            self.debug_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
+            self.error_print('vbus reset error: ' + ''.join(traceback.format_exception(e)))
 
     @property
     def gyro(self):
         try:
             return self.imu.gyro
         except Exception as e:
-            self.debug_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR][GYRO]' + ''.join(traceback.format_exception(e)))
 
     @property
     def accel(self):
         try:
             return self.imu.acceleration
         except Exception as e:
-            self.debug_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR][ACCEL]' + ''.join(traceback.format_exception(e)))
 
     @property
     def imu_temp(self):
         try:
             return self.imu.temperature
         except Exception as e:
-            self.debug_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR][TEMP]' + ''.join(traceback.format_exception(e)))
 
     @property
     def mag(self):
         try:
             return self.mangetometer.magnetic
         except Exception as e:
-            self.debug_print('[ERROR][mag]' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR][mag]' + ''.join(traceback.format_exception(e)))
 
     def log(self,filedir,msg):
         if self.hardware['SDcard']:
@@ -365,9 +394,9 @@ class Satellite:
                     t=int(time.monotonic())
                     f.write('{}, {}\n'.format(t,msg))
             except Exception as e:
-                self.debug_print('SD CARD error: ' + ''.join(traceback.format_exception(e)))
+                self.error_print('SD CARD error: ' + ''.join(traceback.format_exception(e)))
         else:
-            self.debug_print('[WARNING] SD Card not initialized')
+            self.error_print('[WARNING] SD Card not initialized')
     
     def check_reboot(self):
         self.UPTIME=self.uptime
@@ -389,7 +418,7 @@ class Satellite:
                     for line in file:
                         self.debug_print(line.strip())
         except Exception as e:
-            self.debug_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
     
     def read_file(self,filedir=None,binary=False):
         try:
@@ -407,7 +436,7 @@ class Satellite:
                         self.debug_print(line.strip())
                     return file
         except Exception as e:
-            self.debug_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
+            self.error_print('[ERROR] Cant print file: ' + ''.join(traceback.format_exception(e)))
 
     def powermode(self,mode):
         """
@@ -435,7 +464,7 @@ class Satellite:
                 self.enable_rf.value = True
                 self.power_mode = 'maximum'
         except Exception as e:
-            self.debug_print("Error in changing operations of powermode: " + ''.join(traceback.format_exception(e)))
+            self.error_print("Error in changing operations of powermode: " + ''.join(traceback.format_exception(e)))
 
 
     def new_file(self,substring,binary=False):
@@ -453,17 +482,19 @@ class Satellite:
                 self.debug_print('Creating new file in directory: /sd{} with file prefix: {}'.format(_folder,_file))
                 try: chdir('/sd'+_folder)
                 except OSError:
-                    self.debug_print('Directory {} not found. Creating...'.format(_folder))
+                    self.error_print('Directory {} not found. Creating...'.format(_folder))
                     try: mkdir('/sd'+_folder)
                     except Exception as e:
-                        self.debug_print("Error with creating new file: " + ''.join(traceback.format_exception(e)))
+                        self.error_print("Error with creating new file: " + ''.join(traceback.format_exception(e)))
                         return None
                 for i in range(0xFFFF):
                     ff='/sd{}{}{:05}.txt'.format(_folder,_file,(n+i)%0xFFFF)
                     try:
                         if n is not None:
                             stat(ff)
-                    except:
+                    except Exception as e:
+                        self.error_print('file number is {}'.format(n))
+                        self.error_print(e)
                         n=(n+i)%0xFFFF
                         # print('file number is',n)
                         break
@@ -475,7 +506,7 @@ class Satellite:
                 chdir('/')
                 return ff
             except Exception as e:
-                self.debug_print("Error creating file: " + ''.join(traceback.format_exception(e)))
+                self.error_print("Error creating file: " + ''.join(traceback.format_exception(e)))
                 return None
         else:
             self.debug_print('[WARNING] SD Card not initialized')
