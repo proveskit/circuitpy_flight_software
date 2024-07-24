@@ -18,7 +18,6 @@ _LSM6DS_CTRL2_G = const(0x11)
 
 
 class ISM330DHCX(LSM6DS):  # pylint: disable=too-many-instance-attributes
-
     """Driver for the ISM330DHCX 6-axis accelerometer and gyroscope.
 
     :param ~busio.I2C i2c_bus: The I2C bus the device is connected to.
