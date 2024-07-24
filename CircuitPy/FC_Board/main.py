@@ -16,6 +16,7 @@ def debug_print(statement):
         print(co("[MAIN]" + str(statement), 'blue', 'bold'))
 f=functions.functions(c)
 try:
+    c.c_boot += 1 # Increment boot number
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 

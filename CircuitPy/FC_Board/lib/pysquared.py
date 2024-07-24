@@ -38,6 +38,9 @@ _FLAG     = const(16)
 SEND_BUFF=bytearray(252)
 
 class Satellite:
+    """
+    NVM (Non-Volatile Memory) Register Definitions
+    """
     # General NVM counters
     c_boot      = multiBitFlag(register=_BOOTCNT, lowest_bit=0,num_bits=8)
     c_vbusrst   = multiBitFlag(register=_VBUSRST, lowest_bit=0,num_bits=8)
@@ -61,8 +64,9 @@ class Satellite:
 
     def __init__(self):
         """
-        Big init routine as the whole board is brought up.
+        Big init routine as the whole board is brought up. Starting with config variables.
         """
+<<<<<<< Updated upstream
         self.debug=True #Define verbose output here. True or False
         self.legacy=False
         self.BOOTTIME= 1577836800
@@ -86,6 +90,44 @@ class Satellite:
         self.vlowbatt=6.0
         self.send_buff = memoryview(SEND_BUFF)
         self.micro=microcontroller
+=======
+        self.debug = True  # Define verbose output here. True or False
+        self.legacy = False # Define if the board is used with legacy or not
+        self.heating = False # Currently not used
+        self.is_licensed = False
+
+        """
+        Define the boot time and current time
+        """
+        self.BOOTTIME = 1577836800
+        self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        self.CURRENTTIME = self.BOOTTIME
+        self.UPTIME = 0
+
+        """
+        Define the normal power modes
+        """
+        self.NORMAL_TEMP = 20
+        self.NORMAL_BATT_TEMP = 1  # Set to 0 BEFORE FLIGHT!!!!!
+        self.NORMAL_MICRO_TEMP = 20
+        self.NORMAL_CHARGE_CURRENT = 0.5
+        self.NORMAL_BATTERY_VOLTAGE = 6.9  # 6.9
+        self.CRITICAL_BATTERY_VOLTAGE = 6.6  # 6.6
+        self.vlowbatt = 6.0
+        self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
+        self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
+    
+        """
+        Setting up data buffers
+        """
+        self.data_cache = {}
+        self.filenumbers = {}
+        self.image_packets = 0
+        self.urate = 115200
+        self.send_buff = memoryview(SEND_BUFF)
+        self.micro = microcontroller
+
+>>>>>>> Stashed changes
         self.radio_cfg = {
                         'id':   0xfb,
                         'gs':   0xfa,
@@ -114,8 +156,9 @@ class Satellite:
                        'Face4':  False,
                        }
 
-        # Define SPI,I2C,UART | paasing I2C1 to BigData
+        # Define SPI,I2C,UART | pasing I2C1 to BigData
         try:
+<<<<<<< Updated upstream
             self.i2c0 = busio.I2C(board.I2C0_SCL,board.I2C0_SDA,timeout=5)
             self.spi0 = busio.SPI(board.SPI0_SCK,board.SPI0_MOSI,board.SPI0_MISO)
 
@@ -125,6 +168,17 @@ class Satellite:
         except Exception as e:
             self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
 
+=======
+            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+
+            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
+
+            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+        
+        except Exception as e:
+            self.debug_print("ERROR INITIALIZING BUSSES: " + "".join(traceback.format_exception(e)))
+>>>>>>> Stashed changes
 
         # Definites c.boot roll over
         if self.c_boot > 200:
@@ -152,9 +206,10 @@ class Satellite:
             self.debug_print('[ERROR][Magnetometer]' + ''.join(traceback.format_exception(e)))
 
 
-        # Define radio
+        # Define Radio Ditial IO Pins
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
+<<<<<<< Updated upstream
 
         ### Temporary Fix for RF_ENAB ###
 
@@ -168,12 +223,28 @@ class Satellite:
 
         self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
         self.radio1_DIO4=digitalio.DigitalInOut(board.RF1_IO4)
+=======
+        self.radio1_DIO0 = digitalio.DigitalInOut(board.RF1_IO0)
+        self.radio1_DIO4 = digitalio.DigitalInOut(board.RF1_IO4)
+>>>>>>> Stashed changes
 
-        # self.enable_rf.switch_to_output(value=False) # if U21
-        _rf_cs1.switch_to_output(value=True)
+        # Configure Radio Pins
+
+        _rf_cs1.switch_to_output(value=True)    #cs1 and rst1 are only used locally
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
+
+        ######## Temporary Fix for RF_ENAB ########
+        #                                         #
+        if self.legacy: 
+            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
+            # self.enable_rf.switch_to_output(value=False) # if U21
+            self.enable_rf.switch_to_output(value=True)  # if U7
+        else:
+            self.enable_rf = True
+        #                                         #
+        ######## Temporary Fix for RF_ENAB ########
 
         # Initialize SD card
         try:
@@ -233,10 +304,17 @@ class Satellite:
         else:
             self.debug_print('Invalid Device? ->' + str(dev))
 
+<<<<<<< Updated upstream
 
     '''
     Code to toggle on / off individual faces
     '''
+=======
+    """
+    Code to call satellite parameters
+    """
+
+>>>>>>> Stashed changes
     @property
     def burnarm(self):
         return self.f_burnarm
