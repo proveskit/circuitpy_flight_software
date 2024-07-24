@@ -53,3 +53,4 @@ This software is used for performing tests on the satellite
 1. Create your venv `python3 -m venv venv`
 2. Activate your venv `source ./venv/bin/activate`
 3. Install required packages `pip install -r requirements.txt`
+4. Run the automatic formatter with `make fmt`
