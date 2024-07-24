@@ -19,6 +19,7 @@ import pysquared_rfm9x  # Radio
 import neopixel         # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX # IMU
 import adafruit_lis2mdl # Magnetometer
+import adafruit_tca9548a         # I2C Multiplexer
 
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
@@ -66,31 +67,6 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-<<<<<<< Updated upstream
-        self.debug=True #Define verbose output here. True or False
-        self.legacy=False
-        self.BOOTTIME= 1577836800
-        self.debug_print(f'Boot time: {self.BOOTTIME}s')
-        self.CURRENTTIME=self.BOOTTIME
-        self.UPTIME=0
-        self.heating=False
-        self.is_licensed=False
-        self.NORMAL_TEMP=20
-        self.NORMAL_BATT_TEMP=1#Set to 0 BEFORE FLIGHT!!!!!
-        self.NORMAL_MICRO_TEMP=20
-        self.NORMAL_CHARGE_CURRENT=0.5
-        self.NORMAL_BATTERY_VOLTAGE=6.9#6.9
-        self.CRITICAL_BATTERY_VOLTAGE=6.6#6.6
-        self.battery_voltage = 3.3                              # default value for testing REPLACE WITH REAL VALUE
-        self.current_draw = 255                                 # default value for testing REPLACE WITH REAL VALUE
-        self.data_cache={}
-        self.filenumbers={}
-        self.image_packets=0
-        self.urate = 115200
-        self.vlowbatt=6.0
-        self.send_buff = memoryview(SEND_BUFF)
-        self.micro=microcontroller
-=======
         self.debug = True  # Define verbose output here. True or False
         self.legacy = False # Define if the board is used with legacy or not
         self.heating = False # Currently not used
@@ -127,7 +103,6 @@ class Satellite:
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
 
->>>>>>> Stashed changes
         self.radio_cfg = {
                         'id':   0xfb,
                         'gs':   0xfa,
@@ -139,46 +114,59 @@ class Satellite:
                         'st' :  80000
         }
         self.hardware = {
-                       'IMU':    False,
-                       'Mag':    False,
-                       'Radio1': False,
-                       'SDcard': False,
-                       'LiDAR':  False,
-                       'WDT':    False,
-                       'SOLAR':  False,
-                       'PWR':    False,
-                       'FLD':    False,
-                       'TEMP':   False,
-                       'Face0':  False,
-                       'Face1':  False,
-                       'Face2':  False,
-                       'Face3':  False,
-                       'Face4':  False,
+                        'I2C0':   False,
+                        'SPI0':   False,
+                        'I2C1':   False,
+                        'UART':   False,
+                        'IMU':    False,
+                        'Mag':    False,
+                        'Radio1': False,
+                        'SDcard': False,
+                        'LiDAR':  False,
+                        'WDT':    False,
+                        'SOLAR':  False,
+                        'PWR':    False,
+                        'FLD':    False,
+                        'TEMP':   False,
+                        'TCA':    False,
+                        'Face0':  False,
+                        'Face1':  False,
+                        'Face2':  False,
+                        'Face3':  False,
+                        'Face4':  False,
                        }
 
-        # Define SPI,I2C,UART | pasing I2C1 to BigData
+        """
+        Intializing Communication Buses
+        """
         try:
-<<<<<<< Updated upstream
-            self.i2c0 = busio.I2C(board.I2C0_SCL,board.I2C0_SDA,timeout=5)
-            self.spi0 = busio.SPI(board.SPI0_SCK,board.SPI0_MOSI,board.SPI0_MISO)
-
-            self.i2c1 = busio.I2C(board.I2C1_SCL,board.I2C1_SDA,timeout=5,frequency=100000)
-
-            self.uart = busio.UART(board.TX,board.RX,baudrate=self.urate)
-        except Exception as e:
-            self.debug_print("ERROR INITIALIZING BUSSES: " + ''.join(traceback.format_exception(e)))
-
-=======
             self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+            self.hardware['I2C0'] = True
 
-            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
-
-            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
-        
         except Exception as e:
-            self.debug_print("ERROR INITIALIZING BUSSES: " + "".join(traceback.format_exception(e)))
->>>>>>> Stashed changes
+            self.debug_print("ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e)))
+        
+        try:
+            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+            self.hardware['SPI0'] = True
+
+        except Exception as e:
+            self.debug_print("ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e)))
+        
+        try:
+            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
+            self.hardware['I2C1'] = True
+
+        except Exception as e:
+            self.debug_print("ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e)))
+
+        try:
+            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+            self.hardware['UART'] = True
+
+        except Exception as e:
+            self.debug_print("ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e)))
+
 
         # Definites c.boot roll over
         if self.c_boot > 200:
@@ -209,24 +197,8 @@ class Satellite:
         # Define Radio Ditial IO Pins
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
-<<<<<<< Updated upstream
-
-        ### Temporary Fix for RF_ENAB ###
-
-        if self.legacy:
-            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
-            self.enable_rf.switch_to_output(value=True) # if U7
-        else:
-            self.enable_rf= True
-        
-        ### Temporary Fix for RF_ENAB ###
-
         self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
         self.radio1_DIO4=digitalio.DigitalInOut(board.RF1_IO4)
-=======
-        self.radio1_DIO0 = digitalio.DigitalInOut(board.RF1_IO0)
-        self.radio1_DIO4 = digitalio.DigitalInOut(board.RF1_IO4)
->>>>>>> Stashed changes
 
         # Configure Radio Pins
 
@@ -234,6 +206,7 @@ class Satellite:
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
+
 
         ######## Temporary Fix for RF_ENAB ########
         #                                         #
@@ -304,17 +277,10 @@ class Satellite:
         else:
             self.debug_print('Invalid Device? ->' + str(dev))
 
-<<<<<<< Updated upstream
-
-    '''
-    Code to toggle on / off individual faces
-    '''
-=======
     """
     Code to call satellite parameters
     """
 
->>>>>>> Stashed changes
     @property
     def burnarm(self):
         return self.f_burnarm
@@ -407,7 +373,7 @@ class Satellite:
         self.UPTIME=self.uptime
         self.debug_print(str("Current up time: "+str(self.UPTIME)))
         if self.UPTIME>86400:
-            self.reset_vbus()
+            self.micro.reset()
 
     def print_file(self,filedir=None,binary=False):
         try:
