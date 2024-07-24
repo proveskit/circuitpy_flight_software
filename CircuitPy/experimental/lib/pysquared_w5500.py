@@ -152,12 +152,13 @@ class WIZNET5500:
     _UDP_MODE = const(0x02)
 
     _sockets_reserved = []
-    def debug_print(self,statement:str = '') -> None:
+
+    def debug_print(self, statement: str = "") -> None:
         """
         :param statement: message to get printed in debug print
         """
         if self._debug:
-            print(co("[W5500]" + str(statement), 'blue', 'bold'))
+            print(co("[W5500]" + str(statement), "blue", "bold"))
 
     def __init__(
         self,
@@ -360,10 +361,7 @@ class WIZNET5500:
 
         :return bool: True if the link is up, False if the link is down.
         """
-        return bool(
-            int.from_bytes(self._read(_REG_LINK_FLAG, 0x00), "big")
-            & 0x01
-        )
+        return bool(int.from_bytes(self._read(_REG_LINK_FLAG, 0x00), "big") & 0x01)
 
     @property
     def ifconfig(self) -> Tuple[bytes, bytes, bytes, bytes]:
@@ -416,7 +414,9 @@ class WIZNET5500:
         :raises ValueError: If the socket number is out of range.
         :raises ValueError: If the number of bytes on a UDP socket is negative.
         """
-        self.debug_print(f"socket_available called on socket {socket_num}, protocol {sock_type}")
+        self.debug_print(
+            f"socket_available called on socket {socket_num}, protocol {sock_type}"
+        )
         self._sock_num_in_range(socket_num)
 
         number_of_bytes = self._get_rx_rcv_size(socket_num)
@@ -464,7 +464,9 @@ class WIZNET5500:
         """
         self._sock_num_in_range(socket_num)
         self._check_link_status()
-        self.debug_print(f"W5500 socket connect, protocol={conn_mode}, port={port}, ip={self.pretty_ip(dest)}")
+        self.debug_print(
+            f"W5500 socket connect, protocol={conn_mode}, port={port}, ip={self.pretty_ip(dest)}"
+        )
         # initialize a socket and set the mode
         self.socket_open(socket_num, conn_mode=conn_mode)
         # set socket destination IP and port
@@ -547,7 +549,9 @@ class WIZNET5500:
         """
         self._sock_num_in_range(socket_num)
         self._check_link_status()
-        self.debug_print(f"* Listening on port={port}, ip={self.pretty_ip(self.ip_address)}")
+        self.debug_print(
+            f"* Listening on port={port}, ip={self.pretty_ip(self.ip_address)}"
+        )
         # Initialize a socket and set the mode
         self.src_port = port
         self.socket_open(socket_num, conn_mode=conn_mode)
@@ -583,7 +587,9 @@ class WIZNET5500:
         dest_ip = self.remote_ip(socket_num)
         dest_port = self.remote_port(socket_num)
         next_socknum = self.get_socket()
-        self.debug_print(f"Dest is ({dest_ip}, {dest_port}), Next listen socknum is #{next_socknum}")
+        self.debug_print(
+            f"Dest is ({dest_ip}, {dest_port}), Next listen socknum is #{next_socknum}"
+        )
         return next_socknum, (dest_ip, dest_port)
 
     def socket_open(self, socket_num: int, conn_mode: int = _SNMR_TCP) -> None:
@@ -648,7 +654,11 @@ class WIZNET5500:
         timeout = time.monotonic() + 5.0
         while self._read_snsr(socket_num) != SNSR_SOCK_CLOSED:
             if time.monotonic() > timeout:
-                raise RuntimeError("W5500 failed to close socket, status = {}.".format(self._read_snsr(socket_num)))
+                raise RuntimeError(
+                    "W5500 failed to close socket, status = {}.".format(
+                        self._read_snsr(socket_num)
+                    )
+                )
             time.sleep(0.0001)
         self.debug_print("  Socket has closed.")
 
@@ -1008,17 +1018,13 @@ class WIZNET5500:
         """Read socket destination IP address."""
         data = []
         for offset in range(4):
-            data.append(
-                self._read_socket_register(sock, _REG_SNDIPR + offset)
-            )
+            data.append(self._read_socket_register(sock, _REG_SNDIPR + offset))
         return bytes(data)
 
     def _write_sndipr(self, sock: int, ip_addr: bytes) -> None:
         """Write to socket destination IP Address."""
         for offset, value in enumerate(ip_addr):
-            self._write_socket_register(
-                sock, _REG_SNDIPR + offset, value
-            )
+            self._write_socket_register(sock, _REG_SNDIPR + offset, value)
 
     def _read_sndport(self, sock: int) -> int:
         """Read socket destination port."""
@@ -1184,6 +1190,7 @@ class WIZNET5500:
                 self._ch_base_msb + sock * _CH_SIZE + address, cntl_byte
             )
         return int.from_bytes(register, "big")
+
 
 _the_interface: Optional[WIZNET5500] = None
 _default_socket_timeout = None
@@ -1353,18 +1360,19 @@ def gethostbyname(hostname: str) -> str:
     address = "{}.{}.{}.{}".format(address[0], address[1], address[2], address[3])
     return address
 
+
 class socket:
     """
     A simplified implementation of the Python 'socket' class for connecting
     to a Wiznet5k module.
     """
 
-    def debug_print(self,statement:str = '') -> None:
+    def debug_print(self, statement: str = "") -> None:
         """
         :param statement: message to get printed in debug print
         """
         if self._debug:
-            print(co("[SOCKET]" + str(statement), 'blue', 'bold'))
+            print(co("[SOCKET]" + str(statement), "blue", "bold"))
 
     def __init__(
         self,
@@ -1372,7 +1380,7 @@ class socket:
         type: int = SOCK_STREAM,
         proto: int = 0,
         fileno: Optional[int] = None,
-        debug: bool = True
+        debug: bool = True,
     ) -> None:
         """
         :param int family: Socket address (and protocol) family, defaults to AF_INET.
@@ -1381,7 +1389,7 @@ class socket:
         :param int proto: Unused, retained for compatibility.
         :param Optional[int] fileno: Unused, retained for compatibility.
         """
-        self._debug=debug
+        self._debug = debug
         if family != AF_INET:
             raise RuntimeError("Only AF_INET family supported by W5K modules.")
         self._socket_closed = False
@@ -1407,20 +1415,14 @@ class socket:
                 self._socknum, 0xFF
             )  # Reset socket interrupt register.
             _the_interface.socket_disconnect(self._socknum)
-            mask = (
-                SNIR_TIMEOUT
-                | SNIR_DISCON
-            )
+            mask = SNIR_TIMEOUT | SNIR_DISCON
             while not _the_interface.read_snir(self._socknum) & mask:
                 pass
         _the_interface.write_snir(
             self._socknum, 0xFF
         )  # Reset socket interrupt register.
         _the_interface.socket_close(self._socknum)
-        while (
-            _the_interface.socket_status(self._socknum)
-            != SNSR_SOCK_CLOSED
-        ):
+        while _the_interface.socket_status(self._socknum) != SNSR_SOCK_CLOSED:
             pass
 
     # This works around problems with using a class method as a decorator.
@@ -1455,10 +1457,7 @@ class socket:
         if self._socknum >= _the_interface.max_sockets:
             return False
         status = _the_interface.socket_status(self._socknum)
-        if (
-            status == SNSR_SOCK_CLOSE_WAIT
-            and self._available() == 0
-        ):
+        if status == SNSR_SOCK_CLOSE_WAIT and self._available() == 0:
             result = False
         else:
             result = status not in (

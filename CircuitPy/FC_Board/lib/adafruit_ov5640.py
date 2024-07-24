@@ -1078,12 +1078,11 @@ class OV5640(_SCCB16CameraBase):  # pylint: disable=too-many-instance-attributes
         self._white_balance = 0
         self.size = size
 
-        self._write_register(0x3503,0x03)
-        self._write_register(0x350A,0x03)
-        self._write_register(0x350B,0x00)
-        self._write_register(0x3501,0xA0)
-        self._write_register(0x3500,0x0F)
-
+        self._write_register(0x3503, 0x03)
+        self._write_register(0x350A, 0x03)
+        self._write_register(0x350B, 0x00)
+        self._write_register(0x3501, 0xA0)
+        self._write_register(0x3500, 0x0F)
 
     chip_id = _RegBits16(_CHIP_ID_HIGH, 0, 0xFFFF)
 

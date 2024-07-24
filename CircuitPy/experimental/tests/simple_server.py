@@ -17,10 +17,10 @@ cs = digitalio.DigitalInOut(board.D10)
 spi_bus = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
 # Initialize ethernet interface
-ip_address=(b'00C0',b'00A8',b'000A',b'0001')
+ip_address = (b"00C0", b"00A8", b"000A", b"0001")
 eth = pysquared_w5500.WIZNET5500(spi_bus, cs, debug=True)
 print("Chip Version:", eth.chip)
-eth.ifconfig=ip_address
+eth.ifconfig = ip_address
 
 # Initialize a socket for our server
 pysquared_w5500.set_interface(eth)
