@@ -340,14 +340,13 @@ class Satellite:
     """
     Init Helper Functions
     """
+
     def scan_tca_channels(self):
         if not self.hardware["TCA"]:
             self.debug_print("[WARNING] TCA not initialized")
             return
 
-        channel_to_face = {
-            0: "Face0", 1: "Face1", 2: "Face2", 3: "Face3", 4: "Face4"
-        }
+        channel_to_face = {0: "Face0", 1: "Face1", 2: "Face2", 3: "Face3", 4: "Face4"}
 
         for channel in range(8):
             try:
@@ -372,7 +371,7 @@ class Satellite:
                     self.hardware[channel_to_face[channel]] = True
         finally:
             self.tca[channel].unlock()
-    
+
     """
     Code to call satellite parameters
     """
