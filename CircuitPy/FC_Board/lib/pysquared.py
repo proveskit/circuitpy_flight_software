@@ -311,10 +311,14 @@ class Satellite:
             self.error_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
 
         """
-        TCA Multiplexer Initialization
+        Face Initializations
         """
 
-        # Prints init state of PySquared hardware
+        self.scan_tca_channels()
+
+        """
+        Prints init State of PySquared Hardware
+        """
         self.debug_print("PySquared Hardware Initialization Complete!")
 
         if self.debug:
@@ -333,6 +337,42 @@ class Satellite:
         # set power mode
         self.power_mode = "normal"
 
+    """
+    Init Helper Functions
+    """
+    def scan_tca_channels(self):
+        if not self.hardware["TCA"]:
+            self.debug_print("[WARNING] TCA not initialized")
+            return
+
+        channel_to_face = {
+            0: "Face0", 1: "Face1", 2: "Face2", 3: "Face3", 4: "Face4"
+        }
+
+        for channel in range(8):
+            try:
+                self._scan_single_channel(channel, channel_to_face)
+            except Exception as e:
+                self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
+
+    def _scan_single_channel(self, channel, channel_to_face):
+        if not self.tca[channel].try_lock():
+            return
+
+        try:
+            self.debug_print(f"Channel {channel}:")
+            addresses = self.tca[channel].scan()
+            valid_addresses = [addr for addr in addresses if addr not in [0x00, 0x70]]
+
+            if not valid_addresses and 0x70 in addresses:
+                self.debug_print("No Devices Found.")
+            else:
+                self.debug_print([hex(addr) for addr in valid_addresses])
+                if channel in channel_to_face:
+                    self.hardware[channel_to_face[channel]] = True
+        finally:
+            self.tca[channel].unlock()
+    
     """
     Code to call satellite parameters
     """
