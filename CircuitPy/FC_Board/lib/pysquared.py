@@ -129,9 +129,6 @@ class Satellite:
             "SDcard": False,
             "NEOPIX": False,
             "WDT": False,
-            "SOLAR": False,
-            "PWR": False,
-            "TEMP": False,
             "TCA": False,
             "CAN": False,
             "Face0": False,
@@ -305,7 +302,7 @@ class Satellite:
         TCA Multiplexer Initialization
         """
         try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0)
+            self.tca = adafruit_tca9548a.TCA9548A(self.i2c1,address=int(0x77))
             self.hardware["TCA"] = True
         except Exception as e:
             self.error_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
@@ -346,11 +343,15 @@ class Satellite:
             self.debug_print("[WARNING] TCA not initialized")
             return
 
-        channel_to_face = {0: "Face0", 1: "Face1", 2: "Face2", 3: "Face3", 4: "Face4"}
+        channel_to_face = {0: "Face0", 1: "Face1", 2: "Face2", 3: "Face3", 4: "Face4", 5: "CAM"}
 
-        for channel in range(8):
+        for channel in range(len(channel_to_face)):
             try:
                 self._scan_single_channel(channel, channel_to_face)
+            except OSError:
+                self.error_print("[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning.")
+                self.hardware["TCA"] = False
+                return
             except Exception as e:
                 self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
 
@@ -361,10 +362,11 @@ class Satellite:
         try:
             self.debug_print(f"Channel {channel}:")
             addresses = self.tca[channel].scan()
-            valid_addresses = [addr for addr in addresses if addr not in [0x00, 0x70]]
+            valid_addresses = [addr for addr in addresses if addr not in [0x00, 0x19, 0x1e, 0x6b, 0x77]]
 
-            if not valid_addresses and 0x70 in addresses:
-                self.debug_print("No Devices Found.")
+            if not valid_addresses and 0x77 in addresses:
+                self.error_print(f"No Devices Found on {channel_to_face[channel]}.")
+                self.hardware[channel_to_face[channel]] = False
             else:
                 self.debug_print([hex(addr) for addr in valid_addresses])
                 if channel in channel_to_face:
