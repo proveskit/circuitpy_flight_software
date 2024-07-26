@@ -1,6 +1,6 @@
 # This is where the magic happens!
 # This file is executed on every boot (including wake-boot from deepsleep)
-# Created By: Michael Pham 
+# Created By: Michael Pham
 
 """
 Built for the PySquared FC Board
@@ -10,11 +10,11 @@ Published: July 26, 2024
 
 import time
 
+print("="*70)
 print("Hello World!")
-print("="*50)
 print("PySquared FC Board Circuit Python Software Version: 1.0.1 (Beta)")
 print("Published: July 26, 2024")
-print("="*50)
+print("="*70)
 
 try:
     for i in range(10):
