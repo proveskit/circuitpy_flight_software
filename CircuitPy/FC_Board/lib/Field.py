@@ -19,7 +19,9 @@ class Field:
         self.debug = debug
         self.cubesat = cubesat
         try:
-            self.cubesat.enable_rf.value = True
+            if self.cubesat.legacy:
+                self.cubesat.enable_rf.value = True
+
             self.cubesat.radio1.spreading_factor = 8
             self.cubesat.radio1.low_datarate_optimize = False
             self.cubesat.radio1.node = 0xFB
