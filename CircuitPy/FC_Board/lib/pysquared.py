@@ -400,13 +400,13 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value):
-        if self.hardware["Neopixel"]:
+        if self.hardware["NEOPIX"]:
             try:
                 self.neopixel[0] = value
             except Exception as e:
                 self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
         else:
-            self.error_print("[WARNING] neopixel not initialized")
+            self.error_print("[WARNING] NEOPIXEL not initialized")
 
     @property
     def uptime(self):
