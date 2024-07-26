@@ -7,12 +7,10 @@ Library Repo:
 * Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-
 # Common CircuitPython Libs
 import gc
 import board, microcontroller
 import busio, time, sys, traceback
-from storage import mount, umount, VfsFat
 from storage import mount, umount, VfsFat
 import digitalio, sdcardio, pwmio
 from os import listdir, stat, statvfs, mkdir, chdir
@@ -31,19 +29,11 @@ import adafruit_tca9548a  # I2C Multiplexer
 # NVM register numbers
 _BOOTCNT = const(0)
 _VBUSRST = const(6)
-_BOOTCNT = const(0)
-_VBUSRST = const(6)
 _STATECNT = const(7)
 _TOUTS = const(9)
 _ICHRG = const(11)
 _DIST = const(13)
 _FLAG = const(16)
-_TOUTS = const(9)
-_ICHRG = const(11)
-_DIST = const(13)
-_FLAG = const(16)
-
-SEND_BUFF = bytearray(252)
 
 SEND_BUFF = bytearray(252)
 
@@ -59,21 +49,8 @@ class Satellite:
     c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
     c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
     c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
-    c_boot = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
-    c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
 
     # Define NVM flags
-    f_softboot = bitFlag(register=_FLAG, bit=0)
-    f_solar = bitFlag(register=_FLAG, bit=1)
-    f_burnarm = bitFlag(register=_FLAG, bit=2)
-    f_brownout = bitFlag(register=_FLAG, bit=3)
-    f_triedburn = bitFlag(register=_FLAG, bit=4)
-    f_shtdwn = bitFlag(register=_FLAG, bit=5)
-    f_burned = bitFlag(register=_FLAG, bit=6)
-    f_fsk = bitFlag(register=_FLAG, bit=7)
     f_softboot = bitFlag(register=_FLAG, bit=0)
     f_solar = bitFlag(register=_FLAG, bit=1)
     f_burnarm = bitFlag(register=_FLAG, bit=2)
@@ -140,14 +117,6 @@ class Satellite:
             "cr": 8,
             "pwr": 23,
             "st": 80000,
-            "id": 0xFB,
-            "gs": 0xFA,
-            "freq": 437.4,
-            "sf": 8,
-            "bw": 125,
-            "cr": 8,
-            "pwr": 23,
-            "st": 80000,
         }
         self.hardware = {
             "I2C0": False,
@@ -174,16 +143,12 @@ class Satellite:
         """
         if self.c_boot > 200:
             self.c_boot = 0
-            self.c_boot = 0
 
         if self.f_fsk:
             self.debug_print("Fsk going to false")
             self.f_fsk = False
 
-            self.f_fsk = False
-
         if self.f_softboot:
-            self.f_softboot = False
             self.f_softboot = False
 
         """
@@ -310,9 +275,7 @@ class Satellite:
             _vfs = VfsFat(_sd)
             mount(_vfs, "/sd")
             self.fs = _vfs
-            self.fs = _vfs
             sys.path.append("/sd")
-            self.hardware["SDcard"] = True
             self.hardware["SDcard"] = True
         except Exception as e:
             self.error_print(
@@ -465,8 +428,6 @@ class Satellite:
         try:
             self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
             self._resetReg.value = 1
-            self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
-            self._resetReg.value = 1
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -502,13 +463,9 @@ class Satellite:
 
     def log(self, filedir, msg):
         if self.hardware["SDcard"]:
-    def log(self, filedir, msg):
-        if self.hardware["SDcard"]:
             try:
                 self.debug_print(f"writing {msg} to {filedir}")
                 with open(filedir, "a+") as f:
-                    t = int(time.monotonic())
-                    f.write("{}, {}\n".format(t, msg))
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
             except Exception as e:
@@ -525,17 +482,13 @@ class Satellite:
             self.micro.reset()
 
     def print_file(self, filedir=None, binary=False):
-    def print_file(self, filedir=None, binary=False):
         try:
             if filedir == None:
-            if filedir == None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- Printing File: {filedir} ---")
             self.debug_print(f"--- Printing File: {filedir} ---")
             if binary:
                 with open(filedir, "rb") as file:
                     self.debug_print(file.read())
-                    self.debug_print("")
                     self.debug_print("")
             else:
                 with open(filedir, "r") as file:
@@ -549,14 +502,11 @@ class Satellite:
     def read_file(self, filedir=None, binary=False):
         try:
             if filedir == None:
-            if filedir == None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- reading File: {filedir} ---")
             self.debug_print(f"--- reading File: {filedir} ---")
             if binary:
                 with open(filedir, "rb") as file:
                     self.debug_print(file.read())
-                    self.debug_print("")
                     self.debug_print("")
                     return file.read()
             else:
@@ -570,7 +520,6 @@ class Satellite:
             )
 
     def powermode(self, mode):
-    def powermode(self, mode):
         """
         Configure the hardware for minimum or normal power consumption
         Add custom modes for mission-specific control
@@ -578,32 +527,22 @@ class Satellite:
         try:
             if "crit" in mode:
                 self.neopixel.brightness = 0
-            if "crit" in mode:
-                self.neopixel.brightness = 0
                 self.enable_rf.value = False
                 self.power_mode = "critical"
-                self.power_mode = "critical"
 
-            elif "min" in mode:
-                self.neopixel.brightness = 0
             elif "min" in mode:
                 self.neopixel.brightness = 0
                 self.enable_rf.value = False
 
                 self.power_mode = "minimum"
-                self.power_mode = "minimum"
 
-            elif "norm" in mode:
             elif "norm" in mode:
                 self.enable_rf.value = True
-                self.power_mode = "normal"
                 self.power_mode = "normal"
                 # don't forget to reconfigure radios, gps, etc...
 
             elif "max" in mode:
-            elif "max" in mode:
                 self.enable_rf.value = True
-                self.power_mode = "maximum"
                 self.power_mode = "maximum"
         except Exception as e:
             self.error_print(
@@ -613,27 +552,12 @@ class Satellite:
 
     def new_file(self, substring, binary=False):
         """
-    def new_file(self, substring, binary=False):
-        """
         substring something like '/data/DATA_'
         directory is created on the SD!
         int padded with zeros will be appended to the last found file
         """
         if self.hardware["SDcard"]:
-        """
-        if self.hardware["SDcard"]:
             try:
-                ff = ""
-                n = 0
-                _folder = substring[: substring.rfind("/") + 1]
-                _file = substring[substring.rfind("/") + 1 :]
-                self.debug_print(
-                    "Creating new file in directory: /sd{} with file prefix: {}".format(
-                        _folder, _file
-                    )
-                )
-                try:
-                    chdir("/sd" + _folder)
                 ff = ""
                 n = 0
                 _folder = substring[: substring.rfind("/") + 1]
@@ -659,7 +583,6 @@ class Satellite:
                         return None
                 for i in range(0xFFFF):
                     ff = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
-                    ff = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
                     try:
                         if n is not None:
                             stat(ff)
@@ -675,14 +598,7 @@ class Satellite:
                 else:
                     b = "a"
                 with open(ff, b) as f:
-                self.debug_print("creating file..." + str(ff))
-                if binary:
-                    b = "ab"
-                else:
-                    b = "a"
-                with open(ff, b) as f:
                     f.tell()
-                chdir("/")
                 chdir("/")
                 return ff
             except Exception as e:
@@ -691,7 +607,6 @@ class Satellite:
                 )
                 return None
         else:
-            self.debug_print("[WARNING] SD Card not initialized")
             self.debug_print("[WARNING] SD Card not initialized")
 
 
