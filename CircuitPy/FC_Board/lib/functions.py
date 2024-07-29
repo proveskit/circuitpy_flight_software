@@ -6,11 +6,12 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-import alarm
 import gc
 import traceback
 import random
 from debugcolor import co
+from detumble import Detumble
+from instrument import Gyroscope, Magnetometer
 
 
 class functions:
@@ -324,16 +325,11 @@ class functions:
 
         def do_detumble():
             try:
-                import detumble
-
+                d = Detumble()
                 for _ in range(3):
-                    data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]
-                    data[0] = list(data[0])
-                    for x in range(3):
-                        if data[0][x] < 0.01:
-                            data[0][x] = 0.0
-                    data[0] = tuple(data[0])
-                    dipole = detumble.magnetorquer_dipole(data[1], data[0])
+                    gdata = Gyroscope(self.cubesat.IMU.Gyroscope)
+                    mdata = Magnetometer(self.cubesat.IMU.Magnetometer)
+                    dipole = d.magnetorquer_dipole(mdata, gdata)
                     self.debug_print("Dipole: " + str(dipole))
                     self.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)

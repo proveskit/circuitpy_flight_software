@@ -54,3 +54,8 @@ This software is used for performing tests on the satellite
 2. Activate your venv `source ./venv/bin/activate`
 3. Install required packages `pip install -r requirements.txt`
 4. Run the automatic formatter with `make fmt`
+
+## Testing setup
+
+1. Follow the steps to set up your venv and install packages in the linting setup
+2. Run tests with `make test`
