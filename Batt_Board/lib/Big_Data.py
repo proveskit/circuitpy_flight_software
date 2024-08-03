@@ -1,8 +1,8 @@
 """
-This class creates an object for each face of Yearling. 
+This class creates an object for each face of Yearling.
 
 Authors: Antony Macar, Michael Pham, Nicole Maggard
-Updated July 26, 2022 
+Updated July 26, 2022
 v1.1
 """
 
