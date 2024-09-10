@@ -19,6 +19,7 @@ import neopixel  # RGB LED
 import adafruit_pca9685  # LED Driver
 import adafruit_tca9548a  # I2C Multiplexer
 import adafruit_pct2075  # Temperature Sensor
+import adafruit_max31856  # Thermocouple
 import adafruit_vl6180x # LiDAR Distance Sensor for Antenna
 import adafruit_ina219  # Power Monitor
 
@@ -29,10 +30,6 @@ from adafruit_mcp2515 import MCP2515 as CAN
 from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
-
-# Thermoucouple ADC
-import adafruit_ads1x15.ads1015 as ADS
-from adafruit_ads1x15.analog_in import AnalogIn
 
 # NVM register numbers
 _BOOTCNT = const(0)
@@ -264,8 +261,11 @@ class Satellite:
             )
 
         # Initialize Thermocouple ADC
+        self.spi1_cs0 = digitalio.DigitalInOut(board.SPI1_CS0)
+        self.spi1_cs0.direction = digitalio.Direction.OUTPUT
+
         try:
-            self.thermocouple = ADS.ADS1015(self.i2c0, address=0x48)
+            self.thermocouple = adafruit_max31856.MAX31856(self.spi1, self.spi1_cs0)
             self.hardware["COUPLE"] = True
             self.debug_print("[ACTIVE][Thermocouple]")
         except Exception as e:
@@ -605,9 +605,7 @@ class Satellite:
     @property
     def battery_temperature(self):
         if self.hardware["COUPLE"]:
-            chan = AnalogIn(self.thermocouple, ADS.P1)
-            tip = (chan.voltage - 1.25) / 0.005
-            return tip
+            return self.thermocouple.temperature
         else:
             self.debug_print("[WARNING] Thermocouple not initialized")
 
