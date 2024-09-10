@@ -380,6 +380,7 @@ class Satellite:
     def arm_satellite(self):
         self.burnarm = True
         self.burned = False
+        self.f_triedburn = False
         self.dist = 0
         print("[Satellite Armed]")
 
@@ -772,7 +773,7 @@ class Satellite:
             # create our PWM object for the respective pin
             # not active since duty_cycle is set to 0 (for now)
             if '1' in burn_num:
-                burnwire = pwmio.PWMOut(board.BURN_ENABLE, frequency=freq, duty_cycle=0)
+                burnwire = pwmio.PWMOut(board.ENABLE_BURN, frequency=freq, duty_cycle=0)
             else:
                 return False
 
