@@ -198,13 +198,7 @@ class Satellite:
         _rf_cs1.switch_to_output(value=True)
 
         # Define Heater Pins
-        try:
-            if self.hardware["FLD"]:
-                self.heater = self.faces.channels[15]
-        except Exception as e:
-            self.debug_print(
-                "[WARNING][Battery_Heater]" + "".join(traceback.format_exception(e))
-            )
+        self.heater = pwmio.PWMOut(board.ENABLE_HEATER, frequency=1000, duty_cycle=0)
 
         # Initialize Neopixel
         try:
