@@ -13,6 +13,6 @@ try:
 
 except Exception as e:
     print(e)
-    time.sleep(10)
-    microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
-    microcontroller.reset()
+    # time.sleep(10)
+    # microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
+    # microcontroller.reset()
