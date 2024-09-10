@@ -298,8 +298,24 @@ class Satellite:
                 "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
             )
 
-        # Prints init state of PySquared hardware
-        self.debug_print(str(self.hardware))
+        """
+        Prints init State of PySquared Hardware
+        """
+        self.debug_print("PySquared Hardware Initialization Complete!")
+
+        if self.debug:
+            # Find the length of the longest key
+            max_key_length = max(len(key) for key in self.hardware.keys())
+
+            print("=" * 16)
+            print("Device  | Status")
+            for key, value in self.hardware.items():
+                padded_key = key + " " * (max_key_length - len(key))
+                if value:
+                    print(co(f"|{padded_key} | {value} |", "green"))
+                else:
+                    print(co(f"|{padded_key} | {value}|", "red"))
+            print("=" * 16)
 
         # set PyCubed power mode
         self.power_mode = "normal"
@@ -330,12 +346,12 @@ class Satellite:
             self.debug_print("[WARNING] neopixel not initialized")
 
     # =======================================================#
-    # Before Flight Flags                                   #
+    # Before Flight Flags                                    #
     # =======================================================#
-    # These flags should be set as follows before flight:   #
-    # burnarm = True                                        #
-    # burned = False                                        #
-    # dist = 0                                              #
+    # These flags should be set as follows before flight:    #
+    # burnarm = True                                         #
+    # burned = False                                         #
+    # dist = 0                                               #
     # =======================================================#
     @property
     def burnarm(self):
@@ -832,22 +848,18 @@ class Satellite:
                     self.burn("1",dutycycle,freq,4)
                     time.sleep(5)
 
-            # Clean up
-            self._relayA.value = 0
-            burnwire.duty_cycle = 0
-            self.RGB=(0,0,0)
-            #burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+            finally:
+                self._relayA.value = 0
+                burnwire.duty_cycle=0
+                self.RGB=(0,0,0)
+                burnwire.deinit()
+                self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+
             return True
         except Exception as e:
             self.debug_print("Error with Burn Wire: " + ''.join(traceback.format_exception(e)))
             return False
-        finally:
-            self._relayA.value = 0
-            burnwire.duty_cycle=0
-            self.RGB=(0,0,0)
-            burnwire.deinit()
-            self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+
 
 
 print("Initializing Power Management Systems...")
