@@ -179,9 +179,6 @@ class Satellite:
                 "ERROR INITIALIZING FACES: " + "".join(traceback.format_exception(e))
             )
 
-        # Define I2C Reset
-        self._i2c_reset = digitalio.DigitalInOut(board.I2C_RESET)
-        self._i2c_reset.switch_to_output(value=True)
 
         if self.c_boot > 200:
             self.c_boot = 0
@@ -191,7 +188,7 @@ class Satellite:
 
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
-        self.enable_rf = digitalio.DigitalInOut(board.RF_ENABLE)
+        self.enable_rf = digitalio.DigitalInOut(board.ENABLE_RF)
 
         # self.enable_rf.switch_to_output(value=False) # if U21
         self.enable_rf.switch_to_output(value=True)  # if U7
@@ -202,10 +199,8 @@ class Satellite:
 
         # Initialize Neopixel
         try:
-            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
-            self.neopwr.switch_to_output(value=True)
             self.neopixel = neopixel.NeoPixel(
-                board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB
+                board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
             )
             self.neopixel[0] = (0, 0, 255)
             self.hardware["NEO"] = True
