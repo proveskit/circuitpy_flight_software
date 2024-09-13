@@ -237,7 +237,7 @@ class Satellite:
             self.debug_print('[ERROR][LiDAR]' + ''.join(traceback.format_exception(e)))
 
         # Define Charge Indicate Pin
-        self.charge_indicate = digitalio.DigitalInOut(board.IS_CHARGING)
+        self.charge_indicate = digitalio.DigitalInOut(board.CHRG)
         self.charge_indicate.switch_to_input(pull=digitalio.Pull.DOWN)
 
         # Initialize PCT2075 Temperature Sensor
