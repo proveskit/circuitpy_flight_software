@@ -1,6 +1,6 @@
 """
 CircuitPython driver for PySquared satellite board.
-PySquared Hardware Version: mainboard-v01
+PySquared Hardware Version: batteryboard v3c
 CircuitPython Version: 9.0.0 alpha
 Library Repo:
 
@@ -75,6 +75,7 @@ class Satellite:
             self.hardware["Face3"] = True
             self.Face4.duty_cycle = 0xFFFF
             self.hardware["Face4"] = True
+            self.cam.duty_cycle = 0xFFFF
 
     def all_faces_off(self):
         # De-Power Faces
@@ -94,6 +95,8 @@ class Satellite:
             self.Face4.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face4"] = False
+            time.sleep(0.1)
+            self.cam.duty_cycle = 0x0000
 
     def debug_print(self, statement):
         if self.debug:
@@ -173,6 +176,7 @@ class Satellite:
             self.Face2 = self.faces.channels[2]
             self.Face3 = self.faces.channels[3]
             self.Face4 = self.faces.channels[4]
+            self.cam = self.faces.channels[5]
             self.all_faces_on()
         except Exception as e:
             self.debug_print(

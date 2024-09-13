@@ -24,6 +24,7 @@ import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
+import adafruit_pca9685 # LED Driver
 
 
 # NVM register numbers
@@ -130,6 +131,7 @@ class Satellite:
             "NEOPIX": False,
             "WDT": False,
             "TCA": False,
+            "PCA": False,
             "CAN": False,
             "Face0": False,
             "Face1": False,
@@ -310,7 +312,6 @@ class Satellite:
         """
         Face Initializations
         """
-
         self.scan_tca_channels()
 
         """
