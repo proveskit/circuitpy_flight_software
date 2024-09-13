@@ -616,27 +616,26 @@ class Satellite:
             self.debug_print("[WARNING] Thermocouple not initialized")
 
     def heater_on(self):
-        if self.hardware["FLD"]:
-            try:
-                self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
-                if self.f_brownout:
-                    pass
-                else:
-                    self.f_brownout = True
-                    self.heating = True
-                    self._relayA.value = 1
-                    self.RGB = (255, 165, 0)
-                    # Pause to ensure relay is open
-                    time.sleep(0.25)
-                    self.heater.duty_cycle = 0x7FFF
-            except Exception as e:
-                self.debug_print(
-                    "[ERROR] Cant turn on heater: "
-                    + "".join(traceback.format_exception(e))
-                )
-                self.heater.duty_cycle = 0x0000
-        else:
-            self.debug_print("[WARNING] LED Driver not initialized")
+
+        try:
+            self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
+            if self.f_brownout:
+                pass
+            else:
+                self.f_brownout = True
+                self.heating = True
+                self._relayA.value = 1
+                self.RGB = (255, 165, 0)
+                # Pause to ensure relay is open
+                time.sleep(0.25)
+                self.heater.duty_cycle = 0x7FFF
+        except Exception as e:
+            self.debug_print(
+                "[ERROR] Cant turn on heater: "
+                + "".join(traceback.format_exception(e))
+            )
+            self.heater.duty_cycle = 0x0000
+
 
     def heater_off(self):
         if self.hardware["FLD"]:
