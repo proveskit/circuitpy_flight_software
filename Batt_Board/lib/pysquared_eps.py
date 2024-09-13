@@ -281,9 +281,9 @@ class Satellite:
 
         # Initialize CAN Transceiver
         try:
-            self.spi1cs0 = digitalio.DigitalInOut(board.SPI1_CS0)
-            self.spi1cs0.switch_to_output()
-            self.can_bus = CAN(self.spi1, self.spi1cs0, loopback=True, silent=True)
+            self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
+            self.spi0cs0.switch_to_output()
+            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
