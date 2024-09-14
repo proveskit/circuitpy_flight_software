@@ -191,12 +191,10 @@ class Satellite:
             self.f_softboot = False
 
         # Define radio
-        _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
         self.enable_rf = digitalio.DigitalInOut(board.ENABLE_RF)
 
         # self.enable_rf.switch_to_output(value=False) # if U21
         self.enable_rf.switch_to_output(value=True)  # if U7
-        _rf_cs1.switch_to_output(value=True)
 
         # Define Heater Pins
         self.heater = pwmio.PWMOut(board.ENABLE_HEATER, frequency=1000, duty_cycle=0)
