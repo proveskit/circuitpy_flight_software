@@ -24,7 +24,6 @@ import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
-import adafruit_pca9685 # LED Driver
 
 
 # NVM register numbers
@@ -131,7 +130,6 @@ class Satellite:
             "NEOPIX": False,
             "WDT": False,
             "TCA": False,
-            "PCA": False,
             "CAN": False,
             "Face0": False,
             "Face1": False,
@@ -267,6 +265,20 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][Magnetometer]")
             traceback.print_exception(None, e, e.__traceback__)
+
+        """
+        CAN Transceiver Initialization
+        """
+        try:
+            self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
+            self.spi0cs0.switch_to_output()
+            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
+            self.hardware["CAN"] = True
+
+        except Exception as e:
+            self.debug_print(
+                "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
+            )
 
         """
         SD Card Initialization
