@@ -25,6 +25,9 @@ from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
 
+# CAN Bus Import
+from adafruit_mcp2515 import MCP2515 as CAN
+
 
 # NVM register numbers
 _BOOTCNT = const(0)
@@ -270,9 +273,9 @@ class Satellite:
         CAN Transceiver Initialization
         """
         try:
-            self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
-            self.spi0cs0.switch_to_output()
-            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
+            self.spi0cs2 = digitalio.DigitalInOut(board.SPI0_CS2)
+            self.spi0cs2.switch_to_output()
+            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
