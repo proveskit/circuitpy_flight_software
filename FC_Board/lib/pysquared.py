@@ -64,6 +64,9 @@ class Satellite:
     f_fsk = bitFlag(register=_FLAG, bit=7)
 
     def debug_print(self, statement):
+        """
+        A method for printing debug statements. This method will only print if the self.debug flag is set to True.
+        """
         if self.debug:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
@@ -153,6 +156,14 @@ class Satellite:
 
         if self.f_softboot:
             self.f_softboot = False
+
+        """
+        Setting up the watchdog pin.
+        """
+
+        self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
+        self.watchdog_pin.direction = digitalio.Direction.OUTPUT
+        self.watchdog_pin.value = False
 
         """
         Intializing Communication Buses
@@ -488,6 +499,11 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
 
+    def watchdog_pet(self):
+        self.watchdog_pin.value = True
+        time.sleep(0.1)
+        self.watchdog_pin.value = False
+    
     def log(self, filedir, msg):
         if self.hardware["SDcard"]:
             try:

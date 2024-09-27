@@ -25,18 +25,23 @@ try:
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 
+    c.watchdog_pet()
     f.beacon()
     f.listen()
 
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
 
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
+    c.watchdog_pet()
+
 except Exception as e:
     debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
 finally:
@@ -44,20 +49,24 @@ finally:
 
 
 def critical_power_operations():
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
+    c.watchdog_pet()
 
     f.Long_Hybernate()
 
 
 def minimum_power_operations():
 
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
+    c.watchdog_pet()
 
     f.Short_Hybernate()
 
@@ -92,8 +101,10 @@ def normal_power_operations():
         while check_power():
             f.beacon()
             f.listen()
+            c.watchdog_pet()
             f.state_of_health()
             f.listen()
+            c.watchdog_pet()
             time.sleep(1)  # Guard Time
 
             await asyncio.sleep(30)
@@ -182,6 +193,13 @@ def normal_power_operations():
             gc.collect()
             await asyncio.sleep(500)
 
+    async def check_watchdog():
+
+        while check_power():
+            c.watchdog_pet()
+            await asyncio.sleep(5)
+        
+
     async def main_loop():
         # log_face_data_task = asyncio.create_task(l_face_data())
 
@@ -191,8 +209,9 @@ def normal_power_operations():
         t4 = asyncio.create_task(g_face_data())
         t5 = asyncio.create_task(detumble())
         t6 = asyncio.create_task(joke())
+        t7 = asyncio.create_task(check_watchdog())
 
-        await asyncio.gather(t1, t2, t3, t4, t5, t6)
+        await asyncio.gather(t1, t2, t3, t4, t5, t6, t7)
 
     asyncio.run(main_loop())
 
