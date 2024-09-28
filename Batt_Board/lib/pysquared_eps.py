@@ -281,7 +281,7 @@ class Satellite:
         try:
             self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
             self.spi0cs0.switch_to_output()
-            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
+            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
