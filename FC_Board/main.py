@@ -1,6 +1,7 @@
 """
 Created by Nicole Maggard and Michael Pham 8/19/2022
 Updated for Yearling by Nicole Maggard and Rachel Sarmiento 2/4/2023
+Updated again for Orpheus by Michael Pham 9/30/2024
 This is where the processes get scheduled, and satellite operations are handeled
 """
 
@@ -21,7 +22,6 @@ def debug_print(statement):
 
 f = functions.functions(c)
 try:
-    c.c_boot += 1  # Increment boot number
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 

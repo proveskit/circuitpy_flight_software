@@ -86,6 +86,7 @@ class Satellite:
         """
         Define the boot time and current time
         """
+        self.c_boot += 1
         self.BOOTTIME = 1577836800
         self.debug_print(f"Boot time: {self.BOOTTIME}s")
         self.CURRENTTIME = self.BOOTTIME
