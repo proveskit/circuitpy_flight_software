@@ -17,7 +17,7 @@ radio_cfg = {
     "spreading_factor": 8,
     "tx_power": 13,  # Set as a default that works for any radio
     "node": 0x00,
-    "destination": 0xFB,
+    "destination": 0x00,
     "receive_timeout": 5,
     "enable_crc": False,
 }
