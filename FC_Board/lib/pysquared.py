@@ -84,15 +84,6 @@ class Satellite:
         self.is_licensed = False
 
         """
-        Define the boot time and current time
-        """
-        self.c_boot += 1
-        self.BOOTTIME = 1577836800
-        self.debug_print(f"Boot time: {self.BOOTTIME}s")
-        self.CURRENTTIME = self.BOOTTIME
-        self.UPTIME = 0
-
-        """
         Define the normal power modes
         """
         self.NORMAL_TEMP = 20
@@ -114,6 +105,15 @@ class Satellite:
         self.urate = 115200
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
+
+        """
+        Define the boot time and current time
+        """
+        self.c_boot += 1
+        self.BOOTTIME = 1577836800
+        self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        self.CURRENTTIME = self.BOOTTIME
+        self.UPTIME = 0
 
         self.radio_cfg = {
             "id": 0xFB,
