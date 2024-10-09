@@ -135,10 +135,20 @@ def client(passcode):
 
     packet = b""
 
-    if chosen_command == "3":
+    if chosen_command == "1":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x8eb"
+    elif chosen_command == "2":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\xd4\x9f"
+    elif chosen_command == "3":
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x12\x06" + b"\x0b\xfdI\xec"
+    elif chosen_command == "4":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"8\x93" + input("Query: ")
+    elif chosen_command == "5":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x96\xa2" + input("Command: ")
     elif chosen_command == "6":
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\xa5\xb4"
+    elif chosen_command == "7":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x56\xc4"
     else:
         print("Command is not valid or not implemented open radio_test.py and add them yourself!")
 
@@ -150,10 +160,9 @@ def client(passcode):
             print("We tried 5 times! And there was no response. Quitting.")
             return
         cubesat.radio1.send(packet)
-        heard_something = cubesat.radio1.await_rx(timeout=10)
         response = cubesat.radio1.receive(keep_listening=True)
 
-        if heard_something is True and response is not None:
+        if response is not None:
             print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
             return
         else:
