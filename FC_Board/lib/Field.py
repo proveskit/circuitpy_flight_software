@@ -19,17 +19,18 @@ class Field:
         self.debug = debug
         self.cubesat = cubesat
         try:
-            if self.cubesat.legacy:
-                self.cubesat.enable_rf.value = True
+            pass
+            #if self.cubesat.legacy:
+            #    self.cubesat.enable_rf.value = True
 
-            self.cubesat.radio1.spreading_factor = 8
-            self.cubesat.radio1.low_datarate_optimize = False
-            self.cubesat.radio1.node = 0xFB
-            self.cubesat.radio1.destination = 0xFA
-            self.cubesat.radio1.receive_timeout = 10
-            self.cubesat.radio1.enable_crc = True
-            if self.cubesat.radio1.spreading_factor > 8:
-                self.cubesat.radio1.low_datarate_optimize = True
+            #self.cubesat.radio1.spreading_factor = 8
+            #self.cubesat.radio1.low_datarate_optimize = False
+            #self.cubesat.radio1.node = 0xFB
+            #self.cubesat.radio1.destination = 0xFA
+            #self.cubesat.radio1.receive_timeout = 10
+            #self.cubesat.radio1.enable_crc = True
+            #if self.cubesat.radio1.spreading_factor > 8:
+            #    self.cubesat.radio1.low_datarate_optimize = True
         except Exception as e:
             self.debug_print(
                 "Error Defining Radio features: "
@@ -40,7 +41,9 @@ class Field:
         try:
             if self.cubesat.is_licensed:
                 self.debug_print("I am beaconing: " + str(msg))
-                self.cubesat.radio1.send(msg)
+                # TODO: Reimplement method
+                #self.cubesat.radio1.send(msg)
+                print(" Success: " + str(self.cubesat.radio1.send(msg)))
             else:
                 self.debug_print(
                     "Please toggle licensed variable in code once you obtain an amateur radio license"
