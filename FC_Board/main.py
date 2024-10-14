@@ -195,9 +195,11 @@ def normal_power_operations():
 
     async def check_watchdog():
 
+        c.hardware["WDT"] = True
         while check_power():
             c.watchdog_pet()
             await asyncio.sleep(5)
+        c.hardware["WDT"] = False
         
 
     async def main_loop():
@@ -251,3 +253,4 @@ finally:
     debug_print("Going Neutral!")
 
     c.RGB = (0, 0, 0)
+    c.hardware["WDT"] = False
