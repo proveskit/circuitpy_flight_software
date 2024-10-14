@@ -1,7 +1,7 @@
 """
 CircuitPython driver for PySquared satellite board.
-PySquared Hardware Version: mainboard-v01
-CircuitPython Version: 8.0.0 alpha
+PySquared Hardware Version: Flight Controller V4c
+CircuitPython Version: 9.0.0
 Library Repo:
 
 * Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
@@ -24,6 +24,7 @@ import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
+import rv3028
 
 # CAN Bus Import
 from adafruit_mcp2515 import MCP2515 as CAN
@@ -138,6 +139,7 @@ class Satellite:
             "WDT": False,
             "TCA": False,
             "CAN": False,
+            "RTC": False,
             "Face0": False,
             "Face1": False,
             "Face2": False,
@@ -293,6 +295,22 @@ class Satellite:
         except Exception as e:
             self.debug_print(
                 "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
+            )
+
+        """
+        RTC Initialization
+        """
+        try:
+            self.rtc = rv3028(self.i2c1)
+
+            # Still need to test these configs
+            self.rtc.configure_backup_switchover(mode='level', interrupt=True)
+            self.rtc.configure_evi(enable=True, timestamp_mode='last')
+            self.hardware["RTC"] = True
+
+        except Exception as e:
+            self.debug_print(
+                "[ERROR][Real Time Clock]" + "".join(traceback.format_exception(e))
             )
 
         """
@@ -500,10 +518,89 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
 
+    @property
+    def time(self):
+        try:
+            return self.rtc.get_time()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+    
+    @time.setter
+    def time(self,hours,minutes,seconds):
+        if self.hardware["RTC"]:
+            try:
+                self.rtc.set_time(hours,minutes,seconds)
+            except Exception as e:
+                self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+        else:
+            self.error_print("[WARNING] RTC not initialized")
+
+    @property
+    def date(self):
+        try:
+            return self.rtc.get_date()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+    
+    @time.setter
+    def date(self,year,month,date,weekday):
+        if self.hardware["RTC"]:
+            try:
+                self.rtc.set_date(year,month,date,weekday)
+            except Exception as e:
+                self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+        else:
+            self.error_print("[WARNING] RTC not initialized")
+        
+
+    """
+    Maintenence Functions
+    """
     def watchdog_pet(self):
         self.watchdog_pin.value = True
         time.sleep(0.1)
         self.watchdog_pin.value = False
+    
+    def check_reboot(self):
+        self.UPTIME = self.uptime
+        self.debug_print(str("Current up time: " + str(self.UPTIME)))
+        if self.UPTIME > 86400:
+            self.micro.reset()
+    
+    def powermode(self, mode):
+        """
+        Configure the hardware for minimum or normal power consumption
+        Add custom modes for mission-specific control
+        """
+        try:
+            if "crit" in mode:
+                self.neopixel.brightness = 0
+                self.enable_rf.value = False
+                self.power_mode = "critical"
+
+            elif "min" in mode:
+                self.neopixel.brightness = 0
+                self.enable_rf.value = False
+
+                self.power_mode = "minimum"
+
+            elif "norm" in mode:
+                self.enable_rf.value = True
+                self.power_mode = "normal"
+                # don't forget to reconfigure radios, gps, etc...
+
+            elif "max" in mode:
+                self.enable_rf.value = True
+                self.power_mode = "maximum"
+        except Exception as e:
+            self.error_print(
+                "Error in changing operations of powermode: "
+                + "".join(traceback.format_exception(e))
+            )
+
+    """
+    SD Card Functions
+    """
     
     def log(self, filedir, msg):
         if self.hardware["SDcard"]:
@@ -519,11 +616,6 @@ class Satellite:
         else:
             self.error_print("[WARNING] SD Card not initialized")
 
-    def check_reboot(self):
-        self.UPTIME = self.uptime
-        self.debug_print(str("Current up time: " + str(self.UPTIME)))
-        if self.UPTIME > 86400:
-            self.micro.reset()
 
     def print_file(self, filedir=None, binary=False):
         try:
@@ -561,37 +653,6 @@ class Satellite:
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
-            )
-
-    def powermode(self, mode):
-        """
-        Configure the hardware for minimum or normal power consumption
-        Add custom modes for mission-specific control
-        """
-        try:
-            if "crit" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-                self.power_mode = "critical"
-
-            elif "min" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-
-                self.power_mode = "minimum"
-
-            elif "norm" in mode:
-                self.enable_rf.value = True
-                self.power_mode = "normal"
-                # don't forget to reconfigure radios, gps, etc...
-
-            elif "max" in mode:
-                self.enable_rf.value = True
-                self.power_mode = "maximum"
-        except Exception as e:
-            self.error_print(
-                "Error in changing operations of powermode: "
-                + "".join(traceback.format_exception(e))
             )
 
     def new_file(self, substring, binary=False):
