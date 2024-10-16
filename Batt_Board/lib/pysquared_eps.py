@@ -20,7 +20,7 @@ import adafruit_pca9685  # LED Driver
 import adafruit_tca9548a  # I2C Multiplexer
 import adafruit_pct2075  # Temperature Sensor
 import adafruit_max31856  # Thermocouple
-import adafruit_vl6180x # LiDAR Distance Sensor for Antenna
+import adafruit_vl6180x  # LiDAR Distance Sensor for Antenna
 import adafruit_ina219  # Power Monitor
 
 # CAN Bus Import
@@ -183,7 +183,6 @@ class Satellite:
                 "ERROR INITIALIZING FACES: " + "".join(traceback.format_exception(e))
             )
 
-
         if self.c_boot > 200:
             self.c_boot = 0
 
@@ -230,13 +229,13 @@ class Satellite:
             self.debug_print(
                 "[ERROR][SOLAR Power Monitor]" + "".join(traceback.format_exception(e))
             )
-        
+
         # Initialize LiDAR
         try:
-            self.LiDAR = adafruit_vl6180x.VL6180X(self.i2c1,offset=0)
+            self.LiDAR = adafruit_vl6180x.VL6180X(self.i2c1, offset=0)
             self.hardware["LiDAR"] = True
         except Exception as e:
-            self.debug_print('[ERROR][LiDAR]' + ''.join(traceback.format_exception(e)))
+            self.debug_print("[ERROR][LiDAR]" + "".join(traceback.format_exception(e)))
 
         # Define Charge Indicate Pin
         self.charge_indicate = digitalio.DigitalInOut(board.CHRG)
@@ -281,7 +280,7 @@ class Satellite:
         try:
             self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
             self.spi0cs0.switch_to_output()
-            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
+            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
@@ -633,11 +632,9 @@ class Satellite:
                 self.heater.duty_cycle = 0x7FFF
         except Exception as e:
             self.debug_print(
-                "[ERROR] Cant turn on heater: "
-                + "".join(traceback.format_exception(e))
+                "[ERROR] Cant turn on heater: " + "".join(traceback.format_exception(e))
             )
             self.heater.duty_cycle = 0x0000
-
 
     def heater_off(self):
         if self.hardware["FLD"]:
@@ -664,18 +661,20 @@ class Satellite:
     # =======================================================#
 
     def distance(self):
-        if self.hardware['LiDAR']:
+        if self.hardware["LiDAR"]:
             try:
                 distance_mm = 0
                 for _ in range(10):
                     distance_mm += self.LiDAR.range
                     time.sleep(0.01)
-                self.debug_print('distance measured = {0}mm'.format(distance_mm/10))
-                return distance_mm/10
+                self.debug_print("distance measured = {0}mm".format(distance_mm / 10))
+                return distance_mm / 10
             except Exception as e:
-                self.debug_print('LiDAR error: ' + ''.join(traceback.format_exception(e)))
+                self.debug_print(
+                    "LiDAR error: " + "".join(traceback.format_exception(e))
+                )
         else:
-            self.debug_print('[WARNING] LiDAR not initialized')
+            self.debug_print("[WARNING] LiDAR not initialized")
         return 0
 
     def burn(self, burn_num, dutycycle=0, freq=1000, duration=1):
@@ -735,7 +734,7 @@ class Satellite:
             burnwire.deinit()
             self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
 
-    def smart_burn(self,burn_num,dutycycle=0.1):
+    def smart_burn(self, burn_num, dutycycle=0.1):
         """
         Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
         has been installed.
@@ -751,106 +750,118 @@ class Satellite:
 
         freq = 1000
 
-        distance1=0
-        distance2=0
-        #self.dist=self.distance()
+        distance1 = 0
+        distance2 = 0
+        # self.dist=self.distance()
 
         try:
             # convert duty cycle % into 16-bit fractional up time
-            dtycycl=int((dutycycle/100)*(0xFFFF))
-            self.debug_print('----- SMART BURN WIRE CONFIGURATION -----')
-            self.debug_print('\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})'.format(freq,(100*dtycycl/0xFFFF),dtycycl))
+            dtycycl = int((dutycycle / 100) * (0xFFFF))
+            self.debug_print("----- SMART BURN WIRE CONFIGURATION -----")
+            self.debug_print(
+                "\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})".format(
+                    freq, (100 * dtycycl / 0xFFFF), dtycycl
+                )
+            )
             # create our PWM object for the respective pin
             # not active since duty_cycle is set to 0 (for now)
-            if '1' in burn_num:
+            if "1" in burn_num:
                 burnwire = pwmio.PWMOut(board.ENABLE_BURN, frequency=freq, duty_cycle=0)
             else:
                 return False
 
-
             try:
-                distance1=self.distance()
+                distance1 = self.distance()
                 self.debug_print(str(distance1))
-                if distance1 > self.dist+2 and distance1 > 4 or self.f_triedburn == True:
+                if (
+                    distance1 > self.dist + 2
+                    and distance1 > 4
+                    or self.f_triedburn == True
+                ):
                     self.burned = True
                     self.f_brownout = True
-                    raise TypeError("Wire seems to have burned and satellite browned out")
+                    raise TypeError(
+                        "Wire seems to have burned and satellite browned out"
+                    )
                 else:
-                    self.dist=int(distance1)
-                    self.burnarm=True
+                    self.dist = int(distance1)
+                    self.burnarm = True
                 if self.burnarm:
-                    self.burnarm=False
+                    self.burnarm = False
                     self.f_triedburn = True
 
                     # Configure the relay control pin & open relay
-                    self.RGB=(0,165,0)
+                    self.RGB = (0, 165, 0)
 
-                    self._relayA.drive_mode=digitalio.DriveMode.PUSH_PULL
-                    self.RGB=(255,165,0)
+                    self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
+                    self.RGB = (255, 165, 0)
                     self._relayA.value = 1
 
                     # Pause to ensure relay is open
                     time.sleep(0.5)
 
-                    #Start the Burn
-                    burnwire.duty_cycle=dtycycl
+                    # Start the Burn
+                    burnwire.duty_cycle = dtycycl
 
-                    #Burn Timer
+                    # Burn Timer
                     start_time = time.monotonic()
 
-                    #Monitor the burn
+                    # Monitor the burn
                     while not self.burned:
-                        distance2=self.distance()
+                        distance2 = self.distance()
                         self.debug_print(str(distance2))
-                        if distance2 > distance1+1 or distance2 > 10:
+                        if distance2 > distance1 + 1 or distance2 > 10:
                             self._relayA.value = 0
                             burnwire.duty_cycle = 0
-                            self.burned=True
+                            self.burned = True
                             self.f_triedburn = False
                         else:
-                            distance1=distance2
+                            distance1 = distance2
                             time_elapsed = time.monotonic() - start_time
                             print("Time Elapsed: " + str(time_elapsed))
                             if time_elapsed > 4:
                                 self._relayA.value = 0
                                 burnwire.duty_cycle = 0
-                                self.burned=False
-                                self.RGB=(0,0,255)
+                                self.burned = False
+                                self.RGB = (0, 0, 255)
                                 time.sleep(10)
                                 self.f_triedburn = False
                                 break
 
                     time.sleep(5)
-                    distance2=self.distance()
+                    distance2 = self.distance()
                 else:
                     pass
-                if distance2 > distance1+2 or distance2 > 10:
-                    self.burned=True
+                if distance2 > distance1 + 2 or distance2 > 10:
+                    self.burned = True
                     self.f_triedburn = False
             except Exception as e:
-                self.debug_print("Error in Burn Sequence: " + ''.join(traceback.format_exception(e)))
+                self.debug_print(
+                    "Error in Burn Sequence: " + "".join(traceback.format_exception(e))
+                )
                 self.debug_print("Error: " + str(e))
                 if "no attribute 'LiDAR'" in str(e):
                     self.debug_print("Burning without LiDAR")
-                    time.sleep(120) #Set to 120 for flight
-                    self.burnarm=False
-                    self.burned=True
-                    self.f_triedburn=True
-                    self.burn("1",dutycycle,freq,4)
+                    time.sleep(120)  # Set to 120 for flight
+                    self.burnarm = False
+                    self.burned = True
+                    self.f_triedburn = True
+                    self.burn("1", dutycycle, freq, 4)
                     time.sleep(5)
 
             finally:
                 self._relayA.value = 0
-                burnwire.duty_cycle=0
-                self.RGB=(0,0,0)
+                burnwire.duty_cycle = 0
+                self.RGB = (0, 0, 0)
                 burnwire.deinit()
-                self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
+                self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
 
             return True
         except Exception as e:
-            self.debug_print("Error with Burn Wire: " + ''.join(traceback.format_exception(e)))
+            self.debug_print(
+                "Error with Burn Wire: " + "".join(traceback.format_exception(e))
+            )
             return False
-
 
 
 print("Initializing Power Management Systems...")
