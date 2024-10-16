@@ -200,7 +200,6 @@ def normal_power_operations():
             c.watchdog_pet()
             await asyncio.sleep(5)
         c.hardware["WDT"] = False
-        
 
     async def main_loop():
         # log_face_data_task = asyncio.create_task(l_face_data())

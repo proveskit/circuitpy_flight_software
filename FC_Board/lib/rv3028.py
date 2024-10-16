@@ -7,6 +7,7 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 import time
 import adafruit_bus_device.i2c_device as i2c_device
 
+
 class RV3028:
     # Register addresses
     SECONDS = 0x00
@@ -50,11 +51,13 @@ class RV3028:
         return ((value // 10) << 4) | (value % 10)
 
     def set_time(self, hours, minutes, seconds):
-        data = bytes([
-            self._int_to_bcd(seconds),
-            self._int_to_bcd(minutes),
-            self._int_to_bcd(hours)
-        ])
+        data = bytes(
+            [
+                self._int_to_bcd(seconds),
+                self._int_to_bcd(minutes),
+                self._int_to_bcd(hours),
+            ]
+        )
         self._write_register(self.SECONDS, data)
 
     def get_time(self):
@@ -62,16 +65,18 @@ class RV3028:
         return (
             self._bcd_to_int(data[2]),  # hours
             self._bcd_to_int(data[1]),  # minutes
-            self._bcd_to_int(data[0])   # seconds
+            self._bcd_to_int(data[0]),  # seconds
         )
 
     def set_date(self, year, month, date, weekday):
-        data = bytes([
-            self._int_to_bcd(weekday),
-            self._int_to_bcd(date),
-            self._int_to_bcd(month),
-            self._int_to_bcd(year)
-        ])
+        data = bytes(
+            [
+                self._int_to_bcd(weekday),
+                self._int_to_bcd(date),
+                self._int_to_bcd(month),
+                self._int_to_bcd(year),
+            ]
+        )
         self._write_register(self.WEEKDAY, data)
 
     def get_date(self):
@@ -80,7 +85,7 @@ class RV3028:
             self._bcd_to_int(data[3]),  # year
             self._bcd_to_int(data[2]),  # month
             self._bcd_to_int(data[1]),  # date
-            self._bcd_to_int(data[0])   # weekday
+            self._bcd_to_int(data[0]),  # weekday
         )
 
     def set_alarm(self, minute, hour, weekday):
@@ -89,17 +94,19 @@ class RV3028:
         control2 |= 0x08  # Set AIE (Alarm Interrupt Enable) bit
         self._write_register(self.CONTROL2, bytes([control2]))
 
-        data = bytes([
-            self._int_to_bcd(minute),
-            self._int_to_bcd(hour),
-            self._int_to_bcd(weekday)
-        ])
+        data = bytes(
+            [
+                self._int_to_bcd(minute),
+                self._int_to_bcd(hour),
+                self._int_to_bcd(weekday),
+            ]
+        )
         self._write_register(self.MINUTES, data)
 
     def enable_trickle_charger(self, resistance=3000):
         control1 = self._read_register(self.CONTROL1)[0]
         control1 |= 0x20  # Set TCE (Trickle Charge Enable) bit
-        
+
         # Set TCR (Trickle Charge Resistor) bits
         if resistance == 3000:
             control1 |= 0x00
@@ -123,14 +130,14 @@ class RV3028:
         """
         Configure EVI for rising edge detection, enable time stamping,
         and enable interrupt.
-        
+
         :param enable: True to enable EVI, False to disable
         """
         if enable:
             # Configure Event Control Register
             event_control = 0x40  # EHL = 1 (rising edge), ET = 00 (no filtering)
             self._write_register(self.EVENT_CONTROL, bytes([event_control]))
-            
+
             # Enable time stamping and EVI interrupt
             control2 = self._read_register(self.CONTROL2)[0]
             control2 |= 0x84  # Set TSE (bit 7) and EIE (bit 2)
@@ -144,7 +151,7 @@ class RV3028:
     def get_event_timestamp(self):
         """
         Read the timestamp of the last EVI event.
-        
+
         :return: Tuple of (year, month, date, hours, minutes, seconds, count)
         """
         data = self._read_register(self.TIMESTAMP_COUNT, 7)
@@ -155,7 +162,7 @@ class RV3028:
             self._bcd_to_int(data[3]),  # hours
             self._bcd_to_int(data[2]),  # minutes
             self._bcd_to_int(data[1]),  # seconds
-            data[0]  # count (not BCD)
+            data[0],  # count (not BCD)
         )
 
     def clear_event_flag(self):
@@ -169,31 +176,31 @@ class RV3028:
     def is_event_flag_set(self):
         """
         Check if the Event Flag (EVF) is set in the Status Register.
-        
+
         :return: True if EVF is set, False otherwise
         """
         status = self._read_register(self.STATUS)[0]
         return bool(status & 0x02)  # Check EVF (bit 1)
 
-    def configure_backup_switchover(self, mode='level', interrupt=False):
+    def configure_backup_switchover(self, mode="level", interrupt=False):
         """
         Configure the Automatic Backup Switchover function.
-        
+
         :param mode: 'level' for Level Switching Mode (LSM),
                      'direct' for Direct Switching Mode (DSM),
                      or 'disabled' to disable switchover
         :param interrupt: True to enable backup switchover interrupt, False to disable
         """
         backup_reg = self._read_register(self.EEPROM_BACKUP)[0]
-        
+
         # Clear existing BSM bits
         backup_reg &= ~0x0C
 
-        if mode == 'level':
+        if mode == "level":
             backup_reg |= 0x0C  # Set BSM to 11 for LSM
-        elif mode == 'direct':
+        elif mode == "direct":
             backup_reg |= 0x04  # Set BSM to 01 for DSM
-        elif mode == 'disabled':
+        elif mode == "disabled":
             pass  # BSM is already cleared to 00
         else:
             raise ValueError("Invalid mode. Use 'level', 'direct', or 'disabled'.")
@@ -217,7 +224,7 @@ class RV3028:
     def is_backup_switchover_occurred(self):
         """
         Check if a backup switchover has occurred.
-        
+
         :return: True if switchover occurred, False otherwise
         """
         status = self._read_register(self.STATUS)[0]

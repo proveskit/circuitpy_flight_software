@@ -304,8 +304,8 @@ class Satellite:
             self.rtc = rv3028(self.i2c1)
 
             # Still need to test these configs
-            self.rtc.configure_backup_switchover(mode='level', interrupt=True)
-            self.rtc.configure_evi(enable=True, timestamp_mode='last')
+            self.rtc.configure_backup_switchover(mode="level", interrupt=True)
+            self.rtc.configure_evi(enable=True, timestamp_mode="last")
             self.hardware["RTC"] = True
 
         except Exception as e:
@@ -524,14 +524,16 @@ class Satellite:
             return self.rtc.get_time()
         except Exception as e:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
-    
+
     @time.setter
-    def time(self,hours,minutes,seconds):
+    def time(self, hours, minutes, seconds):
         if self.hardware["RTC"]:
             try:
-                self.rtc.set_time(hours,minutes,seconds)
+                self.rtc.set_time(hours, minutes, seconds)
             except Exception as e:
-                self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+                self.error_print(
+                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                )
         else:
             self.error_print("[WARNING] RTC not initialized")
 
@@ -541,32 +543,34 @@ class Satellite:
             return self.rtc.get_date()
         except Exception as e:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
-    
+
     @time.setter
-    def date(self,year,month,date,weekday):
+    def date(self, year, month, date, weekday):
         if self.hardware["RTC"]:
             try:
-                self.rtc.set_date(year,month,date,weekday)
+                self.rtc.set_date(year, month, date, weekday)
             except Exception as e:
-                self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+                self.error_print(
+                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                )
         else:
             self.error_print("[WARNING] RTC not initialized")
-        
 
     """
     Maintenence Functions
     """
+
     def watchdog_pet(self):
         self.watchdog_pin.value = True
         time.sleep(0.1)
         self.watchdog_pin.value = False
-    
+
     def check_reboot(self):
         self.UPTIME = self.uptime
         self.debug_print(str("Current up time: " + str(self.UPTIME)))
         if self.UPTIME > 86400:
             self.micro.reset()
-    
+
     def powermode(self, mode):
         """
         Configure the hardware for minimum or normal power consumption
@@ -601,7 +605,7 @@ class Satellite:
     """
     SD Card Functions
     """
-    
+
     def log(self, filedir, msg):
         if self.hardware["SDcard"]:
             try:
@@ -615,7 +619,6 @@ class Satellite:
                 )
         else:
             self.error_print("[WARNING] SD Card not initialized")
-
 
     def print_file(self, filedir=None, binary=False):
         try:
