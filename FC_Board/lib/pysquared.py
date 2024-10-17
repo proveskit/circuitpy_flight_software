@@ -622,6 +622,7 @@ class Satellite:
                 print(memoryview(self.buffer)[: eoi + 2].hex())
             else:
                 print("image corrupted!")
+                print(memoryview(self.buffer).hex())
 
         except Exception as e:
             self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
