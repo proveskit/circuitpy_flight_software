@@ -25,6 +25,7 @@ from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
 import rv3028
+import adafruit_ov5640
 
 # CAN Bus Import
 from adafruit_mcp2515 import MCP2515 as CAN
@@ -145,6 +146,7 @@ class Satellite:
             "Face2": False,
             "Face3": False,
             "Face4": False,
+            "CAM": False,
         }
 
         """
@@ -358,6 +360,47 @@ class Satellite:
         Face Initializations
         """
         self.scan_tca_channels()
+
+        """
+        Camera Initialization
+        """
+        try:
+            self.cam = adafruit_ov5640.OV5640(
+                self.i2c0,
+                data_pins=(
+                    board.D2,
+                    board.D3,
+                    board.D4,
+                    board.D5,
+                    board.D6,
+                    board.D7,
+                    board.D8,
+                    board.D9,
+                ),
+                clock=board.PC,
+                vsync=board.VS,
+                href=board.HS,
+                mclk=None,
+                shutdown=None,
+                reset=None,
+                size=adafruit_ov5640.OV5640_SIZE_VGA
+            )
+
+            self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
+            self.cam.flip_y = False
+            self.cam.flip_x = False
+            self.cam.test_pattern = False
+
+            self.cam.effect=0
+            self.cam.exposure_value=-2
+            self.cam.white_balance=2
+            self.cam.night_mode=False
+            self.cam.quality=22
+
+            self.hardware["CAM"] = True
+        
+        except Exception as e:
+            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
 
         """
         Prints init State of PySquared Hardware

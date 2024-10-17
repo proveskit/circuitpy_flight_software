@@ -25,7 +25,7 @@ Implementation Notes
 """
 
 # pylint: disable=too-many-lines
-
+# pylint: disable=too-many-public-methods
 # imports
 import time
 import imagecapture
@@ -413,6 +413,28 @@ _pll_pclk_root_div_factors = [1,2,4,8]
 
 _REG_DLY = const(0xFFFF)
 _REGLIST_TAIL = const(0x0000)
+
+_OV5640_STAT_FIRMWAREBAD = const(0x7F)
+_OV5640_STAT_STARTUP = const(0x7E)
+_OV5640_STAT_IDLE = const(0x70)
+_OV5640_STAT_FOCUSING = const(0x00)
+_OV5640_STAT_FOCUSED = const(0x10)
+
+_OV5640_CMD_TRIGGER_AUTOFOCUS = const(0x03)
+_OV5640_CMD_AUTO_AUTOFOCUS = const(0x04)
+_OV5640_CMD_RELEASE_FOCUS = const(0x08)
+_OV5640_CMD_AF_SET_VCM_STEP = const(0x1A)
+_OV5640_CMD_AF_GET_VCM_STEP = const(0x1B)
+
+_OV5640_CMD_MAIN = const(0x3022)
+_OV5640_CMD_ACK = const(0x3023)
+_OV5640_CMD_PARA0 = const(0x3024)
+_OV5640_CMD_PARA1 = const(0x3025)
+_OV5640_CMD_PARA2 = const(0x3026)
+_OV5640_CMD_PARA3 = const(0x3027)
+_OV5640_CMD_PARA4 = const(0x3028)
+_OV5640_CMD_FW_STATUS = const(0x3029)
+
 
 _sensor_default_regs = [
     _SYSTEM_CTROL0, 0x82,  # software reset
@@ -936,6 +958,27 @@ class _RegBits16:
 
 
 class _SCCB16CameraBase:  # pylint: disable=too-few-public-methods
+    _finalize_firmware_load = (
+        0x3022,
+        0x00,
+        0x3023,
+        0x00,
+        0x3024,
+        0x00,
+        0x3025,
+        0x00,
+        0x3026,
+        0x00,
+        0x3027,
+        0x00,
+        0x3028,
+        0x00,
+        0x3029,
+        0x7F,
+        0x3000,
+        0x00,
+    )
+
     def __init__(self, i2c_bus: I2C, i2c_address: int) -> None:
         self._i2c_device = I2CDevice(i2c_bus, i2c_address)
         self._bank = None
@@ -1004,6 +1047,7 @@ class OV5640(_SCCB16CameraBase):  # pylint: disable=too-many-instance-attributes
         mclk_frequency: int = 20_000_000,
         i2c_address: int = 0x3C,
         size: int = OV5640_SIZE_QQVGA,
+        init_autofocus: bool = True,
     ):  # pylint: disable=too-many-arguments
         """
         Args:
@@ -1028,6 +1072,7 @@ class OV5640(_SCCB16CameraBase):  # pylint: disable=too-many-instance-attributes
                 with sufficiently low jitter.
             i2c_address (int): The I2C address of the camera.
             size (int): The captured image size
+            init_autofocus (bool): initialize autofocus
         """
 
         # Initialize the master clock
@@ -1078,21 +1123,114 @@ class OV5640(_SCCB16CameraBase):  # pylint: disable=too-many-instance-attributes
         self._white_balance = 0
         self.size = size
 
-        self._write_register(0x3503, 0x03)
-        self._write_register(0x350A, 0x03)
-        self._write_register(0x350B, 0x00)
-        self._write_register(0x3501, 0xA0)
-        self._write_register(0x3500, 0x0F)
+        if init_autofocus:
+            self.autofocus_init()
 
     chip_id = _RegBits16(_CHIP_ID_HIGH, 0, 0xFFFF)
 
+    def autofocus_init_from_file(self, filename):
+        """Initialize the autofocus engine from a .bin file"""
+        with open(filename, mode="rb") as file:
+            firmware = file.read()
+        self.autofocus_init_from_bitstream(firmware)
+
+    def autofocus_init_from_bitstream(self, firmware: bytes):
+        """Initialize the autofocus engine from a bytestring"""
+        self._write_register(0x3000, 0x20)  # reset autofocus coprocessor
+        time.sleep(0.01)
+
+        arr = bytearray(256)
+        with self._i2c_device as i2c:
+            for offset in range(0, len(firmware), 254):
+                num_firmware_bytes = min(254, len(firmware) - offset)
+                reg = offset + 0x8000
+                arr[0] = reg >> 8
+                arr[1] = reg & 0xFF
+                arr[2 : 2 + num_firmware_bytes] = firmware[
+                    offset : offset + num_firmware_bytes
+                ]
+                i2c.write(arr, end=2 + num_firmware_bytes)
+
+        self._write_list(self._finalize_firmware_load)
+        for _ in range(100):
+            if self.autofocus_status == _OV5640_STAT_IDLE:
+                break
+            time.sleep(0.01)
+        else:
+            raise RuntimeError("Timed out after trying to load autofocus firmware")
+
+    def autofocus_init(self):
+        """Initialize the autofocus engine from ov5640_autofocus.bin"""
+        if "/" in __file__:
+            binfile = (
+                __file__.rsplit("/", 1)[0].rsplit(".", 1)[0] + "/ov5640_autofocus.bin"
+            )
+        else:
+            binfile = "ov5640_autofocus.bin"
+        print(binfile)
+        return self.autofocus_init_from_file(binfile)
+
+    @property
+    def autofocus_status(self):
+        """Read the camera autofocus status register"""
+        return self._read_register(_OV5640_CMD_FW_STATUS)
+
+    def _send_autofocus_command(self, command, msg):  # pylint: disable=unused-argument
+        self._write_register(_OV5640_CMD_ACK, 0x01)  # clear command ack
+        self._write_register(_OV5640_CMD_MAIN, command)  # send command
+        for _ in range(1000):
+            if self._read_register(_OV5640_CMD_ACK) == 0x0:  # command is finished
+                return True
+            time.sleep(0.01)
+        return False
+
+    def autofocus(self) -> list[int]:
+        """Perform an autofocus operation.
+
+        If all elements of the list are 0, the autofocus operation failed. Otherwise,
+        if at least one element is nonzero, the operation succeeded.
+
+        In principle the elements correspond to 5 autofocus regions, if configured."""
+        if not self._send_autofocus_command(_OV5640_CMD_RELEASE_FOCUS, "release focus"):
+            return [False] * 5
+        if not self._send_autofocus_command(_OV5640_CMD_TRIGGER_AUTOFOCUS, "autofocus"):
+            return [False] * 5
+        zone_focus = [self._read_register(_OV5640_CMD_PARA0 + i) for i in range(5)]
+        print(f"zones focused: {zone_focus}")
+        return zone_focus
+
+    @property
+    def autofocus_vcm_step(self):
+        """Get the voice coil motor step location"""
+        if not self._send_autofocus_command(
+            _OV5640_CMD_AF_GET_VCM_STEP, "get vcm step"
+        ):
+            return None
+        return self._read_register(_OV5640_CMD_PARA4)
+
+    @autofocus_vcm_step.setter
+    def autofocus_vcm_step(self, step):
+        """Get the voice coil motor step location, from 0 to 255"""
+        if not 0 <= step <= 255:
+            raise RuntimeError("VCM step must be 0 to 255")
+        self._write_register(_OV5640_CMD_PARA3, 0x00)
+        self._write_register(_OV5640_CMD_PARA4, step)
+        self._send_autofocus_command(_OV5640_CMD_AF_SET_VCM_STEP, "set vcm step")
+
     def capture(self, buf: Union[bytearray, memoryview]) -> None:
         """Capture an image into the buffer.
+
         Args:
             buf (Union[bytearray, memoryview]): A WritableBuffer to contain the \
                 captured image.  Note that this can be a ulab array or a displayio Bitmap.
         """
         self._imagecapture.capture(buf)
+        if self.colorspace == OV5640_COLOR_JPEG:
+            eoi = buf.find(b"\xff\xd9")
+            if eoi != -1:
+                # terminate the JPEG data just after the EOI marker
+                return memoryview(buf)[: eoi + 2]
+        return None
 
     @property
     def capture_buffer_size(self) -> int:
