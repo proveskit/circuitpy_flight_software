@@ -67,7 +67,7 @@ class Satellite:
 
     def debug_print(self, statement):
         """
-        A method for printing debug statements. This method will only print if the self.debug flag is set to True.
+        A method for printing debug statements.
         """
         if self.debug:
             print(co("[pysquared]" + str(statement), "green", "bold"))
@@ -105,6 +105,8 @@ class Satellite:
         self.filenumbers = {}
         self.image_packets = 0
         self.urate = 115200
+        self.buffer = None
+        self.buffer_size = 1
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
 
@@ -303,7 +305,7 @@ class Satellite:
         RTC Initialization
         """
         try:
-            self.rtc = rv3028(self.i2c1)
+            self.rtc = rv3028.RV3028(self.i2c1)
 
             # Still need to test these configs
             self.rtc.configure_backup_switchover(mode="level", interrupt=True)
@@ -366,7 +368,7 @@ class Satellite:
         """
         try:
             self.cam = adafruit_ov5640.OV5640(
-                self.i2c0,
+                self.tca[5],
                 data_pins=(
                     board.D2,
                     board.D3,
@@ -383,7 +385,7 @@ class Satellite:
                 mclk=None,
                 shutdown=None,
                 reset=None,
-                size=adafruit_ov5640.OV5640_SIZE_VGA
+                size=adafruit_ov5640.OV5640_SIZE_QVGA
             )
 
             self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
@@ -395,7 +397,9 @@ class Satellite:
             self.cam.exposure_value=-2
             self.cam.white_balance=2
             self.cam.night_mode=False
-            self.cam.quality=22
+            self.cam.quality=20
+            
+            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality 
 
             self.hardware["CAM"] = True
         
@@ -471,6 +475,10 @@ class Satellite:
                 self.debug_print([hex(addr) for addr in valid_addresses])
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
+        except Exception as e:
+            self.error_print(
+                f"[ERROR][FACE]{traceback.format_exception(e)}"
+            )
         finally:
             self.tca[channel].unlock()
 
@@ -587,7 +595,7 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
-    @time.setter
+    @date.setter
     def date(self, year, month, date, weekday):
         if self.hardware["RTC"]:
             try:
@@ -599,6 +607,28 @@ class Satellite:
         else:
             self.error_print("[WARNING] RTC not initialized")
 
+    """
+    Camera Functions
+    """
+    def take_image(self):
+        try:
+            gc.collect()
+            self.buffer = bytearray(self.buffer_size)
+            self.cam.capture(self.buffer)
+
+            eoi = self.buffer.find(b"\xff\xd9")
+            if eoi != -1:
+                # terminate the JPEG data just after the EOI marker
+                print(memoryview(self.buffer)[: eoi + 2].hex())
+            else:
+                print("image corrupted!")
+
+        except Exception as e:
+            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
+
+        finally:
+            self.buffer = None
+    
     """
     Maintenence Functions
     """
