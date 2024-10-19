@@ -120,25 +120,27 @@ class Satellite:
             "st": 80000,
         }
 
-        self.hardware = OrderedDict([
-            ("I2C0", False),
-            ("SPI0", False),
-            ("I2C1", False),
-            ("UART", False),
-            ("Radio1", False),
-            ("IMU", False),
-            ("Mag", False),
-            ("SDcard", False),
-            ("NEOPIX", False),
-            ("WDT", False),
-            ("TCA", False),
-            ("CAN", False),
-            ("Face0", False),
-            ("Face1", False),
-            ("Face2", False),
-            ("Face3", False),
-            ("Face4", False),
-        ])
+        self.hardware = OrderedDict(
+            [
+                ("I2C0", False),
+                ("SPI0", False),
+                ("I2C1", False),
+                ("UART", False),
+                ("Radio1", False),
+                ("IMU", False),
+                ("Mag", False),
+                ("SDcard", False),
+                ("NEOPIX", False),
+                ("WDT", False),
+                ("TCA", False),
+                ("CAN", False),
+                ("Face0", False),
+                ("Face1", False),
+                ("Face2", False),
+                ("Face3", False),
+                ("Face4", False),
+            ]
+        )
 
         """
         NVM Parameter Resets
