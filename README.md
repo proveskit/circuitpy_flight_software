@@ -14,7 +14,17 @@ For CircuitPython load new software by doing the following:
   import storage
   storage.erase_filesystem()
   ```
-4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo. 
+4. The target board will now disappear and remount. Once remounted, copy and paste the contents of the flight software folder for the target board from your GitHub repo.
+5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
+
+__For Flight Controller Board__
+```py
+from pysquared import cubesat as c
+```
+__For Battery Board__
+```py
+from pysquared_eps import cubesat as c
+```
 
 # General Structure: 
 - **boot.py** This is the code that runs on boot and initializes the stack limit
