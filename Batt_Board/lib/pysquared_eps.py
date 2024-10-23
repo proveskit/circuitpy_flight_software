@@ -80,7 +80,8 @@ class Satellite:
     def all_faces_off(self):
         # De-Power Faces
         if self.hardware["FLD"]:
-            self.Face0.duty_cycle = 0x0000
+            time.sleep(0.1)
+            self.Face4.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face0"] = False
             self.Face1.duty_cycle = 0x0000
@@ -92,11 +93,12 @@ class Satellite:
             self.Face3.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face3"] = False
-            self.Face4.duty_cycle = 0x0000
+            self.Face0.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face4"] = False
             time.sleep(0.1)
             self.cam.duty_cycle = 0x0000
+
 
     def debug_print(self, statement):
         if self.debug:
@@ -196,8 +198,8 @@ class Satellite:
         # self.enable_rf.switch_to_output(value=False) # if U21
         self.enable_rf.switch_to_output(value=True)  # if U7
 
-        # Define Heater Pins
-        self.heater = pwmio.PWMOut(board.ENABLE_HEATER, frequency=1000, duty_cycle=0)
+        #Define Heater Pins
+        self.heater = pwmio.PWMOut(board.JETSON, frequency=1000, duty_cycle=0)
 
         # Initialize Neopixel
         try:
@@ -265,23 +267,12 @@ class Satellite:
             )
 
         # Initialize TCA
-        try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0, address=int(0x77))
-            for channel in range(8):
-                if self.tca[channel].try_lock():
-                    self.debug_print("Channel {}:".format(channel))
-                    addresses = self.tca[channel].scan()
-                    print([hex(address) for address in addresses if address != 0x70])
-                    self.tca[channel].unlock()
-            self.hardware["TCA"] = True
-        except Exception as e:
-            self.debug_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
 
         # Initialize CAN Transceiver
         try:
             self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
             self.spi0cs0.switch_to_output()
-            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
+            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
@@ -621,6 +612,7 @@ class Satellite:
 
         try:
             self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
+            self.f_brownout = False
             if self.f_brownout:
                 pass
             else:
@@ -640,24 +632,21 @@ class Satellite:
 
 
     def heater_off(self):
-        if self.hardware["FLD"]:
-            try:
-                self.heater.duty_cycle = 0x0000
-                self._relayA.value = 0
-                self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
-                if self.heating == True:
-                    self.heating = False
-                    self.f_brownout = False
-                    self.debug_print("Battery Heater off!")
-                    self.RGB = (0, 0, 0)
-            except Exception as e:
-                self.debug_print(
-                    "[ERROR] Cant turn off heater: "
-                    + "".join(traceback.format_exception(e))
-                )
-                self.heater.duty_cycle = 0x0000
-        else:
-            self.debug_print("[WARNING] LED Driver not initialized")
+        try:
+            self.heater.duty_cycle = 0x0000
+            self._relayA.value = 0
+            self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
+            if self.heating == True:
+                self.heating = False
+                self.f_brownout = False
+                self.debug_print("Battery Heater off!")
+                self.RGB = (0, 0, 0)
+        except Exception as e:
+            self.debug_print(
+                "[ERROR] Cant turn off heater: "
+                + "".join(traceback.format_exception(e))
+            )
+            self.heater.duty_cycle = 0x0000
 
     # =======================================================#
     # Burn Wire                                              #
@@ -703,7 +692,7 @@ class Satellite:
             # create our PWM object for the respective pin
             # not active since duty_cycle is set to 0 (for now)
             if "1" in burn_num:
-                burnwire = pwmio.PWMOut(board.BURN_ENABLE, frequency=freq, duty_cycle=0)
+                burnwire = pwmio.PWMOut(board.ENABLE_BURN, frequency=freq, duty_cycle=0)
             else:
                 return False
             # Configure the relay control pin & open relay
