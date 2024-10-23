@@ -1,0 +1,1 @@
+from pysquared_eps import cubesat as c
