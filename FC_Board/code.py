@@ -4,16 +4,16 @@
 
 """
 Built for the PySquared FC Board
-Version: 1.1.1 (Beta)
-Published: October 15, 2024
+Version: 1.1.2 (Beta)
+Published: October 23, 2024
 """
 
 import time
 
 print("=" * 70)
 print("Hello World!")
-print("PySquared FC Board Circuit Python Software Version: 1.1.1 (Beta)")
-print("Published: October 15, 2024")
+print("PySquared FC Board Circuit Python Software Version: 1.1.2 (Beta)")
+print("Published: October 23, 2024")
 print("=" * 70)
 
 loiter_time = 5
