@@ -143,7 +143,8 @@ class Satellite:
         self._resetReg = digitalio.DigitalInOut(board.VBUS_RESET)
         self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
 
-        self._5V_enable = digitalio.DigitalInOut(board.5V_ENABLE)
+        # Define 5V Enable
+        self._5V_enable = digitalio.DigitalInOut(board.ENABLE_5V)
         self._5V_enable.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
 
         # Define SPI,I2C,UART | paasing I2C1 to BigData
@@ -579,6 +580,19 @@ class Satellite:
     def uptime(self):
         self.CURRENTTIME = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
+    
+    @property
+    def fc_wdt(self):
+        return self._5V_enable.value
+
+    @fc_wdt.setter
+    def fc_wdt(self, value):
+        try:
+            self._5V_enable.value = value
+        except Exception as e:
+            self.debug_print(
+                "Error Setting FC Watchdog Status: " + "".join(traceback.format_exception(e))
+            )
 
     @property
     def reset_vbus(self):
