@@ -146,6 +146,13 @@ class Satellite:
         # Define 5V Enable
         self._5V_enable = digitalio.DigitalInOut(board.ENABLE_5V)
         self._5V_enable.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
+        try:
+            self._5V_enable.value = True
+
+        except Exception as e:
+            self.debug_print(
+                "Error Setting 5V Enable: " + "".join(traceback.format_exception(e))
+            )
 
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
