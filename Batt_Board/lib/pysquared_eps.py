@@ -145,6 +145,9 @@ class Satellite:
         self._resetReg = digitalio.DigitalInOut(board.VBUS_RESET)
         self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
 
+        self._5V_enable = digitalio.DigitalInOut(board.5V_ENABLE)
+        self._5V_enable.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
+
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
             self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA, timeout=5)
