@@ -148,7 +148,7 @@ class Satellite:
         self._5V_enable.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
         try:
             self._5V_enable.value = True
-
+            self.debug_print("5V Enabled")
         except Exception as e:
             self.debug_print(
                 "Error Setting 5V Enable: " + "".join(traceback.format_exception(e))
@@ -157,15 +157,39 @@ class Satellite:
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
             self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA, timeout=5)
-            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
-            self.i2c1 = busio.I2C(
-                board.I2C1_SCL, board.I2C1_SDA, timeout=5, frequency=100000
+        except Exception as e:
+            self.debug_print(
+            "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
             )
+
+        try:
+            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+        except Exception as e:
+            self.debug_print(
+            "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
+            self.i2c1 = busio.I2C(
+            board.I2C1_SCL, board.I2C1_SDA, timeout=5, frequency=100000
+            )
+        except Exception as e:
+            self.debug_print(
+            "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.spi1 = busio.SPI(board.SPI1_SCK, board.SPI1_MOSI, board.SPI1_MISO)
+        except Exception as e:
+            self.debug_print(
+            "ERROR INITIALIZING SPI1: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
         except Exception as e:
             self.debug_print(
-                "ERROR INITIALIZING BUSSES: " + "".join(traceback.format_exception(e))
+            "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
             )
 
         # Initialize LED Driver
