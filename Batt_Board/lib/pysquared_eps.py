@@ -17,7 +17,6 @@ import gc
 # Hardware Specific Libs
 import neopixel  # RGB LED
 import adafruit_pca9685  # LED Driver
-import adafruit_tca9548a  # I2C Multiplexer
 import adafruit_pct2075  # Temperature Sensor
 import adafruit_max31856  # Thermocouple
 import adafruit_vl6180x  # LiDAR Distance Sensor for Antenna
@@ -124,7 +123,6 @@ class Satellite:
         self.hardware = {
             "WDT": False,
             "NEO": False,
-            "TCA": False,
             "SOLAR": False,
             "PWR": False,
             "FLD": False,
@@ -265,19 +263,6 @@ class Satellite:
             self.debug_print(
                 "[ERROR][THERMOCOUPLE]" + "".join(traceback.format_exception(e))
             )
-
-        # Initialize TCA
-        try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0, address=int(0x77))
-            for channel in range(8):
-                if self.tca[channel].try_lock():
-                    self.debug_print("Channel {}:".format(channel))
-                    addresses = self.tca[channel].scan()
-                    print([hex(address) for address in addresses if address != 0x70])
-                    self.tca[channel].unlock()
-            self.hardware["TCA"] = True
-        except Exception as e:
-            self.debug_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
 
         # Initialize CAN Transceiver
         try:
