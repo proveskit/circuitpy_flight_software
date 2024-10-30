@@ -9,7 +9,7 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
-import board, microcontroller
+import board, machine, microcontroller
 import busio, time, sys, traceback
 from storage import mount, umount, VfsFat
 import digitalio, sdcardio, pwmio
@@ -97,6 +97,7 @@ class Satellite:
         self.vlowbatt = 6.0
         self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
         self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
+        self.turbo_clock = False
 
         """
         Setting up data buffers
@@ -171,6 +172,11 @@ class Satellite:
         self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
         self.watchdog_pin.direction = digitalio.Direction.OUTPUT
         self.watchdog_pin.value = False
+
+        """
+        Set the CPU Clock Speed
+        """
+        machine.set_clock(62500000)
 
         """
         Intializing Communication Buses
@@ -486,6 +492,23 @@ class Satellite:
     Code to call satellite parameters
     """
 
+    @property
+    def turbo_clock(self):
+        return self.turbo_clock
+    
+    @turbo_clock.setter
+    def turbo_clock(self,value):
+        self.turbo_clock = value
+
+        try:
+            if value is True:
+                machine.set_clock(125000000) #125Mhz
+            else:
+                machine.set_clock(62500000)  #62.5Mhz
+
+        except Exception as e:
+            self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
+    
     @property
     def burnarm(self):
         return self.f_burnarm
