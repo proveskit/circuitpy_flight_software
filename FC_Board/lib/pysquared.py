@@ -17,6 +17,7 @@ from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
 from debugcolor import co
+from collections import OrderedDict
 
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
@@ -118,25 +119,28 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
-        self.hardware = {
-            "I2C0": False,
-            "SPI0": False,
-            "I2C1": False,
-            "UART": False,
-            "IMU": False,
-            "Mag": False,
-            "Radio1": False,
-            "SDcard": False,
-            "NEOPIX": False,
-            "WDT": False,
-            "TCA": False,
-            "CAN": False,
-            "Face0": False,
-            "Face1": False,
-            "Face2": False,
-            "Face3": False,
-            "Face4": False,
-        }
+
+        self.hardware = OrderedDict(
+            [
+                ("I2C0", False),
+                ("SPI0", False),
+                ("I2C1", False),
+                ("UART", False),
+                ("Radio1", False),
+                ("IMU", False),
+                ("Mag", False),
+                ("SDcard", False),
+                ("NEOPIX", False),
+                ("WDT", False),
+                ("TCA", False),
+                ("CAN", False),
+                ("Face0", False),
+                ("Face1", False),
+                ("Face2", False),
+                ("Face3", False),
+                ("Face4", False),
+            ]
+        )
 
         """
         NVM Parameter Resets
