@@ -113,17 +113,17 @@ def normal_power_operations():
         return pwr
 
     # Consider Deprecating this function or changing it to a logging function. Currently it serves no purpose outside of debug.
-    async def g_face_data():
+    async def get_batt_data():
 
         while check_power():
 
-            FaceData = []
+            BattData = []
 
             try:
-                debug_print("Getting face data...")
-                FaceData = f.all_face_data()
-                for _ in range(0, len(FaceData)):
-                    debug_print("Face " + str(_) + ": " + str(FaceData[_]))
+                debug_print("Getting battery data...")
+                BattData = f.all_face_data()
+                for _ in range(0, len(BattData)):
+                    debug_print("Battery: " + str(_) + ": " + str(BattData[_]))
 
             except Exception as e_gf:
                 debug_print(
@@ -134,14 +134,14 @@ def normal_power_operations():
 
             await asyncio.sleep(60)
 
-    async def s_face_data():
+    async def check_can_messages():
 
-        await asyncio.sleep(20)
+        await asyncio.sleep(5)
 
         while check_power():
             try:
-                debug_print("Looking to send face data...")
-                f.send_face()
+                debug_print("Checking for messages from the CAN Bus")
+                
 
             except asyncio.TimeoutError as e_sf:
                 debug_print(
@@ -150,35 +150,15 @@ def normal_power_operations():
 
             gc.collect()
 
-            await asyncio.sleep(200)
-
-    async def detumble():
-
-        await asyncio.sleep(300)
-
-        while check_power():
-            try:
-                debug_print("Looking to detumble...")
-                f.detumble()
-                debug_print("Detumble complete")
-
-            except Exception as e_de:
-                debug_print(
-                    f"Outta time!" + "".join(traceback.format_exception(e_de))
-                )  # pylint: disable=no-value-for-parameter
-
-            gc.collect()
-
-            await asyncio.sleep(300)
+            await asyncio.sleep(5)
 
     async def main_loop():
         # log_face_data_task = asyncio.create_task(l_face_data())
 
-        t1 = asyncio.create_task(s_face_data())
-        t2 = asyncio.create_task(g_face_data())
-        t3 = asyncio.create_task(detumble())
+        t1 = asyncio.create_task(get_batt_data())
+        t2 = asyncio.create_task(check_can_messages())
 
-        await asyncio.gather(t1, t2, t3)
+        await asyncio.gather(t1, t2)
 
     asyncio.run(main_loop())
 
