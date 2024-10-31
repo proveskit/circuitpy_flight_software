@@ -230,9 +230,16 @@ class functions:
 
     def all_face_data(self):
 
-        # self.cubesat.all_faces_on()
+        self.cubesat.all_faces_on()
         try:
-            print("New Function Needed!")
+            import Big_Data
+
+            a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+
+            self.facestring = a.Face_Test_All()
+
+            del a
+            del Big_Data
 
         except Exception as e:
             self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
