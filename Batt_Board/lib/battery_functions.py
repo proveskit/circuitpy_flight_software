@@ -244,6 +244,8 @@ class functions:
                 + "".join(traceback.format_exception(e))
             )  # pylint: disable=no-value-for-parameter
 
+        return self.state_list
+
     # =======================================================#
     # Big Data Functions                                    #
     # =======================================================#
@@ -265,37 +267,6 @@ class functions:
         elif face == "Face5":
             self.cubesat.Face0.duty_cycle = duty_cycle
 
-    def all_face_data(self):
-
-        self.cubesat.all_faces_on()
-        try:
-            import Big_Data
-
-            a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
-
-            self.facestring = a.Face_Test_All()
-
-            del a
-            del Big_Data
-
-        except Exception as e:
-            self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
-
-        return self.facestring
-
-    def get_imu_data(self):
-
-        self.cubesat.all_faces_on()
-        data = (0, 0, 0)
-        try:
-            self.debug_print("Attempting to get data from Flight Controller")
-            data = self.get_CAN("IMU")
-        except Exception as e:
-            self.debug_print(
-                "Error retrieving IMU data" + "".join(traceback.format_exception(e))
-            )
-
-        return data
 
     # =======================================================#
     # Interboard Communitication Functions                 #

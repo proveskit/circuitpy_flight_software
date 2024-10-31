@@ -121,7 +121,7 @@ def normal_power_operations():
 
             try:
                 debug_print("Getting battery data...")
-                BattData = f.all_face_data()
+                BattData = f.state_of_health()
                 for _ in range(0, len(BattData)):
                     debug_print("Battery: " + str(_) + ": " + str(BattData[_]))
 
