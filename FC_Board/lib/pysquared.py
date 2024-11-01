@@ -362,7 +362,9 @@ class Satellite:
             self.tca = adafruit_tca9548a.TCA9548A(self.i2c1, address=int(0x77))
             self.hardware["TCA"] = True
         except OSError:
-            self.error_print("[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning.")
+            self.error_print(
+                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
+            )
             self.hardware["TCA"] = False
             return
         except Exception as e:
@@ -396,7 +398,7 @@ class Satellite:
                     mclk=None,
                     shutdown=None,
                     reset=None,
-                    size=adafruit_ov5640.OV5640_SIZE_QVGA
+                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
                 )
 
                 self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
@@ -404,23 +406,25 @@ class Satellite:
                 self.cam.flip_x = False
                 self.cam.test_pattern = False
 
-                self.cam.effect=0
-                self.cam.exposure_value=-2
-                self.cam.white_balance=2
-                self.cam.night_mode=False
-                self.cam.quality=20
-                
-                self.buffer_size = self.cam.height * self.cam.width // self.cam.quality 
+                self.cam.effect = 0
+                self.cam.exposure_value = -2
+                self.cam.white_balance = 2
+                self.cam.night_mode = False
+                self.cam.quality = 20
+
+                self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
 
                 self.hardware["CAM"] = True
-            
+
             except Exception as e:
-                self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
-        
+                self.error_print(
+                    "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
+                )
+
         else:
             self.error_print("[ERROR][CAMERA]TCA Not Initialized")
             self.hardware["CAM"] = False
-            
+
         """
         Prints init State of PySquared Hardware
         """
@@ -491,9 +495,7 @@ class Satellite:
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
-            self.error_print(
-                f"[ERROR][FACE]{traceback.format_exception(e)}"
-            )
+            self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
         finally:
             self.tca[channel].unlock()
 
@@ -504,20 +506,20 @@ class Satellite:
     @property
     def turbo(self):
         return self.turbo_clock
-    
+
     @turbo.setter
-    def turbo(self,value):
+    def turbo(self, value):
         self.turbo_clock = value
 
         try:
             if value is True:
-                machine.set_clock(125000000) #125Mhz
+                machine.set_clock(125000000)  # 125Mhz
             else:
-                machine.set_clock(62500000)  #62.5Mhz
+                machine.set_clock(62500000)  # 62.5Mhz
 
         except Exception as e:
             self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
-    
+
     @property
     def burnarm(self):
         return self.f_burnarm
@@ -642,6 +644,7 @@ class Satellite:
     """
     Camera Functions
     """
+
     def take_image(self):
         try:
             gc.collect()
@@ -661,7 +664,7 @@ class Satellite:
 
         finally:
             self.buffer = None
-    
+
     """
     Maintenence Functions
     """
