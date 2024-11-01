@@ -9,7 +9,7 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
-import board, microcontroller
+import board, machine, microcontroller
 import busio, time, sys, traceback
 from storage import mount, umount, VfsFat
 import digitalio, sdcardio, pwmio
@@ -97,6 +97,7 @@ class Satellite:
         self.vlowbatt = 6.0
         self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
         self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
+        self.turbo_clock = False
 
         """
         Setting up data buffers
@@ -171,6 +172,11 @@ class Satellite:
         self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
         self.watchdog_pin.direction = digitalio.Direction.OUTPUT
         self.watchdog_pin.value = False
+
+        """
+        Set the CPU Clock Speed
+        """
+        machine.set_clock(62500000)
 
         """
         Intializing Communication Buses
@@ -355,6 +361,12 @@ class Satellite:
         try:
             self.tca = adafruit_tca9548a.TCA9548A(self.i2c1, address=int(0x77))
             self.hardware["TCA"] = True
+        except OSError:
+            self.error_print(
+                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
+            )
+            self.hardware["TCA"] = False
+            return
         except Exception as e:
             self.error_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
 
@@ -366,45 +378,52 @@ class Satellite:
         """
         Camera Initialization
         """
-        try:
-            self.cam = adafruit_ov5640.OV5640(
-                self.tca[5],
-                data_pins=(
-                    board.D2,
-                    board.D3,
-                    board.D4,
-                    board.D5,
-                    board.D6,
-                    board.D7,
-                    board.D8,
-                    board.D9,
-                ),
-                clock=board.PC,
-                vsync=board.VS,
-                href=board.HS,
-                mclk=None,
-                shutdown=None,
-                reset=None,
-                size=adafruit_ov5640.OV5640_SIZE_QVGA
-            )
+        if self.hardware["TCA"] is True:
+            try:
+                self.cam = adafruit_ov5640.OV5640(
+                    self.tca[5],
+                    data_pins=(
+                        board.D2,
+                        board.D3,
+                        board.D4,
+                        board.D5,
+                        board.D6,
+                        board.D7,
+                        board.D8,
+                        board.D9,
+                    ),
+                    clock=board.PC,
+                    vsync=board.VS,
+                    href=board.HS,
+                    mclk=None,
+                    shutdown=None,
+                    reset=None,
+                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
+                )
 
-            self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
-            self.cam.flip_y = False
-            self.cam.flip_x = False
-            self.cam.test_pattern = False
+                self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
+                self.cam.flip_y = False
+                self.cam.flip_x = False
+                self.cam.test_pattern = False
 
-            self.cam.effect=0
-            self.cam.exposure_value=-2
-            self.cam.white_balance=2
-            self.cam.night_mode=False
-            self.cam.quality=20
-            
-            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality 
+                self.cam.effect = 0
+                self.cam.exposure_value = -2
+                self.cam.white_balance = 2
+                self.cam.night_mode = False
+                self.cam.quality = 20
 
-            self.hardware["CAM"] = True
-        
-        except Exception as e:
-            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
+                self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
+
+                self.hardware["CAM"] = True
+
+            except Exception as e:
+                self.error_print(
+                    "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
+                )
+
+        else:
+            self.error_print("[ERROR][CAMERA]TCA Not Initialized")
+            self.hardware["CAM"] = False
 
         """
         Prints init State of PySquared Hardware
@@ -476,15 +495,30 @@ class Satellite:
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
-            self.error_print(
-                f"[ERROR][FACE]{traceback.format_exception(e)}"
-            )
+            self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
         finally:
             self.tca[channel].unlock()
 
     """
     Code to call satellite parameters
     """
+
+    @property
+    def turbo(self):
+        return self.turbo_clock
+
+    @turbo.setter
+    def turbo(self, value):
+        self.turbo_clock = value
+
+        try:
+            if value is True:
+                machine.set_clock(125000000)  # 125Mhz
+            else:
+                machine.set_clock(62500000)  # 62.5Mhz
+
+        except Exception as e:
+            self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
 
     @property
     def burnarm(self):
@@ -610,6 +644,7 @@ class Satellite:
     """
     Camera Functions
     """
+
     def take_image(self):
         try:
             gc.collect()
@@ -629,7 +664,7 @@ class Satellite:
 
         finally:
             self.buffer = None
-    
+
     """
     Maintenence Functions
     """
