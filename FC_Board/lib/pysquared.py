@@ -34,7 +34,7 @@ from adafruit_mcp2515 import MCP2515 as CAN
 # NVM register numbers
 _BOOTCNT = const(0)
 _VBUSRST = const(6)
-_STATECNT = const(7)
+_ERRORCNT = const(7)
 _TOUTS = const(9)
 _ICHRG = const(11)
 _DIST = const(13)
@@ -51,7 +51,7 @@ class Satellite:
     # General NVM counters
     c_boot = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
     c_vbusrst = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
+    c_error_count = multiBitFlag(register=_ERRORCNT, lowest_bit=0, num_bits=8)
     c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
     c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
 
@@ -73,6 +73,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement):
+        self.c_error_count = (self.c_error_count + 1) & 0xFF #Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
