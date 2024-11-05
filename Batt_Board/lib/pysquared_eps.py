@@ -707,9 +707,10 @@ class Satellite:
                 self.debug_print(
                     "LiDAR error: " + "".join(traceback.format_exception(e))
                 )
+                return 0
         else:
             self.debug_print("[WARNING] LiDAR not initialized")
-        return 0
+            return 0
 
     def burn(self, burn_num, dutycycle=0, freq=1000, duration=1):
         """
