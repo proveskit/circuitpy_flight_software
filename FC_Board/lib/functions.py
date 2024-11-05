@@ -120,6 +120,7 @@ class functions:
                 f"RT:{self.cubesat.radio1.former_temperature}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
+                f"EC:{self.cubesat.c_error_count}",
                 f"AB:{int(self.cubesat.burned)}",
                 f"BO:{int(self.cubesat.f_brownout)}",
                 f"FK:{int(self.cubesat.f_fsk)}",
