@@ -84,6 +84,7 @@ class Satellite:
         self.debug = True  # Define verbose output here. True or False
         self.legacy = False  # Define if the board is used with legacy or not
         self.heating = False  # Currently not used
+        self.orpheus = True # Define if the board is used with Orpheus or not
         self.is_licensed = False
 
         """
@@ -177,8 +178,11 @@ class Satellite:
         Intializing Communication Buses
         """
         try:
-            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-            self.hardware["I2C0"] = True
+            if not self.orpheus:
+                self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+                self.hardware["I2C0"] = True
+            else:
+                self.debug_print("[Orpheus] I2C0 not initialized")
 
         except Exception as e:
             self.error_print(
@@ -204,8 +208,13 @@ class Satellite:
             )
 
         try:
-            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
-            self.hardware["UART"] = True
+            if not self.orpheus:
+                self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+                self.hardware["UART"] = True
+            else:
+                # Orpheus uses the I2C0 Connection for UART
+                self.uart = busio.UART(board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate)
+                self.hardware["UART"] = True
 
         except Exception as e:
             self.error_print(
