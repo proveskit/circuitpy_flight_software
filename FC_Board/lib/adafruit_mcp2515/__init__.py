@@ -383,6 +383,10 @@ class MCP2515:  # pylint:disable=too-many-instance-attributes
             new_mode = _MODE_NORMAL
 
         self._set_mode(new_mode)
+    
+    def sleep(self):
+        """Put the MCP2515 to sleep"""
+        self._set_mode(_MODE_SLEEP)
 
     def send(self, message_obj):
         """Send a message on the bus with the given data and id. If the message could not be sent
