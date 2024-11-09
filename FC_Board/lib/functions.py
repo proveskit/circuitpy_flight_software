@@ -42,6 +42,24 @@ class functions:
 
     def current_check(self):
         return self.cubesat.current_draw
+    
+    def safe_sleep(self, duration=15):
+        self.debug_print("Setting Safe Sleep Mode")
+
+        self.cubesat.can_bus.sleep()
+
+        iterations = 0
+
+        while duration > 15 and iterations < 12:
+
+            time_alarm = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 15)
+
+            alarm.light_sleep_until_alarms(time_alarm)
+            duration -= 15
+            iterations += 1
+
+            self.cubesat.watchdog_pet()
+
 
     """
     Radio Functions

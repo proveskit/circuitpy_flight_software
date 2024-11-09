@@ -17,6 +17,7 @@ from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
 from debugcolor import co
+from collections import OrderedDict
 
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
@@ -131,27 +132,29 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
-        self.hardware = {
-            "I2C0": False,
-            "SPI0": False,
-            "I2C1": False,
-            "UART": False,
-            "IMU": False,
-            "Mag": False,
-            "Radio1": False,
-            "SDcard": False,
-            "NEOPIX": False,
-            "WDT": False,
-            "TCA": False,
-            "CAN": False,
-            "RTC": False,
-            "Face0": False,
-            "Face1": False,
-            "Face2": False,
-            "Face3": False,
-            "Face4": False,
-            "CAM": False,
-        }
+        self.hardware = OrderedDict(
+            [
+                ("I2C0", False),
+                ("SPI0", False),
+                ("I2C1", False),
+                ("UART", False),
+                ("Radio1", False),
+                ("IMU", False),
+                ("Mag", False),
+                ("SDcard", False),
+                ("NEOPIX", False),
+                ("WDT", False),
+                ("TCA", False),
+                ("CAN", False),
+                ("Face0", False),
+                ("Face1", False),
+                ("Face2", False),
+                ("Face3", False),
+                ("Face4", False),
+                ("CAM", False),
+                ("RTC", False),
+            ]
+        )
 
         """
         NVM Parameter Resets
@@ -544,8 +547,7 @@ class Satellite:
                     "error unmounting SD card" + "".join(traceback.format_exception(e))
                 )
         try:
-            self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
-            self._resetReg.value = 1
+            self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -646,7 +648,7 @@ class Satellite:
 
     def watchdog_pet(self):
         self.watchdog_pin.value = True
-        time.sleep(0.1)
+        time.sleep(0.01)
         self.watchdog_pin.value = False
 
     def check_reboot(self):
