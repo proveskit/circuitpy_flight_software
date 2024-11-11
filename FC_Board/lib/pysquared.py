@@ -107,7 +107,7 @@ class Satellite:
         self.data_cache = {}
         self.filenumbers = {}
         self.image_packets = 0
-        self.urate = 115200
+        self.urate = 9600
         self.buffer = None
         self.buffer_size = 1
         self.send_buff = memoryview(SEND_BUFF)
