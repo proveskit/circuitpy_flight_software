@@ -134,7 +134,7 @@ class BatteryHelper:
         
         Returns:
             Tuple of (battery_voltage, draw_current, charge_voltage, 
-                     charge_current, is_charging)
+                     charge_current, is_charging, battery_percentage)
         """
         response = self._send_command(self.CMD_GET_POWER)
         

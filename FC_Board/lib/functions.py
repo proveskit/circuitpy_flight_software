@@ -11,6 +11,7 @@ import gc
 import traceback
 import random
 from debugcolor import co
+from battery_helper import BatteryHelper
 
 
 class functions:
@@ -21,6 +22,7 @@ class functions:
 
     def __init__(self, cubesat):
         self.cubesat = cubesat
+        self.battery = BatteryHelper(cubesat)
         self.debug = cubesat.debug
         self.debug_print("Initializing Functionalities")
         self.Errorcount = 0
@@ -264,6 +266,20 @@ class functions:
             self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
 
         return self.facestring
+    
+    def get_battery_data(self):
+        
+        try:
+            data = []
+            metrics = self.battery.get_power_metrics()
+            data.append(metrics)
+            return data
+        
+        except Exception as e:
+            self.debug_print(
+                "Error retrieving battery data" + "".join(traceback.format_exception(e))
+            )
+            return None
 
     def get_imu_data(self):
 
