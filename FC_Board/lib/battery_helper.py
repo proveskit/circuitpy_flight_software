@@ -29,6 +29,7 @@ class BatteryHelper:
         """
         self.uart = pysquared.uart
         self.last_command_time = 0
+        self.debug_mode = True
         
     def _flush_input(self):
         """Flush the input buffer"""
@@ -37,97 +38,80 @@ class BatteryHelper:
             try_count += 1
             self.uart.read()
             
-    def _read_response(self, timeout_ms=1000, retries=3):
-        """
-        Read response with retries and intelligent waiting
+    def _wait_for_ack(self):
+        """Wait for acknowledgment character"""
+        start = time.monotonic()
         
-        Args:
-            timeout_ms: Maximum time to wait for response in milliseconds
-            retries: Number of retry attempts if response is invalid
+        # Clear any existing data
+        if self.uart.in_waiting:
+            self.uart.read()
             
-        Returns:
-            Response string or empty string on failure
-        """
+        # Wait up to 10ms for ACK
+        while (time.monotonic() - start) * 1000 < 10:
+            if self.uart.in_waiting:
+                byte = self.uart.read(1)
+                if self.debug_mode:
+                    print(f"ACK byte received: {byte}")
+                if byte == b'A':
+                    return True
+            time.sleep(0.001)
+        return False
+    
+    def _read_message(self, timeout_ms=150):
+        """Read until we get a complete message or timeout"""
+
+        response = bytearray()
         
-        for attempt in range(retries):
-            start = time.monotonic()
-            response = bytearray()
+        # Initial wait for data
+        start = time.monotonic()
+        while not self.uart.in_waiting and (time.monotonic() - start) * 1000 < timeout_ms:
+            pass
             
-            # Initial delay to allow response to arrive
-            time.sleep(0.05)  # 50ms initial wait
-            
-            # Read until timeout or valid response
-            while (time.monotonic() - start) * 1000 < timeout_ms:
-                if self.uart.in_waiting:
-                    chunk = self.uart.read()
-                    if chunk:
-                        response.extend(chunk)
-                        # If we got data, reset timeout to allow for more
-                        start = time.monotonic()
-                        timeout_ms = 500  # Reset timeout to 500ms
-                else:
-                    # Small delay only if no data available
-                    time.sleep(0.01)
-                    
-                # Check if we have a complete response
-                if response and response[-1] in [ord('\n'), ord('\r')]:
-                    break
-            
-            if response:
-                try:
-                    return response.decode('utf-8').strip()
-                except UnicodeDecodeError:
-                    continue  # Try again if decode failed
-                    
-            # If we get here with no response, wait longer before next retry
-            time.sleep(0.1 * (attempt + 1))  # Increasing delay between retries
+        # Read data as it comes
+        last_read = time.monotonic()
+        while (time.monotonic() - last_read) * 1000 < 5:  # 5ms timeout between chunks
+            if self.uart.in_waiting:
+                response.extend(self.uart.read())
+                last_read = time.monotonic()
+        
+        try:
+            text = response.decode('utf-8')
+            if self.debug_mode:
+                print(f"Buffer: {text}")
+                
+            # Check for complete message
+            if 'AA<' in text and '>' in text:
+                start_idx = text.find('<')
+                end_idx = text.find('>')
+                if start_idx < end_idx:
+                    return text[start_idx+1:end_idx]
+        except UnicodeDecodeError:
+            pass
             
         return ""
             
-    def _send_command(self, cmd: int, min_interval_ms=100) -> str:
+    def _send_command(self, cmd):
         """
-        Send a command and return the response with rate limiting
+        Send command and wait for acknowledgment
         
-        Args:
-            cmd: Command number to send
-            min_interval_ms: Minimum time between commands in milliseconds
-            
         Returns:
-            Response string from the device
+            str: Response message or empty string on failure
         """
-        
         try:
-            current_time = time.monotonic()
-            
-            # Rate limiting
-            time_since_last = (current_time - self.last_command_time) * 1000
-            if time_since_last < min_interval_ms:
-                time.sleep((min_interval_ms - time_since_last) / 1000)
-            
-            # Clear any pending data
-            self._flush_input()
-            
-            # Send command with retry logic
-            max_retries = 3
-            for attempt in range(max_retries):
-                # Send command
-                self.uart.write(bytes(cmd.encode()))
-                response = self._read_response(timeout_ms=1000)
+
+            # Send command
+            self.uart.write(bytes(cmd.encode()))
                 
-                if response:
-                    self.last_command_time = time.monotonic()
-                    return response
-                    
-                # If no response, wait before retry
-                if attempt < max_retries - 1:
-                    time.sleep(0.1 * (attempt + 1))
-            
-            print("Failed to get response after all retries")
-            return ""
+            # Read the response message
+            return self._read_message()
             
         except Exception as e:
             print(f"UART error: {e}")
             return ""
+        
+    def _is_valid_message(self, msg):
+        """Verify message format and checksum if implemented"""
+        return bool(msg and len(msg) > 0)
     
     def get_temperatures(self):
         """
@@ -152,30 +136,28 @@ class BatteryHelper:
             Tuple of (battery_voltage, draw_current, charge_voltage, 
                      charge_current, is_charging)
         """
-        max_retries = 3
-        for attempt in range(max_retries):
-            response = self._send_command(self.CMD_GET_POWER)
-            if response:
-                try:
-                    metrics = response.split(',')
-                    if len(metrics) == 5:
-                        # Create tuple manually instead of using unpacking
-                        values = []
-                        for i in range(4):
-                            values.append(float(metrics[i]))
-                        values.append(bool(int(metrics[4])))
-                        
-                        # Basic sanity checks
-                        if all(0 <= v <= 100 for v in values[:4]):  # Adjust ranges as needed
-                            return tuple(values)
-                except Exception as e:
-                    print(f"Error parsing power metrics (attempt {attempt + 1}): {e}")
+        response = self._send_command(self.CMD_GET_POWER)
+        
+        if response:
+            try:
+                parts = response.split(',')
+                if len(parts) == 5:
+                    return (
+                        float(parts[0]),
+                        float(parts[1]),
+                        float(parts[2]),
+                        float(parts[3]),
+                        bool(int(parts[4])),
+                        self.get_battery_percentage(float(parts[0]), bool(int(parts[4])))
+                    )
             
-            import time
-            time.sleep(0.1 * (attempt + 1))
-            
-        print("Failed to get valid power metrics after all retries")
-        return (0.0, 0.0, 0.0, 0.0, False)
+            except Exception as e:
+                if self.debug_mode:
+                    print(f"Error parsing metrics: {e}")
+        
+        if self.debug_mode:
+            print("Failed to get valid power metrics")
+        return (0.0, 0.0, 0.0, 0.0, False, 0.0)
             
     def get_error_metrics(self):
         """
@@ -274,3 +256,38 @@ class BatteryHelper:
                 return round(percent, 1)
         
         return 0  # Fallback
+    
+    def debug_timing(self):
+        """Measure and print timing of each step"""
+        
+        print("\nTiming analysis:")
+        
+        # Measure command send time
+        start = time.monotonic()
+        self.uart.write(bytes(self.CMD_GET_POWER.encode()))
+        send_time = (time.monotonic() - start) * 1000
+        
+        # Measure response read time
+        read_start = time.monotonic()
+        response = self._read_message()
+        read_time = (time.monotonic() - read_start) * 1000
+        
+        # Measure parse time
+        parse_start = time.monotonic()
+        if response:
+            try:
+                parts = response.split(',')
+                values = [float(x) for x in parts[:4]]
+                values.append(bool(int(parts[4])))
+            except Exception as e:
+                print(f"Parse error: {e}")
+        parse_time = (time.monotonic() - parse_start) * 1000
+        
+        # Total time
+        total_time = (time.monotonic() - start) * 1000
+        
+        print(f"Send time: {send_time:.2f}ms")
+        print(f"Read time: {read_time:.2f}ms")
+        print(f"Parse time: {parse_time:.2f}ms")
+        print(f"Total time: {total_time:.2f}ms")
+        print(f"Response: {response}")
