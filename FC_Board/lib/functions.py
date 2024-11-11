@@ -13,6 +13,7 @@ import random
 from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
+from packet_sender import PacketSender
 
 
 class functions:
@@ -28,6 +29,7 @@ class functions:
         self.debug_print("Initializing Functionalities")
 
         self.pm = PacketManager(max_packet_size=128)
+        self.ps = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
         self.Errorcount = 0
         self.facestring = []
@@ -90,6 +92,15 @@ class functions:
             self.debug_print("Failed to send packet")
         del self.field
         del Field
+
+    def send_packets(self, data):
+        """Sends packets of data over the radio with delay between packets.
+
+        Args:
+            data (String, Byte Array): Pass the data to be sent.
+            delay (float): Delay in seconds between packets
+        """
+        self.ps.send_data(data)
 
     def beacon(self):
         """Calls the RFM9x to send a beacon."""

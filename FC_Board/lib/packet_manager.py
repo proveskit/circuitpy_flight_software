@@ -12,7 +12,7 @@ class PacketManager:
         """
         Takes input data and returns a list of packets ready for transmission
         Each packet includes:
-        - 2 bytes: sequence number
+        - 2 bytes: sequence number (0-based)
         - 2 bytes: total number of packets
         - remaining bytes: payload
         """
@@ -25,11 +25,13 @@ class PacketManager:
                 
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size
+        print(f"Packing data of length {len(data)} into {total_packets} packets")
         
         packets = []
         for seq in range(total_packets):
             # Create header
             header = seq.to_bytes(2, 'big') + total_packets.to_bytes(2, 'big')
+            print(f"Created header: {[hex(b) for b in header]}")
             
             # Get payload slice for this packet
             start = seq * self.payload_size
@@ -38,6 +40,7 @@ class PacketManager:
             
             # Combine header and payload
             packet = header + payload
+            print(f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}")
             packets.append(packet)
             
         return packets
