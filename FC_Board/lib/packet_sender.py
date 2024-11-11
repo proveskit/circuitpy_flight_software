@@ -68,3 +68,90 @@ class PacketSender:
         
         print(f"Successfully sent {total_packets} packets!")
         return True
+    
+    def handle_retransmit_request(self, packets, request_packet):
+        """Handle retransmit request by sending requested packets"""
+        import time
+        
+        try:
+            missing_packets = self.pm.parse_retransmit_request(request_packet)
+            print(f"\nRetransmit request received for {len(missing_packets)} packets")
+            time.sleep(.2) # Small delay before retransmission
+
+            for seq in missing_packets:
+                if seq < len(packets):
+                    print(f"Retransmitting packet {seq}")
+                    self.radio.send(packets[seq])
+                    time.sleep(0.2)  # Small delay between retransmitted packets
+                    self.radio.send(packets[seq])
+                    time.sleep(0.2)  # Small delay between retransmitted packets
+                    
+            return True
+            
+        except Exception as e:
+            print(f"Error handling retransmit request: {e}")
+            return False
+    
+    def fast_send_data(self, data, send_delay=0.5, retransmit_wait=15.0):
+        """Send data with improved retransmission handling"""
+        import time
+        
+        packets = self.pm.pack_data(data)
+        total_packets = len(packets)
+        print(f"Sending {total_packets} packets...")
+        
+        # Send first packet with retry until ACKed
+        for attempt in range(self.max_retries):
+            print(f"Sending first packet (attempt {attempt + 1}/{self.max_retries})")
+            self.radio.send(packets[0])
+            
+            if self.wait_for_ack(0):
+                break
+            else:
+                if attempt < self.max_retries - 1:
+                    time.sleep(1.0)
+                else:
+                    print("Failed to get ACK for first packet")
+                    return False
+        
+        # Send remaining packets without waiting for ACKs
+        print("Sending remaining packets...")
+        for i in range(1, total_packets):
+            if i % 10 == 0:
+                print(f"Sending packet {i}/{total_packets}")
+            self.radio.send(packets[i])
+            time.sleep(send_delay)
+        
+        print("\nWaiting for retransmit requests...")
+        retransmit_end_time = time.monotonic() + retransmit_wait
+        
+        while time.monotonic() < retransmit_end_time:
+            packet = self.radio.receive()
+            if packet:
+                print(f"Received potential retransmit request: {[hex(b) for b in packet]}")
+                
+                if self.pm.is_retransmit_request(packet):
+                    print("Valid retransmit request received!")
+                    missing_packets = self.pm.parse_retransmit_request(packet)
+                    print(f"Retransmitting packets: {missing_packets}")
+                    
+                    # Add delay before retransmission to let receiver get ready
+                    time.sleep(1)
+                    
+                    for seq in missing_packets:
+                        if seq < len(packets):
+                            print(f"Retransmitting packet {seq}")
+                            self.radio.send(packets[seq])
+                            time.sleep(0.5)  # Longer delay between retransmitted packets
+                            print(f"Retransmitting packet {seq}")
+                            self.radio.send(packets[seq])
+                            time.sleep(0.2)  # Longer delay between retransmitted packets
+                            
+                    # Reset timeout and add extra delay after retransmission
+                    time.sleep(1.0)
+                    retransmit_end_time = time.monotonic() + retransmit_wait
+            
+            time.sleep(0.1)
+        
+        print("Finished sending all packets")
+        return True

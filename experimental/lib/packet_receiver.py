@@ -79,7 +79,7 @@ class PacketReceiver:
         
         for i in range(num_acks):
             print(f"Sending ACK {i+1}/{num_acks} for packet {seq_num}")
-            self.radio.send(ack)
+            self.radio.send(ack, keep_listening=True)
             if i < num_acks - 1:  # Don't delay after last ACK
                 time.sleep(ack_delay)
         
@@ -166,6 +166,179 @@ class PacketReceiver:
                 if self.total_packets is not None:
                     print(f"Have {len(self.received_packets)}/{self.total_packets} packets")
                     print(f"Missing packets: {self.get_missing_packets()}")
+
+    def send_retransmit_request(self, missing_packets):
+        """Send request for missing packets with adjusted timing"""
+        import time
+        print(f"\nRequesting retransmission of {len(missing_packets)} packets")
+        
+        request = self.pm.create_retransmit_request(missing_packets)
+        retransmit_timeout = max(10, len(missing_packets) * 1.0)  # Longer timeout
+        
+        # Send request multiple times with longer gaps
+        for i in range(2):  # Reduced to 2 attempts to avoid flooding
+            print(f"Sending retransmit request attempt {i+1}/2")
+            self.radio.send(request, keep_listening=True)
+            time.sleep(0.2)
+        
+        # Wait for retransmitted packets
+        start_time = time.monotonic()
+        original_missing = set(missing_packets)
+        last_receive_time = start_time
+        
+        print("Waiting for retransmitted packets...")
+        while time.monotonic() - start_time < retransmit_timeout:
+            packet = self.radio.receive(keep_listening=True)
+            print(packet)
+            time.sleep(0.5)
+            
+            if packet:
+                last_receive_time = time.monotonic()
+                try:
+                    seq_num = int.from_bytes(packet[:2], 'big')
+                    if seq_num in original_missing:
+                        self.received_packets[seq_num] = packet
+                        original_missing.remove(seq_num)
+                        print(f"Successfully received retransmitted packet {seq_num}")
+                        print(f"Still missing: {list(original_missing)}")
+                        
+                        if not original_missing:
+                            print("All requested packets received!")
+                            return True
+                except Exception as e:
+                    print(f"Error processing retransmitted packet: {e}")
+        
+                
+        
+        remaining = list(original_missing)
+        if remaining:
+            print(f"Retransmission incomplete. Still missing: {remaining}")
+        return False
+        
+    def fast_receive_until_complete(self, timeout=30.0, idle_timeout=5, max_retransmit_attempts=3):
+        """
+        Fast receive with automatic retransmission after idle period
+        
+        Args:
+            timeout: Total time to wait for complete message
+            idle_timeout: Time to wait with no new packets before requesting retransmit
+            max_retransmit_attempts: Maximum number of retransmit attempts
+        """
+        import time
+        print("\nStarting fast receiver...")
+        self.reset()
+        self.start_time = time.monotonic()
+        last_packet_time = time.monotonic()
+        
+        stats = {
+            'packets_received': 0,
+            'duplicate_packets': 0,
+            'invalid_packets': 0,
+            'time_elapsed': 0,
+            'retransmit_rounds': 0
+        }
+        
+        # First, wait for and ACK the initial packet
+        while True:
+            if time.monotonic() - self.start_time > timeout:
+                return False, None, stats
+                
+            packet = self.radio.receive()
+            print(packet)
+            
+            if packet:
+                try:
+                    last_packet_time = time.monotonic()
+                    seq_num = int.from_bytes(packet[:2], 'big')
+                    self.total_packets = int.from_bytes(packet[2:4], 'big')
+                    
+                    if seq_num == 0:  # First packet
+                        print(f"Received first packet. Expecting {self.total_packets} total packets")
+                        self.received_packets[0] = packet
+                        stats['packets_received'] += 1
+                        self.send_ack(0)  # ACK only the first packet
+                        break
+                except Exception as e:
+                    print(f"Error processing first packet: {e}")
+            
+            time.sleep(self.receive_delay)
+        
+        # Now receive remaining packets without ACKs
+        print("Receiving remaining packets...")
+        receive_end_time = time.monotonic() + timeout
+        
+        while time.monotonic() < receive_end_time:
+            current_time = time.monotonic()
+            
+            packet = self.radio.receive()
+            print(packet)
+            
+            if packet:
+                try:
+                    seq_num = int.from_bytes(packet[:2], 'big')
+                    packet_total = int.from_bytes(packet[2:4], 'big')
+                    
+                    if seq_num not in self.received_packets:
+                        self.received_packets[seq_num] = packet
+                        stats['packets_received'] += 1
+                        print(f"Received packet {seq_num}/{self.total_packets}")
+                        last_packet_time = current_time  # Update last packet time
+                    else:
+                        stats['duplicate_packets'] += 1
+                        
+                    # Check if we have all packets
+                    if len(self.received_packets) == self.total_packets:
+                        if all(i in self.received_packets for i in range(self.total_packets)):
+                            print("All packets received!")
+                            stats['time_elapsed'] = time.monotonic() - self.start_time
+                            return True, self.get_received_data(), stats
+                            
+                except Exception as e:
+                    stats['invalid_packets'] += 1
+                    print(f"Error processing packet: {e}")
+            
+            time.sleep(self.receive_delay)
+            
+            # Print status every 10 packets
+            if stats['packets_received'] % 10 == 0:
+                missing = self.get_missing_packets()
+                print(f"Have {len(self.received_packets)}/{self.total_packets} packets")
+                print(f"Missing: {missing}")
+                    # Check if we've been idle too long
+            if current_time - last_packet_time > idle_timeout:
+                missing = self.get_missing_packets()
+                if missing:
+                    print(f"\nNo packets received for {idle_timeout} seconds")
+                    print(f"Missing {len(missing)} packets: {missing}")
+                    
+                    if stats['retransmit_rounds'] < max_retransmit_attempts:
+                        stats['retransmit_rounds'] += 1
+                        print(f"Requesting retransmission (attempt {stats['retransmit_rounds']}/{max_retransmit_attempts})")
+                        
+                        if self.send_retransmit_request(missing):
+                            print("Retransmission successful!")
+                            if not self.get_missing_packets():
+                                return True, self.get_received_data(), stats
+                        else:
+                            print("Retransmission failed")
+                        
+                        # Reset idle timer after retransmit attempt
+                        last_packet_time = current_time
+                    else:
+                        print(f"Max retransmit attempts ({max_retransmit_attempts}) reached")
+                        break
+        
+        # Final retransmit attempt if needed
+        missing = self.get_missing_packets()
+        if missing:
+            print(f"\nTransfer incomplete. Missing {len(missing)} packets")
+            print(f"Missing packet numbers: {missing}")
+            stats['time_elapsed'] = time.monotonic() - self.start_time
+            return False, None, stats
+        else:
+            print("\nTransfer complete!")
+            stats['time_elapsed'] = time.monotonic() - self.start_time
+            return True, self.get_received_data(), stats
 
     def get_received_data(self):
         """

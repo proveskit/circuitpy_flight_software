@@ -7,6 +7,32 @@ class PacketManager:
         self.max_packet_size = max_packet_size
         self.header_size = 4  # 2 bytes for sequence number, 2 for total packets
         self.payload_size = max_packet_size - self.header_size
+
+    def create_retransmit_request(self, missing_packets):
+        """
+        Create a packet requesting retransmission
+        Format:
+        - 2 bytes: 0xFFFF (special sequence number indicating retransmit request)
+        - 2 bytes: Number of missing packets
+        - Remaining bytes: Missing packet sequence numbers
+        """
+        header = b'\xFF\xFF' + len(missing_packets).to_bytes(2, 'big')
+        payload = b''.join(seq.to_bytes(2, 'big') for seq in missing_packets)
+        return header + payload
+        
+    def is_retransmit_request(self, packet):
+        """Check if packet is a retransmit request"""
+        return len(packet) >= 4 and packet[:2] == b'\xFF\xFF'
+        
+    def parse_retransmit_request(self, packet):
+        """Extract missing packet numbers from retransmit request"""
+        num_missing = int.from_bytes(packet[2:4], 'big')
+        missing = []
+        for i in range(num_missing):
+            start_idx = 4 + (i * 2)
+            seq = int.from_bytes(packet[start_idx:start_idx+2], 'big')
+            missing.append(seq)
+        return missing
         
     def pack_data(self, data):
         """
