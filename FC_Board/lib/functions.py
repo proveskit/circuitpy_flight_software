@@ -12,6 +12,7 @@ import traceback
 import random
 from debugcolor import co
 from battery_helper import BatteryHelper
+from packet_manager import PacketManager
 
 
 class functions:
@@ -25,6 +26,9 @@ class functions:
         self.battery = BatteryHelper(cubesat)
         self.debug = cubesat.debug
         self.debug_print("Initializing Functionalities")
+
+        self.pm = PacketManager(max_packet_size=128)
+
         self.Errorcount = 0
         self.facestring = []
         self.jokes = [
@@ -252,6 +256,9 @@ class functions:
     def all_face_data(self):
 
         self.cubesat.all_faces_on()
+        self.debug_print(gc.mem_free())
+        gc.collect()
+        
         try:
             import Big_Data
 
@@ -309,22 +316,16 @@ class functions:
         self.debug_print("Logging Face Data")
         try:
             self.cubesat.log("/faces.txt", data)
-        except:
-            try:
-                self.cubesat.new_file("/faces.txt")
-            except Exception as e:
-                self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
+        except Exception as e:
+            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     def log_error_data(self, data):
 
         self.debug_print("Logging Error Data")
         try:
             self.cubesat.log("/error.txt", data)
-        except:
-            try:
-                self.cubesat.new_file("/error.txt")
-            except Exception as e:
-                self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
+        except Exception as e:
+            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     """
     Misc Functions

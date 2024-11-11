@@ -1,0 +1,85 @@
+# Written with Claude 3.5
+# Nov 10, 2024
+
+class PacketManager:
+    def __init__(self, max_packet_size=128):
+        """Initialize the packet manager with maximum packet size (default 128 bytes for typical LoRa)"""
+        self.max_packet_size = max_packet_size
+        self.header_size = 4  # 2 bytes for sequence number, 2 for total packets
+        self.payload_size = max_packet_size - self.header_size
+        
+    def pack_data(self, data):
+        """
+        Takes input data and returns a list of packets ready for transmission
+        Each packet includes:
+        - 2 bytes: sequence number
+        - 2 bytes: total number of packets
+        - remaining bytes: payload
+        """
+        # Convert data to bytes if it isn't already
+        if not isinstance(data, bytes):
+            if isinstance(data, str):
+                data = data.encode('utf-8')
+            else:
+                data = str(data).encode('utf-8')
+                
+        # Calculate number of packets needed
+        total_packets = (len(data) + self.payload_size - 1) // self.payload_size
+        
+        packets = []
+        for seq in range(total_packets):
+            # Create header
+            header = seq.to_bytes(2, 'big') + total_packets.to_bytes(2, 'big')
+            
+            # Get payload slice for this packet
+            start = seq * self.payload_size
+            end = start + self.payload_size
+            payload = data[start:end]
+            
+            # Combine header and payload
+            packet = header + payload
+            packets.append(packet)
+            
+        return packets
+    
+    def unpack_data(self, packets):
+        """
+        Takes a list of packets and reassembles the original data
+        Returns None if packets are missing or corrupted
+        """
+        if not packets:
+            return None
+            
+        # Sort packets by sequence number
+        try:
+            packets = sorted(packets, key=lambda p: int.from_bytes(p[:2], 'big'))
+        except:
+            return None
+            
+        # Verify all packets are present
+        total_packets = int.from_bytes(packets[0][2:4], 'big')
+        if len(packets) != total_packets:
+            return None
+            
+        # Verify sequence numbers are consecutive
+        for i, packet in enumerate(packets):
+            if int.from_bytes(packet[:2], 'big') != i:
+                return None
+                
+        # Combine payloads
+        data = b''.join(packet[self.header_size:] for packet in packets)
+        return data
+    
+    def create_ack_packet(self, seq_num):
+        """Creates an acknowledgment packet for a given sequence number"""
+        return b'ACK' + seq_num.to_bytes(2, 'big')
+    
+    def is_ack_packet(self, packet):
+        """Checks if a packet is an acknowledgment packet"""
+        return packet.startswith(b'ACK')
+    
+    def get_ack_seq_num(self, ack_packet):
+        """Extracts sequence number from an acknowledgment packet"""
+        if self.is_ack_packet(ack_packet):
+            return int.from_bytes(ack_packet[3:5], 'big')
+        return None
