@@ -19,6 +19,7 @@ def debug_print(statement):
     if c.debug:
         print(co("[MAIN]" + str(statement), "blue", "bold"))
 
+
 def inital_boot():
     c.watchdog_pet()
     f.beacon()
@@ -28,6 +29,7 @@ def inital_boot():
     f.state_of_health()
     f.listen()
     c.watchdog_pet()
+
 
 f = functions.functions(c)
 try:
@@ -81,7 +83,6 @@ def normal_power_operations():
         print(c.charge_current)
         print(c.is_charging)
         print(c.battery_percentage)
-        
 
         if c.power_mode == "normal" or c.power_mode == "maximum":
             pwr = True
@@ -122,7 +123,7 @@ def normal_power_operations():
             gc.collect()
 
             await asyncio.sleep(60)
-    
+
     async def g_batt_data():
 
         while check_power():

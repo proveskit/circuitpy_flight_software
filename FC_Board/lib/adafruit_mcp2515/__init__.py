@@ -383,7 +383,7 @@ class MCP2515:  # pylint:disable=too-many-instance-attributes
             new_mode = _MODE_NORMAL
 
         self._set_mode(new_mode)
-    
+
     def sleep(self):
         """Put the MCP2515 to sleep"""
         self._set_mode(_MODE_SLEEP)

@@ -74,7 +74,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement):
-        self.c_error_count = (self.c_error_count + 1) & 0xFF #Limited to 255 errors
+        self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -85,7 +85,7 @@ class Satellite:
         self.debug = True  # Define verbose output here. True or False
         self.legacy = False  # Define if the board is used with legacy or not
         self.heating = False  # Currently not used
-        self.orpheus = True # Define if the board is used with Orpheus or not
+        self.orpheus = True  # Define if the board is used with Orpheus or not
         self.is_licensed = False
 
         """
@@ -229,7 +229,9 @@ class Satellite:
                 self.hardware["UART"] = True
             else:
                 # Orpheus uses the I2C0 Connection for UART
-                self.uart = busio.UART(board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate)
+                self.uart = busio.UART(
+                    board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
+                )
                 self.hardware["UART"] = True
 
         except Exception as e:
@@ -425,11 +427,11 @@ class Satellite:
                 self.cam.flip_x = False
                 self.cam.test_pattern = False
 
-            self.cam.effect=0
-            self.cam.exposure_value=-2
-            self.cam.white_balance=2
-            self.cam.night_mode=False
-            self.cam.quality=20
+                self.cam.effect = 0
+                self.cam.exposure_value = -2
+                self.cam.white_balance = 2
+                self.cam.night_mode = False
+                self.cam.quality = 20
 
                 self.hardware["CAM"] = True
 

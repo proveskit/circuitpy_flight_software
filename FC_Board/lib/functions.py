@@ -50,7 +50,7 @@ class functions:
 
     def current_check(self):
         return self.cubesat.current_draw
-    
+
     def safe_sleep(self, duration=15):
         self.debug_print("Setting Safe Sleep Mode")
 
@@ -67,7 +67,6 @@ class functions:
             iterations += 1
 
             self.cubesat.watchdog_pet()
-
 
     """
     Radio Functions
@@ -268,9 +267,10 @@ class functions:
         # self.cubesat.all_faces_on()
         self.debug_print(gc.mem_free())
         gc.collect()
-        
+
         try:
             import Big_Data
+
             self.debug_print(gc.mem_free())
 
             gc.collect()
@@ -286,12 +286,12 @@ class functions:
             self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
 
         return self.facestring
-    
+
     def get_battery_data(self):
-        
+
         try:
             return self.battery.get_power_metrics()
-        
+
         except Exception as e:
             self.debug_print(
                 "Error retrieving battery data" + "".join(traceback.format_exception(e))

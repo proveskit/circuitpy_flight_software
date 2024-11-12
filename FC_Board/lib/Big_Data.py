@@ -10,12 +10,16 @@ from debugcolor import co
 import time
 import traceback
 import gc
+
 print(gc.mem_free())
 import adafruit_mcp9808  # temperature sensor
+
 print(gc.mem_free())
 import adafruit_veml7700  # light sensor
+
 print(gc.mem_free())
 import adafruit_drv2605  # Coil motor driver
+
 print(gc.mem_free())
 
 
