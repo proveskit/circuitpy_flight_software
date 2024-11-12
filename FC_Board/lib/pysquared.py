@@ -19,6 +19,7 @@ from micropython import const
 from debugcolor import co
 
 # Hardware Specific Libs
+from adafruit_rfm import rfm9x  # Radio
 from adafruit_rfm import rfm9xfsk  # Radio
 import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
@@ -224,9 +225,13 @@ class Satellite:
                 _rf_rst1,
                 self.radio_cfg["freq"],
                 # code_rate=8, code rate does not exist for RFM9xFSK
-                baudrate=1320000,
             )
-            self.radio1.modulation_type = 1
+            
+            node = 1
+            destination = 2
+            self.radio1.fsk_node_address = 1
+            self.radio1.fsk_broadcast_address = 0xFF
+            self.radio1.modulation_type = 0
             # Default LoRa Modulation Settings
             # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
             # TODO: Reimplement method

@@ -43,7 +43,7 @@ class Field:
                 self.debug_print("I am beaconing: " + str(msg))
                 # TODO: Reimplement method
                 #self.cubesat.radio1.send(msg)
-                print(" Success: " + str(self.cubesat.radio1.send(msg)))
+                print(" Success: " + str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))))
             else:
                 self.debug_print(
                     "Please toggle licensed variable in code once you obtain an amateur radio license"
