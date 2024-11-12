@@ -159,37 +159,37 @@ class Satellite:
             self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA, timeout=5)
         except Exception as e:
             self.debug_print(
-            "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
             )
 
         try:
             self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
         except Exception as e:
             self.debug_print(
-            "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
             )
 
         try:
             self.i2c1 = busio.I2C(
-            board.I2C1_SCL, board.I2C1_SDA, timeout=5, frequency=100000
+                board.I2C1_SCL, board.I2C1_SDA, timeout=5, frequency=100000
             )
         except Exception as e:
             self.debug_print(
-            "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
             )
 
         try:
             self.spi1 = busio.SPI(board.SPI1_SCK, board.SPI1_MOSI, board.SPI1_MISO)
         except Exception as e:
             self.debug_print(
-            "ERROR INITIALIZING SPI1: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING SPI1: " + "".join(traceback.format_exception(e))
             )
 
         try:
             self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
         except Exception as e:
             self.debug_print(
-            "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
             )
 
         # Initialize LED Driver
@@ -611,7 +611,7 @@ class Satellite:
     def uptime(self):
         self.CURRENTTIME = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
-    
+
     @property
     def fc_wdt(self):
         return self._5V_enable.value
@@ -622,7 +622,8 @@ class Satellite:
             self._5V_enable.value = value
         except Exception as e:
             self.debug_print(
-                "Error Setting FC Watchdog Status: " + "".join(traceback.format_exception(e))
+                "Error Setting FC Watchdog Status: "
+                + "".join(traceback.format_exception(e))
             )
 
     @property
@@ -706,9 +707,10 @@ class Satellite:
                 self.debug_print(
                     "LiDAR error: " + "".join(traceback.format_exception(e))
                 )
+                return 0
         else:
             self.debug_print("[WARNING] LiDAR not initialized")
-        return 0
+            return 0
 
     def burn(self, burn_num, dutycycle=0, freq=1000, duration=1):
         """
