@@ -32,7 +32,7 @@ class functions:
         self.ps = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
         self.Errorcount = 0
-        self.facestring = []
+        self.facestring = [None, None, None, None, None]
         self.jokes = [
             "Hey Its pretty cold up here, did someone forget to pay the electric bill?"
         ]
@@ -148,7 +148,6 @@ class functions:
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
-                f"VS:{self.cubesat.system_voltage}",
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
@@ -266,14 +265,17 @@ class functions:
 
     def all_face_data(self):
 
-        self.cubesat.all_faces_on()
+        # self.cubesat.all_faces_on()
         self.debug_print(gc.mem_free())
         gc.collect()
         
         try:
             import Big_Data
+            self.debug_print(gc.mem_free())
 
+            gc.collect()
             a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            self.debug_print(gc.mem_free())
 
             self.facestring = a.Face_Test_All()
 
@@ -288,10 +290,7 @@ class functions:
     def get_battery_data(self):
         
         try:
-            data = []
-            metrics = self.battery.get_power_metrics()
-            data.append(metrics)
-            return data
+            return self.battery.get_power_metrics()
         
         except Exception as e:
             self.debug_print(
@@ -303,9 +302,9 @@ class functions:
 
         try:
             data = []
-            data.append(self.cubesat.IMU.Acceleration)
-            data.append(self.cubesat.IMU.Gyroscope)
-            data.append(self.cubesat.IMU.Magnetometer)
+            data.append(self.cubesat.accel)
+            data.append(self.cubesat.gyro)
+            data.append(self.cubesat.mag)
         except Exception as e:
             self.debug_print(
                 "Error retrieving IMU data" + "".join(traceback.format_exception(e))

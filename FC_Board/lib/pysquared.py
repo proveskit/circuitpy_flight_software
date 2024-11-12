@@ -113,6 +113,13 @@ class Satellite:
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
 
+        self.battery_voltage = None
+        self.draw_current = None
+        self.charge_voltage = None
+        self.charge_current = None
+        self.is_charging = None
+        self.battery_percentage = None
+
         """
         Define the boot time and current time
         """
@@ -322,7 +329,6 @@ class Satellite:
 
             # Still need to test these configs
             self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-            self.rtc.configure_evi(enable=True, timestamp_mode="last")
             self.hardware["RTC"] = True
 
         except Exception as e:
@@ -411,8 +417,6 @@ class Satellite:
             self.cam.white_balance=2
             self.cam.night_mode=False
             self.cam.quality=20
-            
-            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality 
 
             self.hardware["CAM"] = True
         
@@ -540,7 +544,7 @@ class Satellite:
         if self.hardware["SDcard"]:
             try:
                 umount("/sd")
-                self.spi.deinit()
+                self.spi1.deinit()
                 time.sleep(3)
             except Exception as e:
                 self.error_print(
@@ -568,7 +572,7 @@ class Satellite:
             self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
 
     @property
-    def imu_temp(self):
+    def internal_temperature(self):
         try:
             return self.imu.temperature
         except Exception as e:
@@ -625,6 +629,7 @@ class Satellite:
     def take_image(self):
         try:
             gc.collect()
+            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
             self.buffer = bytearray(self.buffer_size)
             self.cam.capture(self.buffer)
 

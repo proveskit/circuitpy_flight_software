@@ -19,28 +19,22 @@ def debug_print(statement):
     if c.debug:
         print(co("[MAIN]" + str(statement), "blue", "bold"))
 
+def inital_boot():
+    c.watchdog_pet()
+    f.beacon()
+    c.watchdog_pet()
+    f.listen()
+    c.watchdog_pet()
+    f.state_of_health()
+    f.listen()
+    c.watchdog_pet()
 
 f = functions.functions(c)
 try:
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 
-    c.watchdog_pet()
-    f.beacon()
-    f.listen()
-
-    c.watchdog_pet()
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
-
-    c.watchdog_pet()
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
-    c.watchdog_pet()
+    inital_boot()
 
 except Exception as e:
     debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
@@ -74,14 +68,20 @@ def minimum_power_operations():
 def normal_power_operations():
 
     debug_print("Entering Norm Operations")
-    FaceData = []
 
     # Defining L1 Tasks
     def check_power():
         gc.collect()
 
-        print("Implement a New Function Here!")
-        c.check_reboot()
+        print("Checking Power State")
+
+        print(c.battery_voltage)
+        print(c.draw_current)
+        print(c.charge_voltage)
+        print(c.charge_current)
+        print(c.is_charging)
+        print(c.battery_percentage)
+        
 
         if c.power_mode == "normal" or c.power_mode == "maximum":
             pwr = True
@@ -113,7 +113,8 @@ def normal_power_operations():
 
         while check_power():
             try:
-                print("Pass Consider Adding a New check_power Function Here")
+                debug_print("Consider Adding a Logging Function Here!")
+                f.all_face_data()
 
             except Exception as e:
                 debug_print("Outta time! " + "".join(traceback.format_exception(e)))
@@ -121,6 +122,35 @@ def normal_power_operations():
             gc.collect()
 
             await asyncio.sleep(60)
+    
+    async def g_batt_data():
+
+        while check_power():
+            try:
+                debug_print("Looking to get battery data...")
+                batt_data = f.get_battery_data()
+
+                debug_print("Battery Data: " + str(batt_data))
+
+                debug_print(batt_data[0])
+                debug_print(batt_data[1])
+                debug_print(batt_data[2])
+
+                c.battery_voltage = batt_data[0]
+                c.draw_current = batt_data[1]
+                c.charge_voltage = batt_data[2]
+                c.charge_current = batt_data[3]
+                c.is_charging = batt_data[4]
+                c.battery_percentage = batt_data[5]
+
+                c.check_reboot()
+
+            except Exception as e:
+                debug_print("Outta time! " + "".join(traceback.format_exception(e)))
+
+            gc.collect()
+
+            await asyncio.sleep(30)
 
     async def s_face_data():
 
@@ -208,11 +238,12 @@ def normal_power_operations():
         t2 = asyncio.create_task(s_face_data())
         t3 = asyncio.create_task(s_imu_data())
         t4 = asyncio.create_task(g_face_data())
-        t5 = asyncio.create_task(detumble())
-        t6 = asyncio.create_task(joke())
-        t7 = asyncio.create_task(check_watchdog())
+        t5 = asyncio.create_task(g_batt_data())
+        t6 = asyncio.create_task(detumble())
+        t7 = asyncio.create_task(joke())
+        t8 = asyncio.create_task(check_watchdog())
 
-        await asyncio.gather(t1, t2, t3, t4, t5, t6, t7)
+        await asyncio.gather(t1, t2, t3, t4, t5, t6, t7, t8)
 
     asyncio.run(main_loop())
 
@@ -244,7 +275,7 @@ try:
             f.listen()
 
 except Exception as e:
-    debug_print("Error in Main Loop: " + "".join(traceback.format_exception(e)))
+    debug_print("Critical in Main Loop: " + "".join(traceback.format_exception(e)))
     time.sleep(10)
     microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
     microcontroller.reset()

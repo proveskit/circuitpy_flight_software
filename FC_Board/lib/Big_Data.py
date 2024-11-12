@@ -9,9 +9,14 @@ v1.1
 from debugcolor import co
 import time
 import traceback
+import gc
+print(gc.mem_free())
 import adafruit_mcp9808  # temperature sensor
+print(gc.mem_free())
 import adafruit_veml7700  # light sensor
+print(gc.mem_free())
 import adafruit_drv2605  # Coil motor driver
+print(gc.mem_free())
 
 
 # Is the Face cass even necessary?
@@ -165,8 +170,8 @@ class Face:
             self.debug_print("[WARNING]Motor driver not initialized")
 
     # Function to test all sensors that should be on each face.
-    # Function takes number of tests "num" and polling rate in hz "rate"
-    def test_all(self, num, rate):
+    # Function takes number of tests "num"
+    def test_all(self, num):
         self.datalist = []
         self.debug_print("Expected Sensors: " + str(self.senlist_what))
         self.debug_print("Initialized Sensors: " + str(self.active_sensors))
@@ -338,11 +343,11 @@ class AllFaces:
         try:
             self.BigFaceList = []
             self.debug_print("Creating Face List")
-            self.BigFaceList.append(self.Face0.test_all(1, 0.1))
-            self.BigFaceList.append(self.Face1.test_all(1, 0.1))
-            self.BigFaceList.append(self.Face2.test_all(1, 0.1))
-            self.BigFaceList.append(self.Face3.test_all(1, 0.1))
-            self.BigFaceList.append(self.Face4.test_all(1, 0.1))
+            self.BigFaceList.append(self.Face0.test_all(1))
+            self.BigFaceList.append(self.Face1.test_all(1))
+            self.BigFaceList.append(self.Face2.test_all(1))
+            self.BigFaceList.append(self.Face3.test_all(1))
+            self.BigFaceList.append(self.Face4.test_all(1))
 
             for face in self.BigFaceList:
                 self.debug_print(str(face))
