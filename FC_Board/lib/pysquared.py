@@ -17,6 +17,7 @@ from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
 from debugcolor import co
+from collections import OrderedDict
 
 # Hardware Specific Libs
 import pysquared_rfm9x  # Radio
@@ -34,7 +35,7 @@ from adafruit_mcp2515 import MCP2515 as CAN
 # NVM register numbers
 _BOOTCNT = const(0)
 _VBUSRST = const(6)
-_STATECNT = const(7)
+_ERRORCNT = const(7)
 _TOUTS = const(9)
 _ICHRG = const(11)
 _DIST = const(13)
@@ -51,7 +52,7 @@ class Satellite:
     # General NVM counters
     c_boot = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
     c_vbusrst = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
+    c_error_count = multiBitFlag(register=_ERRORCNT, lowest_bit=0, num_bits=8)
     c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
     c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
 
@@ -73,6 +74,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement):
+        self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -83,6 +85,7 @@ class Satellite:
         self.debug = True  # Define verbose output here. True or False
         self.legacy = False  # Define if the board is used with legacy or not
         self.heating = False  # Currently not used
+        self.orpheus = True  # Define if the board is used with Orpheus or not
         self.is_licensed = False
 
         """
@@ -105,11 +108,18 @@ class Satellite:
         self.data_cache = {}
         self.filenumbers = {}
         self.image_packets = 0
-        self.urate = 115200
+        self.urate = 9600
         self.buffer = None
         self.buffer_size = 1
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
+
+        self.battery_voltage = None
+        self.draw_current = None
+        self.charge_voltage = None
+        self.charge_current = None
+        self.is_charging = None
+        self.battery_percentage = None
 
         """
         Define the boot time and current time
@@ -130,27 +140,29 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
-        self.hardware = {
-            "I2C0": False,
-            "SPI0": False,
-            "I2C1": False,
-            "UART": False,
-            "IMU": False,
-            "Mag": False,
-            "Radio1": False,
-            "SDcard": False,
-            "NEOPIX": False,
-            "WDT": False,
-            "TCA": False,
-            "CAN": False,
-            "RTC": False,
-            "Face0": False,
-            "Face1": False,
-            "Face2": False,
-            "Face3": False,
-            "Face4": False,
-            "CAM": False,
-        }
+        self.hardware = OrderedDict(
+            [
+                ("I2C0", False),
+                ("SPI0", False),
+                ("I2C1", False),
+                ("UART", False),
+                ("Radio1", False),
+                ("IMU", False),
+                ("Mag", False),
+                ("SDcard", False),
+                ("NEOPIX", False),
+                ("WDT", False),
+                ("TCA", False),
+                ("CAN", False),
+                ("Face0", False),
+                ("Face1", False),
+                ("Face2", False),
+                ("Face3", False),
+                ("Face4", False),
+                ("CAM", False),
+                ("RTC", False),
+            ]
+        )
 
         """
         NVM Parameter Resets
@@ -182,8 +194,11 @@ class Satellite:
         Intializing Communication Buses
         """
         try:
-            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-            self.hardware["I2C0"] = True
+            if not self.orpheus:
+                self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+                self.hardware["I2C0"] = True
+            else:
+                self.debug_print("[Orpheus] I2C0 not initialized")
 
         except Exception as e:
             self.error_print(
@@ -209,8 +224,15 @@ class Satellite:
             )
 
         try:
-            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
-            self.hardware["UART"] = True
+            if not self.orpheus:
+                self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+                self.hardware["UART"] = True
+            else:
+                # Orpheus uses the I2C0 Connection for UART
+                self.uart = busio.UART(
+                    board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
+                )
+                self.hardware["UART"] = True
 
         except Exception as e:
             self.error_print(
@@ -315,7 +337,6 @@ class Satellite:
 
             # Still need to test these configs
             self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-            self.rtc.configure_evi(enable=True, timestamp_mode="last")
             self.hardware["RTC"] = True
 
         except Exception as e:
@@ -411,8 +432,6 @@ class Satellite:
                 self.cam.white_balance = 2
                 self.cam.night_mode = False
                 self.cam.quality = 20
-
-                self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
 
                 self.hardware["CAM"] = True
 
@@ -561,15 +580,14 @@ class Satellite:
         if self.hardware["SDcard"]:
             try:
                 umount("/sd")
-                self.spi.deinit()
+                self.spi1.deinit()
                 time.sleep(3)
             except Exception as e:
                 self.error_print(
                     "error unmounting SD card" + "".join(traceback.format_exception(e))
                 )
         try:
-            self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
-            self._resetReg.value = 1
+            self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -590,7 +608,7 @@ class Satellite:
             self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
 
     @property
-    def imu_temp(self):
+    def internal_temperature(self):
         try:
             return self.imu.temperature
         except Exception as e:
@@ -648,6 +666,7 @@ class Satellite:
     def take_image(self):
         try:
             gc.collect()
+            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
             self.buffer = bytearray(self.buffer_size)
             self.cam.capture(self.buffer)
 
@@ -671,7 +690,7 @@ class Satellite:
 
     def watchdog_pet(self):
         self.watchdog_pin.value = True
-        time.sleep(0.1)
+        time.sleep(0.01)
         self.watchdog_pin.value = False
 
     def check_reboot(self):
