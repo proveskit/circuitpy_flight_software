@@ -17,7 +17,7 @@ from debugcolor import co
 
 def debug_print(statement):
     if c.debug:
-        print(co("[MAIN]" + str(statement), "blue", "bold"))
+        print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
 
 def inital_boot():
@@ -75,14 +75,7 @@ def normal_power_operations():
     def check_power():
         gc.collect()
 
-        print("Checking Power State")
-
-        print(c.battery_voltage)
-        print(c.draw_current)
-        print(c.charge_voltage)
-        print(c.charge_current)
-        print(c.is_charging)
-        print(c.battery_percentage)
+        debug_print("Checking Power State")
 
         if c.power_mode == "normal" or c.power_mode == "maximum":
             pwr = True
