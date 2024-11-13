@@ -154,11 +154,7 @@ def client(passcode):
             b"\x00\x00\x00\x00" + passcode.encode() + b"\x12\x06" + b"\x0b\xfdI\xec"
         )
     elif chosen_command == "4":
-<<<<<<< HEAD
-        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"8\x93" + input("Query: ")
-=======
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"8\x93" + input()
->>>>>>> upstream/orpheus_edition
     elif chosen_command == "5":
         packet = (
             b"\x00\x00\x00\x00" + passcode.encode() + b"\x96\xa2" + input("Command: ")
@@ -174,23 +170,6 @@ def client(passcode):
 
     tries = 0
     while True:
-<<<<<<< HEAD
-        sleep(0.1)
-        tries += 1
-        if tries > 5:
-            print("We tried 5 times! And there was no response. Quitting.")
-            return
-        success = cubesat.radio1.send_with_ack(packet)
-        print("Success " + str(success))
-        if success is True:
-            response = cubesat.radio1.receive(keep_listening=True)
-
-            if response is not None:
-                print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
-                return
-            else:
-                debug_print("No response, trying again (" + str(tries) + ")")
-=======
         msg = cubesat.radio1.receive()
 
         if msg is not None:
@@ -204,7 +183,7 @@ def client(passcode):
                 if tries > 5:
                     print("We tried 5 times! And there was no response. Quitting.")
                     break
-                success = cubesat.radio1.send(packet)
+                success = cubesat.radio1.send_with_ack(packet)
                 print("Success " + str(success))
                 if success is True:
                     response = cubesat.radio1.receive(keep_listening=True)
@@ -215,7 +194,6 @@ def client(passcode):
                         break
                     else:
                         debug_print("No response, trying again (" + str(tries) + ")")
->>>>>>> upstream/orpheus_edition
 
 
 def handle_ping():
