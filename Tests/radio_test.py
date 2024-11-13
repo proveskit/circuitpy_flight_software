@@ -64,7 +64,7 @@ def device_under_test(attempts):
     debug_print("Setting up Radio...")
 
     cubesat.radio1.node = 0xFA
-    cubesat.radio1.destination = 0xFF
+    cubesat.radio1.destination = 0xFB
 
     debug_print("Radio Setup Complete")
     debug_print("Sending Ping...")
@@ -92,8 +92,8 @@ def receiver():
     debug_print("Receiver Selected")
     debug_print("Setting up Radio...")
 
-    cubesat.radio1.node = 0xFF
-    cubesat.radio1.destination = 0xFA
+    cubesat.radio1.node = 0xFA
+    cubesat.radio1.destination = 0xFB
 
     debug_print("Radio Setup Complete")
     debug_print("Awaiting Ping...")
@@ -167,14 +167,16 @@ def client(passcode):
         if tries > 5:
             print("We tried 5 times! And there was no response. Quitting.")
             return
-        cubesat.radio1.send(packet)
-        response = cubesat.radio1.receive(keep_listening=True)
+        success = cubesat.radio1.send_with_ack(packet)
+        print("Success " + str(success))
+        if success is True:
+            response = cubesat.radio1.receive(keep_listening=True)
 
-        if response is not None:
-            print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
-            return
-        else:
-            debug_print("No response, trying again (" + str(tries) + ")")
+            if response is not None:
+                print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
+                return
+            else:
+                debug_print("No response, trying again (" + str(tries) + ")")
 
 
 def handle_ping():

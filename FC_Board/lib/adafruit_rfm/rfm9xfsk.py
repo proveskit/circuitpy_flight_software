@@ -267,9 +267,9 @@ class RFM9xFSK(RFMSPI):
         # by default.  Users with advanced knowledge can manually reconfigure
         # for any other mode (consulting the datasheet is absolutely
         # necessary!).
-        self.modulation_shaping = 0b00  # Gaussian filter, BT=1.0
-        self.bitrate = 1200
-        self.frequency_deviation = 600 # 250khz
+        self.modulation_shaping = 0b01  # Gaussian filter, BT=1.0
+        self.bitrate = 250000  # 250kbs
+        self.frequency_deviation = 250000  # 250khz
         self.rx_bw_mantissa = 0b00
         self.rx_bw_exponent = 0b000
         self.afc_bw_mantissa = 0b00

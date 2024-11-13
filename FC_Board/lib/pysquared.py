@@ -227,8 +227,6 @@ class Satellite:
                 # code_rate=8, code rate does not exist for RFM9xFSK
             )
             
-            node = 1
-            destination = 2
             self.radio1.fsk_node_address = 1
             self.radio1.fsk_broadcast_address = 0xFF
             self.radio1.modulation_type = 0
@@ -241,8 +239,8 @@ class Satellite:
             #self.radio1.max_output = True
             #self.radio1.tx_power = self.radio_cfg["pwr"]
             #self.radio1.spreading_factor = self.radio_cfg["sf"]
-            #self.radio1.node = self.radio_cfg["id"]
-            #self.radio1.destination = self.radio_cfg["gs"]
+            self.radio1.node = self.radio_cfg["id"]
+            self.radio1.destination = self.radio_cfg["gs"]
             #self.radio1.enable_crc = True
             #self.radio1.ack_delay = 0.2
             #if self.radio1.spreading_factor > 9:

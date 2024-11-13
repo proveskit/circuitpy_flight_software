@@ -189,9 +189,8 @@ class functions:
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.debug_print("Listening")
-            #self.cubesat.radio1.receive_timeout = 10
-            # TODO: Reimplement method
-            #received = self.cubesat.radio1.receive(keep_listening=True)
+            self.cubesat.radio1.receive_timeout = 10
+            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.debug_print(
                 "An Error has occured while listening: "
@@ -218,12 +217,12 @@ class functions:
         try:
             self.debug_print("Listening")
             # TODO: Reimplement method
-            # self.cubesat.radio1.receive_timeout = 10
-            # received = self.cubesat.radio1.receive(keep_listening=True)
-            #if received is not None and "HAHAHAHAHA!" in received:
-            #    return True
-            #else:
-            #    return False
+            self.cubesat.radio1.receive_timeout = 10
+            received = self.cubesat.radio1.receive(keep_listening=True)
+            if received is not None and "HAHAHAHAHA!" in received:
+                return True
+            else:
+                return False
         except Exception as e:
             self.debug_print(
                 "An Error has occured while listening: "
