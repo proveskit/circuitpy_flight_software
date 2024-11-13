@@ -1,6 +1,7 @@
 """
 Created by Nicole Maggard and Michael Pham 8/19/2022
 Updated for Yearling by Nicole Maggard and Rachel Sarmiento 2/4/2023
+Updated again for Orpheus by Michael Pham 9/30/2024
 This is where the processes get scheduled, and satellite operations are handeled
 """
 
@@ -16,7 +17,18 @@ from debugcolor import co
 
 def debug_print(statement):
     if c.debug:
-        print(co("[MAIN]" + str(statement), "blue", "bold"))
+        print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
+
+
+def inital_boot():
+    c.watchdog_pet()
+    f.beacon()
+    c.watchdog_pet()
+    f.listen()
+    c.watchdog_pet()
+    f.state_of_health()
+    f.listen()
+    c.watchdog_pet()
 
 
 f = functions.functions(c)
@@ -25,18 +37,8 @@ try:
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 
-    f.beacon()
-    f.listen()
+    inital_boot()
 
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
-
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
 except Exception as e:
     debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
 finally:
@@ -44,20 +46,24 @@ finally:
 
 
 def critical_power_operations():
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
+    c.watchdog_pet()
 
     f.Long_Hybernate()
 
 
 def minimum_power_operations():
 
+    c.watchdog_pet()
     f.beacon()
     f.listen()
     f.state_of_health()
     f.listen()
+    c.watchdog_pet()
 
     f.Short_Hybernate()
 
@@ -65,14 +71,12 @@ def minimum_power_operations():
 def normal_power_operations():
 
     debug_print("Entering Norm Operations")
-    FaceData = []
 
     # Defining L1 Tasks
     def check_power():
         gc.collect()
 
-        print("Implement a New Function Here!")
-        c.check_reboot()
+        debug_print("Checking Power State")
 
         if c.power_mode == "normal" or c.power_mode == "maximum":
             pwr = True
@@ -92,8 +96,10 @@ def normal_power_operations():
         while check_power():
             f.beacon()
             f.listen()
+            c.watchdog_pet()
             f.state_of_health()
             f.listen()
+            c.watchdog_pet()
             time.sleep(1)  # Guard Time
 
             await asyncio.sleep(30)
@@ -102,7 +108,8 @@ def normal_power_operations():
 
         while check_power():
             try:
-                print("Pass Consider Adding a New check_power Function Here")
+                debug_print("Consider Adding a Logging Function Here!")
+                f.all_face_data()
 
             except Exception as e:
                 debug_print("Outta time! " + "".join(traceback.format_exception(e)))
@@ -110,6 +117,35 @@ def normal_power_operations():
             gc.collect()
 
             await asyncio.sleep(60)
+
+    async def g_batt_data():
+
+        while check_power():
+            try:
+                debug_print("Looking to get battery data...")
+                batt_data = f.get_battery_data()
+
+                debug_print("Battery Data: " + str(batt_data))
+
+                debug_print(batt_data[0])
+                debug_print(batt_data[1])
+                debug_print(batt_data[2])
+
+                c.battery_voltage = batt_data[0]
+                c.draw_current = batt_data[1]
+                c.charge_voltage = batt_data[2]
+                c.charge_current = batt_data[3]
+                c.is_charging = batt_data[4]
+                c.battery_percentage = batt_data[5]
+
+                c.check_reboot()
+
+            except Exception as e:
+                debug_print("Outta time! " + "".join(traceback.format_exception(e)))
+
+            gc.collect()
+
+            await asyncio.sleep(30)
 
     async def s_face_data():
 
@@ -182,6 +218,14 @@ def normal_power_operations():
             gc.collect()
             await asyncio.sleep(500)
 
+    async def check_watchdog():
+
+        c.hardware["WDT"] = True
+        while check_power():
+            c.watchdog_pet()
+            await asyncio.sleep(5)
+        c.hardware["WDT"] = False
+
     async def main_loop():
         # log_face_data_task = asyncio.create_task(l_face_data())
 
@@ -189,10 +233,12 @@ def normal_power_operations():
         t2 = asyncio.create_task(s_face_data())
         t3 = asyncio.create_task(s_imu_data())
         t4 = asyncio.create_task(g_face_data())
-        t5 = asyncio.create_task(detumble())
-        t6 = asyncio.create_task(joke())
+        t5 = asyncio.create_task(g_batt_data())
+        t6 = asyncio.create_task(detumble())
+        t7 = asyncio.create_task(joke())
+        t8 = asyncio.create_task(check_watchdog())
 
-        await asyncio.gather(t1, t2, t3, t4, t5, t6)
+        await asyncio.gather(t1, t2, t3, t4, t5, t6, t7, t8)
 
     asyncio.run(main_loop())
 
@@ -224,7 +270,7 @@ try:
             f.listen()
 
 except Exception as e:
-    debug_print("Error in Main Loop: " + "".join(traceback.format_exception(e)))
+    debug_print("Critical in Main Loop: " + "".join(traceback.format_exception(e)))
     time.sleep(10)
     microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
     microcontroller.reset()
@@ -232,3 +278,4 @@ finally:
     debug_print("Going Neutral!")
 
     c.RGB = (0, 0, 0)
+    c.hardware["WDT"] = False

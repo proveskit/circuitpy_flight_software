@@ -12,7 +12,7 @@ jokereply = [
 ]
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
-super_secret_code = b""  # put your own code here
+super_secret_code = b"1678" # put your own code here
 print(f"Super secret code is: {super_secret_code}")
 commands = {
     b"\x8eb": "noop",

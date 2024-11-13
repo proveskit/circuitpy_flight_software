@@ -11,6 +11,9 @@ import gc
 import traceback
 import random
 from debugcolor import co
+from battery_helper import BatteryHelper
+from packet_manager import PacketManager
+from packet_sender import PacketSender
 
 
 class functions:
@@ -21,10 +24,15 @@ class functions:
 
     def __init__(self, cubesat):
         self.cubesat = cubesat
+        self.battery = BatteryHelper(cubesat)
         self.debug = cubesat.debug
         self.debug_print("Initializing Functionalities")
+
+        self.pm = PacketManager(max_packet_size=128)
+        self.ps = PacketSender(cubesat.radio1, self.pm, max_retries=3)
+
         self.Errorcount = 0
-        self.facestring = []
+        self.facestring = [None, None, None, None, None]
         self.jokes = [
             "Hey Its pretty cold up here, did someone forget to pay the electric bill?"
         ]
@@ -42,6 +50,23 @@ class functions:
 
     def current_check(self):
         return self.cubesat.current_draw
+
+    def safe_sleep(self, duration=15):
+        self.debug_print("Setting Safe Sleep Mode")
+
+        self.cubesat.can_bus.sleep()
+
+        iterations = 0
+
+        while duration > 15 and iterations < 12:
+
+            time_alarm = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 15)
+
+            alarm.light_sleep_until_alarms(time_alarm)
+            duration -= 15
+            iterations += 1
+
+            self.cubesat.watchdog_pet()
 
     """
     Radio Functions
@@ -68,6 +93,15 @@ class functions:
             self.debug_print("Failed to send packet")
         del self.field
         del Field
+
+    def send_packets(self, data):
+        """Sends packets of data over the radio with delay between packets.
+
+        Args:
+            data (String, Byte Array): Pass the data to be sent.
+            delay (float): Delay in seconds between packets
+        """
+        self.ps.send_data(data)
 
     def beacon(self):
         """Calls the RFM9x to send a beacon."""
@@ -117,13 +151,13 @@ class functions:
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
-                f"VS:{self.cubesat.system_voltage}",
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.cubesat.radio1.temperature}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
+                f"EC:{self.cubesat.c_error_count}",
                 f"AB:{int(self.cubesat.burned)}",
                 f"BO:{int(self.cubesat.f_brownout)}",
                 f"FK:{int(self.cubesat.f_fsk)}",
@@ -239,21 +273,46 @@ class functions:
     def all_face_data(self):
 
         # self.cubesat.all_faces_on()
+        self.debug_print(gc.mem_free())
+        gc.collect()
+
         try:
-            print("New Function Needed!")
+            import Big_Data
+
+            self.debug_print(gc.mem_free())
+
+            gc.collect()
+            a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            self.debug_print(gc.mem_free())
+
+            self.facestring = a.Face_Test_All()
+
+            del a
+            del Big_Data
 
         except Exception as e:
             self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
 
         return self.facestring
 
+    def get_battery_data(self):
+
+        try:
+            return self.battery.get_power_metrics()
+
+        except Exception as e:
+            self.debug_print(
+                "Error retrieving battery data" + "".join(traceback.format_exception(e))
+            )
+            return None
+
     def get_imu_data(self):
 
         try:
             data = []
-            data.append(self.cubesat.IMU.Acceleration)
-            data.append(self.cubesat.IMU.Gyroscope)
-            data.append(self.cubesat.IMU.Magnetometer)
+            data.append(self.cubesat.accel)
+            data.append(self.cubesat.gyro)
+            data.append(self.cubesat.mag)
         except Exception as e:
             self.debug_print(
                 "Error retrieving IMU data" + "".join(traceback.format_exception(e))
@@ -263,6 +322,7 @@ class functions:
 
     def OTA(self):
         # resets file system to whatever new file is received
+        self.debug_print("Implement an OTA Function Here")
         pass
 
     """
@@ -274,22 +334,16 @@ class functions:
         self.debug_print("Logging Face Data")
         try:
             self.cubesat.log("/faces.txt", data)
-        except:
-            try:
-                self.cubesat.new_file("/faces.txt")
-            except Exception as e:
-                self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
+        except Exception as e:
+            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     def log_error_data(self, data):
 
         self.debug_print("Logging Error Data")
         try:
             self.cubesat.log("/error.txt", data)
-        except:
-            try:
-                self.cubesat.new_file("/error.txt")
-            except Exception as e:
-                self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
+        except Exception as e:
+            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     """
     Misc Functions

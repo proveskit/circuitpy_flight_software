@@ -1,7 +1,7 @@
 """
 CircuitPython driver for PySquared satellite board.
-PySquared Hardware Version: mainboard-v01
-CircuitPython Version: 8.0.0 alpha
+PySquared Hardware Version: Flight Controller V4c
+CircuitPython Version: 9.0.0
 Library Repo:
 
 * Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
@@ -9,7 +9,7 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
-import board, microcontroller
+import board, machine, microcontroller
 import busio, time, sys, traceback
 from storage import mount, umount, VfsFat
 import digitalio, sdcardio, pwmio
@@ -17,6 +17,7 @@ from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
 from debugcolor import co
+from collections import OrderedDict
 
 # Hardware Specific Libs
 from adafruit_rfm import rfm9x  # Radio
@@ -25,12 +26,17 @@ import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
+import rv3028
+import adafruit_ov5640
+
+# CAN Bus Import
+from adafruit_mcp2515 import MCP2515 as CAN
 
 
 # NVM register numbers
 _BOOTCNT = const(0)
 _VBUSRST = const(6)
-_STATECNT = const(7)
+_ERRORCNT = const(7)
 _TOUTS = const(9)
 _ICHRG = const(11)
 _DIST = const(13)
@@ -47,7 +53,7 @@ class Satellite:
     # General NVM counters
     c_boot = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
     c_vbusrst = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
+    c_error_count = multiBitFlag(register=_ERRORCNT, lowest_bit=0, num_bits=8)
     c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
     c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
 
@@ -62,10 +68,14 @@ class Satellite:
     f_fsk = bitFlag(register=_FLAG, bit=7)
 
     def debug_print(self, statement):
+        """
+        A method for printing debug statements.
+        """
         if self.debug:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement):
+        self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -76,15 +86,8 @@ class Satellite:
         self.debug = True  # Define verbose output here. True or False
         self.legacy = False  # Define if the board is used with legacy or not
         self.heating = False  # Currently not used
+        self.orpheus = True  # Define if the board is used with Orpheus or not
         self.is_licensed = True
-
-        """
-        Define the boot time and current time
-        """
-        self.BOOTTIME = 1577836800
-        self.debug_print(f"Boot time: {self.BOOTTIME}s")
-        self.CURRENTTIME = self.BOOTTIME
-        self.UPTIME = 0
 
         """
         Define the normal power modes
@@ -98,6 +101,7 @@ class Satellite:
         self.vlowbatt = 6.0
         self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
         self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
+        self.turbo_clock = False
 
         """
         Setting up data buffers
@@ -105,9 +109,27 @@ class Satellite:
         self.data_cache = {}
         self.filenumbers = {}
         self.image_packets = 0
-        self.urate = 115200
+        self.urate = 9600
+        self.buffer = None
+        self.buffer_size = 1
         self.send_buff = memoryview(SEND_BUFF)
         self.micro = microcontroller
+
+        self.battery_voltage = None
+        self.draw_current = None
+        self.charge_voltage = None
+        self.charge_current = None
+        self.is_charging = None
+        self.battery_percentage = None
+
+        """
+        Define the boot time and current time
+        """
+        self.c_boot += 1
+        self.BOOTTIME = 1577836800
+        self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        self.CURRENTTIME = self.BOOTTIME
+        self.UPTIME = 0
 
         self.radio_cfg = {
             "id": 0xFB,
@@ -119,25 +141,29 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
-        self.hardware = {
-            "I2C0": False,
-            "SPI0": False,
-            "I2C1": False,
-            "UART": False,
-            "IMU": False,
-            "Mag": False,
-            "Radio1": False,
-            "SDcard": False,
-            "NEOPIX": False,
-            "WDT": False,
-            "TCA": False,
-            "CAN": False,
-            "Face0": False,
-            "Face1": False,
-            "Face2": False,
-            "Face3": False,
-            "Face4": False,
-        }
+        self.hardware = OrderedDict(
+            [
+                ("I2C0", False),
+                ("SPI0", False),
+                ("I2C1", False),
+                ("UART", False),
+                ("Radio1", False),
+                ("IMU", False),
+                ("Mag", False),
+                ("SDcard", False),
+                ("NEOPIX", False),
+                ("WDT", False),
+                ("TCA", False),
+                ("CAN", False),
+                ("Face0", False),
+                ("Face1", False),
+                ("Face2", False),
+                ("Face3", False),
+                ("Face4", False),
+                ("CAM", False),
+                ("RTC", False),
+            ]
+        )
 
         """
         NVM Parameter Resets
@@ -146,18 +172,34 @@ class Satellite:
             self.c_boot = 0
 
         if self.f_fsk:
-            self.debug_print("Fsk going to false")
+            self.debug_print("Next restart will be in LoRa mode.")
             self.f_fsk = False
 
         if self.f_softboot:
             self.f_softboot = False
 
         """
+        Setting up the watchdog pin.
+        """
+
+        self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
+        self.watchdog_pin.direction = digitalio.Direction.OUTPUT
+        self.watchdog_pin.value = False
+
+        """
+        Set the CPU Clock Speed
+        """
+        machine.set_clock(62500000)
+
+        """
         Intializing Communication Buses
         """
         try:
-            self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-            self.hardware["I2C0"] = True
+            if not self.orpheus:
+                self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+                self.hardware["I2C0"] = True
+            else:
+                self.debug_print("[Orpheus] I2C0 not initialized")
 
         except Exception as e:
             self.error_print(
@@ -183,8 +225,15 @@ class Satellite:
             )
 
         try:
-            self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
-            self.hardware["UART"] = True
+            if not self.orpheus:
+                self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+                self.hardware["UART"] = True
+            else:
+                # Orpheus uses the I2C0 Connection for UART
+                self.uart = busio.UART(
+                    board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
+                )
+                self.hardware["UART"] = True
 
         except Exception as e:
             self.error_print(
@@ -219,32 +268,37 @@ class Satellite:
         self.radio1_DIO4.switch_to_input()
 
         try:
-            self.radio1 = rfm9xfsk.RFM9xFSK(
-                self.spi0,
-                _rf_cs1,
-                _rf_rst1,
-                self.radio_cfg["freq"],
-                # code_rate=8, code rate does not exist for RFM9xFSK
-            )
-            
-            self.radio1.fsk_node_address = 1
-            self.radio1.fsk_broadcast_address = 0xFF
-            self.radio1.modulation_type = 0
-            # Default LoRa Modulation Settings
-            # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-            # TODO: Reimplement method
-            #self.cubesat.radio1.send(msg)
-            #self.radio1.dio0 = self.radio1_DIO0
-            ## self.radio1.dio4=self.radio1_DIO4
-            #self.radio1.max_output = True
-            #self.radio1.tx_power = self.radio_cfg["pwr"]
-            #self.radio1.spreading_factor = self.radio_cfg["sf"]
+            if self.f_fsk:
+                self.radio1 = rfm9xfsk.RFM9xFSK(
+                    self.spi0,
+                    _rf_cs1,
+                    _rf_rst1,
+                    self.radio_cfg["freq"],
+                    # code_rate=8, code rate does not exist for RFM9xFSK
+                )
+                self.radio1.fsk_node_address = 1
+                self.radio1.fsk_broadcast_address = 0xFF
+                self.radio1.modulation_type = 0
+            else:
+                # Default LoRa Modulation Settings
+                # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
+                self.radio1 = rfm9x.RFM9x(
+                    self.spi0,
+                    _rf_cs1,
+                    _rf_rst1,
+                    self.radio_cfg["freq"],
+                    # code_rate=8, code rate does not exist for RFM9xFSK
+                )
+                self.radio1.max_output = True
+                self.radio1.tx_power = self.radio_cfg["pwr"]
+                self.radio1.spreading_factor = self.radio_cfg["sf"]
+
+                self.radio1.enable_crc = True
+                self.radio1.ack_delay = 0.2
+                if self.radio1.spreading_factor > 9:
+                    self.radio1.preamble_length = self.radio1.spreading_factor
             self.radio1.node = self.radio_cfg["id"]
             self.radio1.destination = self.radio_cfg["gs"]
-            #self.radio1.enable_crc = True
-            #self.radio1.ack_delay = 0.2
-            #if self.radio1.spreading_factor > 9:
-            #    self.radio1.preamble_length = self.radio1.spreading_factor
             self.hardware["Radio1"] = True
 
             #if self.legacy:
@@ -271,6 +325,35 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][Magnetometer]")
             traceback.print_exception(None, e, e.__traceback__)
+
+        """
+        CAN Transceiver Initialization
+        """
+        try:
+            self.spi0cs2 = digitalio.DigitalInOut(board.SPI0_CS2)
+            self.spi0cs2.switch_to_output()
+            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
+            self.hardware["CAN"] = True
+
+        except Exception as e:
+            self.debug_print(
+                "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
+            )
+
+        """
+        RTC Initialization
+        """
+        try:
+            self.rtc = rv3028.RV3028(self.i2c1)
+
+            # Still need to test these configs
+            self.rtc.configure_backup_switchover(mode="level", interrupt=True)
+            self.hardware["RTC"] = True
+
+        except Exception as e:
+            self.debug_print(
+                "[ERROR][Real Time Clock]" + "".join(traceback.format_exception(e))
+            )
 
         """
         SD Card Initialization
@@ -310,14 +393,67 @@ class Satellite:
         try:
             self.tca = adafruit_tca9548a.TCA9548A(self.i2c1, address=int(0x77))
             self.hardware["TCA"] = True
+        except OSError:
+            self.error_print(
+                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
+            )
+            self.hardware["TCA"] = False
+            return
         except Exception as e:
             self.error_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
 
         """
         Face Initializations
         """
-
         self.scan_tca_channels()
+
+        """
+        Camera Initialization
+        """
+        if self.hardware["TCA"] is True:
+            try:
+                self.cam = adafruit_ov5640.OV5640(
+                    self.tca[5],
+                    data_pins=(
+                        board.D2,
+                        board.D3,
+                        board.D4,
+                        board.D5,
+                        board.D6,
+                        board.D7,
+                        board.D8,
+                        board.D9,
+                    ),
+                    clock=board.PC,
+                    vsync=board.VS,
+                    href=board.HS,
+                    mclk=None,
+                    shutdown=None,
+                    reset=None,
+                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
+                )
+
+                self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
+                self.cam.flip_y = False
+                self.cam.flip_x = False
+                self.cam.test_pattern = False
+
+                self.cam.effect = 0
+                self.cam.exposure_value = -2
+                self.cam.white_balance = 2
+                self.cam.night_mode = False
+                self.cam.quality = 20
+
+                self.hardware["CAM"] = True
+
+            except Exception as e:
+                self.error_print(
+                    "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
+                )
+
+        else:
+            self.error_print("[ERROR][CAMERA]TCA Not Initialized")
+            self.hardware["CAM"] = False
 
         """
         Prints init State of PySquared Hardware
@@ -388,12 +524,31 @@ class Satellite:
                 self.debug_print([hex(addr) for addr in valid_addresses])
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
+        except Exception as e:
+            self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
         finally:
             self.tca[channel].unlock()
 
     """
     Code to call satellite parameters
     """
+
+    @property
+    def turbo(self):
+        return self.turbo_clock
+
+    @turbo.setter
+    def turbo(self, value):
+        self.turbo_clock = value
+
+        try:
+            if value is True:
+                machine.set_clock(125000000)  # 125Mhz
+            else:
+                machine.set_clock(62500000)  # 62.5Mhz
+
+        except Exception as e:
+            self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
 
     @property
     def burnarm(self):
@@ -436,15 +591,14 @@ class Satellite:
         if self.hardware["SDcard"]:
             try:
                 umount("/sd")
-                self.spi.deinit()
+                self.spi1.deinit()
                 time.sleep(3)
             except Exception as e:
                 self.error_print(
                     "error unmounting SD card" + "".join(traceback.format_exception(e))
                 )
         try:
-            self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
-            self._resetReg.value = 1
+            self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -465,7 +619,7 @@ class Satellite:
             self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
 
     @property
-    def imu_temp(self):
+    def internal_temperature(self):
         try:
             return self.imu.temperature
         except Exception as e:
@@ -477,6 +631,119 @@ class Satellite:
             return self.mangetometer.magnetic
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
+
+    @property
+    def time(self):
+        try:
+            return self.rtc.get_time()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+
+    @time.setter
+    def time(self, hours, minutes, seconds):
+        if self.hardware["RTC"]:
+            try:
+                self.rtc.set_time(hours, minutes, seconds)
+            except Exception as e:
+                self.error_print(
+                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                )
+        else:
+            self.error_print("[WARNING] RTC not initialized")
+
+    @property
+    def date(self):
+        try:
+            return self.rtc.get_date()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+
+    @date.setter
+    def date(self, year, month, date, weekday):
+        if self.hardware["RTC"]:
+            try:
+                self.rtc.set_date(year, month, date, weekday)
+            except Exception as e:
+                self.error_print(
+                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                )
+        else:
+            self.error_print("[WARNING] RTC not initialized")
+
+    """
+    Camera Functions
+    """
+
+    def take_image(self):
+        try:
+            gc.collect()
+            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
+            self.buffer = bytearray(self.buffer_size)
+            self.cam.capture(self.buffer)
+
+            eoi = self.buffer.find(b"\xff\xd9")
+            if eoi != -1:
+                # terminate the JPEG data just after the EOI marker
+                print(memoryview(self.buffer)[: eoi + 2].hex())
+            else:
+                print("image corrupted!")
+                print(memoryview(self.buffer).hex())
+
+        except Exception as e:
+            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
+
+        finally:
+            self.buffer = None
+
+    """
+    Maintenence Functions
+    """
+
+    def watchdog_pet(self):
+        self.watchdog_pin.value = True
+        time.sleep(0.01)
+        self.watchdog_pin.value = False
+
+    def check_reboot(self):
+        self.UPTIME = self.uptime
+        self.debug_print(str("Current up time: " + str(self.UPTIME)))
+        if self.UPTIME > 86400:
+            self.micro.reset()
+
+    def powermode(self, mode):
+        """
+        Configure the hardware for minimum or normal power consumption
+        Add custom modes for mission-specific control
+        """
+        try:
+            if "crit" in mode:
+                self.neopixel.brightness = 0
+                self.enable_rf.value = False
+                self.power_mode = "critical"
+
+            elif "min" in mode:
+                self.neopixel.brightness = 0
+                self.enable_rf.value = False
+
+                self.power_mode = "minimum"
+
+            elif "norm" in mode:
+                self.enable_rf.value = True
+                self.power_mode = "normal"
+                # don't forget to reconfigure radios, gps, etc...
+
+            elif "max" in mode:
+                self.enable_rf.value = True
+                self.power_mode = "maximum"
+        except Exception as e:
+            self.error_print(
+                "Error in changing operations of powermode: "
+                + "".join(traceback.format_exception(e))
+            )
+
+    """
+    SD Card Functions
+    """
 
     def log(self, filedir, msg):
         if self.hardware["SDcard"]:
@@ -491,12 +758,6 @@ class Satellite:
                 )
         else:
             self.error_print("[WARNING] SD Card not initialized")
-
-    def check_reboot(self):
-        self.UPTIME = self.uptime
-        self.debug_print(str("Current up time: " + str(self.UPTIME)))
-        if self.UPTIME > 86400:
-            self.micro.reset()
 
     def print_file(self, filedir=None, binary=False):
         try:
@@ -534,37 +795,6 @@ class Satellite:
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
-            )
-
-    def powermode(self, mode):
-        """
-        Configure the hardware for minimum or normal power consumption
-        Add custom modes for mission-specific control
-        """
-        try:
-            if "crit" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-                self.power_mode = "critical"
-
-            elif "min" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-
-                self.power_mode = "minimum"
-
-            elif "norm" in mode:
-                self.enable_rf.value = True
-                self.power_mode = "normal"
-                # don't forget to reconfigure radios, gps, etc...
-
-            elif "max" in mode:
-                self.enable_rf.value = True
-                self.power_mode = "maximum"
-        except Exception as e:
-            self.error_print(
-                "Error in changing operations of powermode: "
-                + "".join(traceback.format_exception(e))
             )
 
     def new_file(self, substring, binary=False):

@@ -22,6 +22,13 @@ radio_cfg = {
     "enable_crc": False,
 }
 
+if (input("FSK or LoRa? [L/f]") == "F"):
+    print("Resetting in FSK")
+    cubesat.f_fsk = True
+    cubesat.micro.reset()
+
+print("FSK: " + str(cubesat.f_fsk))
+
 options = ["A", "B", "C"]
 
 # Setting the Radio
