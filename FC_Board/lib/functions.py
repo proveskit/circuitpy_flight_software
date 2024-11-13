@@ -37,7 +37,7 @@ class functions:
             "Hey Its pretty cold up here, did someone forget to pay the electric bill?"
         ]
         self.last_battery_temp = 20
-        self.callsign = "Callsign"
+        self.callsign = "K06AZM"
         self.state_bool = False
         self.face_data_baton = False
         self.detumble_enable_z = True
