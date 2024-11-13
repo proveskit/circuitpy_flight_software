@@ -83,10 +83,6 @@ class functions:
         self.field = Field.Field(self.cubesat, self.debug)
         message = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
-        if self.cubesat.f_fsk:
-            pass
-            # TODO: Reimplement method
-            #self.cubesat.radio1.cw(message)
         if self.cubesat.is_licensed:
             self.debug_print(f"Sent Packet: " + message)
         else:
@@ -130,10 +126,6 @@ class functions:
 
         self.field = Field.Field(self.cubesat, self.debug)
         self.field.Beacon(lora_beacon)
-        if self.cubesat.f_fsk:
-            pass
-            # TODO: Reimplement method
-            #self.cubesat.radio1.cw(lora_beacon)
         del self.field
         del Field
 
@@ -175,13 +167,6 @@ class functions:
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
-            # TODO: Reimplement method
-            #if self.cubesat.f_fsk:
-            #    self.cubesat.radio1.cw(
-            #        f"{self.callsign} Yearling^2 State of Health 1/2"
-            #        + str(self.state_list)
-            #        + f"{self.callsign}"
-            #    )
             self.state_bool = True
         else:
             self.field.Beacon(
@@ -189,13 +174,6 @@ class functions:
                 + str(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
-            # Todo: Reimplement method
-            #if self.cubesat.f_fsk:
-            #    self.cubesat.radio1.cw(
-            #        f"{self.callsign} YSOH 2/2"
-            #        + str(self.cubesat.hardware)
-            #        + f"{self.callsign}"
-            #    )
             self.state_bool = False
         del self.field
         del Field
@@ -209,11 +187,6 @@ class functions:
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
-        # TODO: Reimplement method
-        #if self.cubesat.f_fsk:
-        #    self.cubesat.radio1.cw(
-        #        f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
-        #    )
         del self.field
         del Field
 
@@ -250,7 +223,6 @@ class functions:
     def listen_joke(self):
         try:
             self.debug_print("Listening")
-            # TODO: Reimplement method
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
