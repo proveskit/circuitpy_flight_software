@@ -11,6 +11,7 @@ from time import sleep
 test_message = "Hello There!"
 debug_mode = True
 number_of_attempts = 0
+cube_callsign = "KN6YZZ"
 
 # Radio Configuration Setup Here
 radio_cfg = {
@@ -153,7 +154,11 @@ def client(passcode):
             b"\x00\x00\x00\x00" + passcode.encode() + b"\x12\x06" + b"\x0b\xfdI\xec"
         )
     elif chosen_command == "4":
+<<<<<<< HEAD
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"8\x93" + input("Query: ")
+=======
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"8\x93" + input()
+>>>>>>> upstream/orpheus_edition
     elif chosen_command == "5":
         packet = (
             b"\x00\x00\x00\x00" + passcode.encode() + b"\x96\xa2" + input("Command: ")
@@ -169,6 +174,7 @@ def client(passcode):
 
     tries = 0
     while True:
+<<<<<<< HEAD
         sleep(0.1)
         tries += 1
         if tries > 5:
@@ -184,6 +190,32 @@ def client(passcode):
                 return
             else:
                 debug_print("No response, trying again (" + str(tries) + ")")
+=======
+        msg = cubesat.radio1.receive()
+
+        if msg is not None:
+            msg_string = ''.join([chr(b) for b in msg])
+            print(f"Message Received {msg_string}")
+            print(msg_string[:6])
+
+            if msg_string[:6]==cube_callsign:
+                time.sleep(0.1)
+                tries += 1
+                if tries > 5:
+                    print("We tried 5 times! And there was no response. Quitting.")
+                    break
+                success = cubesat.radio1.send(packet)
+                print("Success " + str(success))
+                if success is True:
+                    response = cubesat.radio1.receive(keep_listening=True)
+                    time.sleep(0.5)
+
+                    if response is not None:
+                        print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
+                        break
+                    else:
+                        debug_print("No response, trying again (" + str(tries) + ")")
+>>>>>>> upstream/orpheus_edition
 
 
 def handle_ping():
