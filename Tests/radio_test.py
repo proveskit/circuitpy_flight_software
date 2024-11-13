@@ -11,7 +11,11 @@ from time import sleep
 test_message = "Hello There!"
 debug_mode = True
 number_of_attempts = 0
-cube_callsign = "KN6YZZ"
+cube_callsign = ""
+
+if cube_callsign == "":
+    print("No cube callsign!")
+    exit()
 
 # Radio Configuration Setup Here
 radio_cfg = {
