@@ -182,9 +182,9 @@ class Satellite:
         Setting up the watchdog pin.
         """
 
-        #self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
-        #self.watchdog_pin.direction = digitalio.Direction.OUTPUT
-        #self.watchdog_pin.value = False
+        self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
+        self.watchdog_pin.direction = digitalio.Direction.OUTPUT
+        self.watchdog_pin.value = False
 
         """
         Set the CPU Clock Speed
@@ -701,9 +701,9 @@ class Satellite:
 
     def watchdog_pet(self):
         ...
-        #self.watchdog_pin.value = True
-        #time.sleep(0.01)
-        #self.watchdog_pin.value = False
+        self.watchdog_pin.value = True
+        time.sleep(0.01)
+        self.watchdog_pin.value = False
 
     def check_reboot(self):
         self.UPTIME = self.uptime
