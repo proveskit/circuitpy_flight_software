@@ -413,7 +413,7 @@ class functions:
 
         self.cubesat.enable_rf.value = False
         self.cubesat.f_softboot = True
-        time.sleep(120)
+        self.safe_sleep(120)
 
         self.cubesat.enable_rf.value = True
         return True
@@ -425,7 +425,7 @@ class functions:
 
         self.cubesat.enable_rf.value = False
         self.cubesat.f_softboot = True
-        time.sleep(600)
+        self.safe_sleep(600)
 
         self.cubesat.enable_rf.value = True
         return True
