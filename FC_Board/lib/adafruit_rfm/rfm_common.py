@@ -49,6 +49,7 @@ _RH_BROADCAST_ADDRESS = const(0xFF)
 _RH_FLAGS_ACK = const(0x80)
 _RH_FLAGS_RETRY = const(0x40)
 
+_RH_RF95_REG_5B_FORMER_TEMP = const(0x5B)
 
 # supervisor.ticks_ms() contants
 _TICKS_PERIOD = const(1 << 29)
