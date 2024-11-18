@@ -171,10 +171,6 @@ class Satellite:
         if self.c_boot > 200:
             self.c_boot = 0
 
-        if self.f_fsk:
-            self.debug_print("Next restart will be in LoRa mode.")
-            self.f_fsk = False
-
         if self.f_softboot:
             self.f_softboot = False
 
@@ -454,6 +450,10 @@ class Satellite:
         else:
             self.error_print("[ERROR][CAMERA]TCA Not Initialized")
             self.hardware["CAM"] = False
+
+        if self.f_fsk:
+            self.debug_print("Next restart will be in LoRa mode.")
+            self.f_fsk = False
 
         """
         Prints init State of PySquared Hardware
