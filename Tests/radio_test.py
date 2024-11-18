@@ -88,7 +88,7 @@ def device_under_test(attempts):
     debug_print("Ping Sent")
     debug_print("Awaiting Response...")
 
-    heard_something = cubesat.radio1.await_rx(timeout=10)
+    heard_something = cubesat.radio1.receive(timeout=10)
 
     if heard_something:
         handle_ping()
@@ -111,7 +111,7 @@ def receiver():
     debug_print("Radio Setup Complete")
     debug_print("Awaiting Ping...")
 
-    heard_something = cubesat.radio1.await_rx(timeout=10)
+    heard_something = cubesat.radio1.receive(timeout=10)
 
     if heard_something:
         handle_ping()
