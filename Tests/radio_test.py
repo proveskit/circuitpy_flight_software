@@ -142,6 +142,7 @@ def client(passcode):
     5 - exec_cmd                     |
     6 - joke_reply                   |
     7 - FSK                          |
+    8 - Repeat Code                  |
     ==================================
     """
     )
@@ -168,6 +169,8 @@ def client(passcode):
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\xa5\xb4"
     elif chosen_command == "7":
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x56\xc4"
+    elif chosen_command == "8":
+        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"RP" + input("Message to Repeat: ")
     else:
         print(
             "Command is not valid or not implemented open radio_test.py and add them yourself!"

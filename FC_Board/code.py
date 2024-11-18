@@ -9,6 +9,7 @@ Published: Nov 12, 2024
 """
 
 import time
+import microcontroller
 
 print("=" * 70)
 print("Hello World!")

@@ -88,7 +88,8 @@ class BatteryHelper:
                 end_idx = text.find(">")
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
-        except UnicodeDecodeError:
+        except Exception as e:
+            print(f"Error decoding message: {e}")
             pass
 
         return ""

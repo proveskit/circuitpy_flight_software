@@ -87,7 +87,7 @@ class Satellite:
         self.legacy = False  # Define if the board is used with legacy or not
         self.heating = False  # Currently not used
         self.orpheus = True  # Define if the board is used with Orpheus or not
-        self.is_licensed = False
+        self.is_licensed = True
 
         """
         Define the normal power modes

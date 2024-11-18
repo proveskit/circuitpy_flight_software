@@ -20,7 +20,7 @@ def debug_print(statement):
         print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
 
-def inital_boot():
+def initial_boot():
     c.watchdog_pet()
     f.beacon()
     c.watchdog_pet()
@@ -32,12 +32,14 @@ def inital_boot():
 
 
 f = functions.functions(c)
+
+
 try:
     c.c_boot += 1  # Increment boot number
     debug_print("Boot number: " + str(c.c_boot))
     debug_print(str(gc.mem_free()) + " Bytes remaining")
 
-    inital_boot()
+    initial_boot()
 
 except Exception as e:
     debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
@@ -46,11 +48,8 @@ finally:
 
 
 def critical_power_operations():
-    c.watchdog_pet()
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
+
+    initial_boot()
     c.watchdog_pet()
 
     f.Long_Hybernate()
@@ -58,11 +57,7 @@ def critical_power_operations():
 
 def minimum_power_operations():
 
-    c.watchdog_pet()
-    f.beacon()
-    f.listen()
-    f.state_of_health()
-    f.listen()
+    initial_boot()
     c.watchdog_pet()
 
     f.Short_Hybernate()

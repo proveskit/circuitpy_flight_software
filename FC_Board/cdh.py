@@ -12,7 +12,8 @@ jokereply = [
 ]
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
-super_secret_code = b"1678" # put your own code here
+super_secret_code = b"ABCD"  # put your own code here
+repeat_code = b"RP"
 print(f"Super secret code is: {super_secret_code}")
 commands = {
     b"\x8eb": "noop",
@@ -98,6 +99,12 @@ def message_handler(cubesat, msg):
                 if response is not None:
                     cubesat.c_gs_resp += 1
                     message_handler(cubesat, response)
+        elif bytes(msg[4:6]) == repeat_code:
+            print("Repeating last message!")
+            try:
+                cubesat.radio1.send(msg[6:])
+            except Exception as e:
+                print("error repeating message: {}".format(e))
         else:
             print("bad code?")
 
@@ -112,7 +119,7 @@ def hreset(cubesat):
     print("Resetting")
     try:
         cubesat.radio1.send(data=b"resetting")
-        cubesat.micro.on_next_reset(self.cubesat.micro.RunMode.NORMAL)
+        cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
         cubesat.micro.reset()
     except:
         pass
