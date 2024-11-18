@@ -131,6 +131,21 @@ class functions:
 
     def joke(self):
         self.send(random.choice(self.jokes))
+    
+    def format_state_of_health(self, hardware):
+        to_return = ""
+        for key, value in hardware.items():
+            to_return = to_return + key + "="
+            if value:
+                to_return += "1"
+            else:
+                to_return += "0"
+
+            if len(to_return) > 245:
+                return to_return
+
+        return to_return
+
 
     def state_of_health(self):
         import Field
@@ -171,7 +186,7 @@ class functions:
         else:
             self.field.Beacon(
                 f"{self.callsign} YSOH 2/2"
-                + str(self.cubesat.hardware)
+                + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
             self.state_bool = False
