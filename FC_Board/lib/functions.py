@@ -161,7 +161,7 @@ class functions:
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.cubesat.radio1.temperature}",
+                f"RT:{self.cubesat.radio1.former_temperature}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.cubesat.c_error_count}",

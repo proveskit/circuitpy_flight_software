@@ -555,3 +555,13 @@ class RFMSPI:
     """Non-asyncio wrapper to Receive a packet
     using the same arguments and keywords as asyncio_receive_with_ack()
     """
+
+    @property
+    def former_temperature(self):
+        """Tries to grab former temp from module"""
+        raw_temp = self._read_u8(_RH_RF95_REG_5B_FORMER_TEMP)
+        temp = raw_temp & 0x7F
+        if (raw_temp & 0x80) == 0x80:
+            temp = ~temp + 0x01
+
+        return temp + 143  # Added prescalar for temp
