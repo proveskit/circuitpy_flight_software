@@ -556,6 +556,11 @@ class RFMSPI:
     using the same arguments and keywords as asyncio_receive_with_ack()
     """
 
+    def _read_u8(self, address):
+        # Read a single byte from the provided address and return it.
+        self._read_into(address, self._BUFFER, length=1)
+        return self._BUFFER[0]
+
     @property
     def former_temperature(self):
         """Tries to grab former temp from module"""
