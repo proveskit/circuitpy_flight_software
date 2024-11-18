@@ -28,9 +28,10 @@ radio_cfg = {
 }
 
 if (input("FSK or LoRa? [L/f]") == "F"):
-    print("Resetting in FSK")
     cubesat.f_fsk = True
-    cubesat.micro.reset()
+    del cubesat
+    print("Resetting in FSK")
+    from pysquared import cubesat
 
 print("FSK: " + str(cubesat.f_fsk))
 
