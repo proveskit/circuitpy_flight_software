@@ -75,7 +75,9 @@ def asyncio_to_blocking(function):
     return blocking_function
 
 
-async def asyncio_check_timeout(flag: Callable, limit: float, timeout_poll: float) -> bool:
+async def asyncio_check_timeout(
+    flag: Callable, limit: float, timeout_poll: float
+) -> bool:
     """test for timeout waiting for specified flag"""
     timed_out = False
     if HAS_SUPERVISOR:
@@ -224,7 +226,9 @@ class RFMSPI:
 
     # pylint: disable=no-member
     # Reconsider pylint: disable when this can be tested
-    def read_into(self, address: int, buf: WriteableBuffer, length: Optional[int] = None) -> None:
+    def read_into(
+        self, address: int, buf: WriteableBuffer, length: Optional[int] = None
+    ) -> None:
         """Read a number of bytes from the specified address into the provided
         buffer.  If length is not specified (the default) the entire buffer
         will be filled."""
@@ -241,7 +245,9 @@ class RFMSPI:
         self.read_into(address, self._BUFFER, length=1)
         return self._BUFFER[0]
 
-    def write_from(self, address: int, buf: ReadableBuffer, length: Optional[int] = None) -> None:
+    def write_from(
+        self, address: int, buf: ReadableBuffer, length: Optional[int] = None
+    ) -> None:
         """Write a number of bytes to the provided address and taken from the
         provided buffer.  If no length is specified (the default) the entire
         buffer is written."""
@@ -257,7 +263,9 @@ class RFMSPI:
         """Write a byte register to the chip.  Specify the 7-bit address and the
         8-bit value to write to that address."""
         with self.spi_device as device:
-            self._BUFFER[0] = (address | 0x80) & 0xFF  # Set top bit to 1 to indicate a write.
+            self._BUFFER[0] = (
+                address | 0x80
+            ) & 0xFF  # Set top bit to 1 to indicate a write.
             self._BUFFER[1] = val & 0xFF
             device.write(self._BUFFER, end=2)
 
@@ -363,7 +371,9 @@ class RFMSPI:
                 got_ack = True
             else:
                 # wait for a packet from our destination
-                ack_packet = await self.asyncio_receive(timeout=self.ack_wait, with_header=True)
+                ack_packet = await self.asyncio_receive(
+                    timeout=self.ack_wait, with_header=True
+                )
                 if ack_packet is not None:
                     if ack_packet[3] & _RH_FLAGS_ACK:
                         # check the ID
@@ -417,7 +427,9 @@ class RFMSPI:
             # interrupt supports.
             # Make sure we are listening for packets.
             self.listen()
-            timed_out = await asyncio_check_timeout(self.payload_ready, timeout, self.timeout_poll)
+            timed_out = await asyncio_check_timeout(
+                self.payload_ready, timeout, self.timeout_poll
+            )
         # Payload ready is set, a packet is in the FIFO.
         packet = None
         # save last RSSI reading
@@ -442,7 +454,9 @@ class RFMSPI:
                             and packet[0] != self.node
                         ):
                             packet = None
-                        if not with_header and packet is not None:  # skip the header if not wanted
+                        if (
+                            not with_header and packet is not None
+                        ):  # skip the header if not wanted
                             packet = packet[4:]
         # Listen again if necessary and return the result packet.
         if keep_listening:
@@ -490,7 +504,9 @@ class RFMSPI:
             # interrupt supports.
             # Make sure we are listening for packets.
             self.listen()
-            timed_out = await asyncio_check_timeout(self.payload_ready, timeout, self.timeout_poll)
+            timed_out = await asyncio_check_timeout(
+                self.payload_ready, timeout, self.timeout_poll
+            )
         # Payload ready is set, a packet is in the FIFO.
         packet = None
         # save last RSSI reading
@@ -541,7 +557,9 @@ class RFMSPI:
                             packet is not None and (packet[3] & _RH_FLAGS_ACK) != 0
                         ):  # Ignore it if it was an ACK packet
                             packet = None
-                        if not with_header and packet is not None:  # skip the header if not wanted
+                        if (
+                            not with_header and packet is not None
+                        ):  # skip the header if not wanted
                             packet = packet[4:]
         # Listen again if necessary and return the result packet.
         if keep_listening:

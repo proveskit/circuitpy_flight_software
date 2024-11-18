@@ -131,7 +131,7 @@ class functions:
 
     def joke(self):
         self.send(random.choice(self.jokes))
-    
+
     def format_state_of_health(self, hardware):
         to_return = ""
         for key, value in hardware.items():
@@ -145,7 +145,6 @@ class functions:
                 return to_return
 
         return to_return
-
 
     def state_of_health(self):
         import Field

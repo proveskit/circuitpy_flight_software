@@ -297,7 +297,7 @@ class Satellite:
             self.radio1.destination = self.radio_cfg["gs"]
             self.hardware["Radio1"] = True
 
-            #if self.legacy:
+            # if self.legacy:
             #    self.enable_rf.value = False
 
         except Exception as e:

@@ -198,7 +198,9 @@ class RFM9xFSK(RFMSPI):
     packet_format = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=7, bits=1)
     dc_free = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=5, bits=2)
     crc_on = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=4, bits=1)
-    crc_auto_clear_off = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=3, bits=1)
+    crc_auto_clear_off = RFMSPI.RegisterBits(
+        _RF95_REG_30_PACKET_CONFIG_1, offset=3, bits=1
+    )
     address_filter = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=1, bits=2)
     crc_type = RFMSPI.RegisterBits(_RF95_REG_30_PACKET_CONFIG_1, offset=0, bits=1)
     mode_ready = RFMSPI.RegisterBits(_RF95_REG_3E_IRQ_FLAGS_1, offset=7)
@@ -207,7 +209,9 @@ class RFM9xFSK(RFMSPI):
     ook_thresh_step = RFMSPI.RegisterBits(_RF95_REG_14_OOK_PEAK, offset=0, bits=3)
     ook_peak_thresh_dec = RFMSPI.RegisterBits(_RF95_REG_16_OOK_AVG, offset=5, bits=3)
     ook_average_offset = RFMSPI.RegisterBits(_RF95_REG_16_OOK_AVG, offset=2, bits=2)
-    ook_average_thresh_filt = RFMSPI.RegisterBits(_RF95_REG_16_OOK_AVG, offset=0, bits=2)
+    ook_average_thresh_filt = RFMSPI.RegisterBits(
+        _RF95_REG_16_OOK_AVG, offset=0, bits=2
+    )
 
     def __init__(  # noqa: PLR0913
         self,

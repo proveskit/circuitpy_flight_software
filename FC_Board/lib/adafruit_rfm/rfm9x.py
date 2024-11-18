@@ -169,7 +169,9 @@ class RFM9x(RFMSPI):
 
     auto_agc = RFMSPI.RegisterBits(_RF95_REG_26_MODEM_CONFIG3, offset=2, bits=1)
 
-    low_datarate_optimize = RFMSPI.RegisterBits(_RF95_REG_26_MODEM_CONFIG3, offset=3, bits=1)
+    low_datarate_optimize = RFMSPI.RegisterBits(
+        _RF95_REG_26_MODEM_CONFIG3, offset=3, bits=1
+    )
 
     lna_boost_hf = RFMSPI.RegisterBits(_RF95_REG_0C_LNA, offset=0, bits=2)
 
