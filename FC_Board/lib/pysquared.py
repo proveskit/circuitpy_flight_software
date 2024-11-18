@@ -20,7 +20,8 @@ from debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
-import pysquared_rfm9x  # Radio
+from adafruit_rfm import rfm9x  # Radio
+from adafruit_rfm import rfm9xfsk  # Radio
 import neopixel  # RGB LED
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
@@ -170,10 +171,6 @@ class Satellite:
         if self.c_boot > 200:
             self.c_boot = 0
 
-        if self.f_fsk:
-            self.debug_print("Fsk going to false")
-            self.f_fsk = False
-
         if self.f_softboot:
             self.f_softboot = False
 
@@ -267,31 +264,41 @@ class Satellite:
         self.radio1_DIO4.switch_to_input()
 
         try:
-            self.radio1 = pysquared_rfm9x.RFM9x(
-                self.spi0,
-                _rf_cs1,
-                _rf_rst1,
-                self.radio_cfg["freq"],
-                code_rate=8,
-                baudrate=1320000,
-            )
-            # Default LoRa Modulation Settings
-            # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-            self.radio1.dio0 = self.radio1_DIO0
-            # self.radio1.dio4=self.radio1_DIO4
-            self.radio1.max_output = True
-            self.radio1.tx_power = self.radio_cfg["pwr"]
-            self.radio1.spreading_factor = self.radio_cfg["sf"]
+            if self.f_fsk:
+                self.radio1 = rfm9xfsk.RFM9xFSK(
+                    self.spi0,
+                    _rf_cs1,
+                    _rf_rst1,
+                    self.radio_cfg["freq"],
+                    # code_rate=8, code rate does not exist for RFM9xFSK
+                )
+                self.radio1.fsk_node_address = 1
+                self.radio1.fsk_broadcast_address = 0xFF
+                self.radio1.modulation_type = 0
+            else:
+                # Default LoRa Modulation Settings
+                # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
+                self.radio1 = rfm9x.RFM9x(
+                    self.spi0,
+                    _rf_cs1,
+                    _rf_rst1,
+                    self.radio_cfg["freq"],
+                    # code_rate=8, code rate does not exist for RFM9xFSK
+                )
+                self.radio1.max_output = True
+                self.radio1.tx_power = self.radio_cfg["pwr"]
+                self.radio1.spreading_factor = self.radio_cfg["sf"]
+
+                self.radio1.enable_crc = True
+                self.radio1.ack_delay = 0.2
+                if self.radio1.spreading_factor > 9:
+                    self.radio1.preamble_length = self.radio1.spreading_factor
             self.radio1.node = self.radio_cfg["id"]
             self.radio1.destination = self.radio_cfg["gs"]
-            self.radio1.enable_crc = True
-            self.radio1.ack_delay = 0.2
-            if self.radio1.spreading_factor > 9:
-                self.radio1.preamble_length = self.radio1.spreading_factor
             self.hardware["Radio1"] = True
 
-            if self.legacy:
-                self.enable_rf.value = False
+            # if self.legacy:
+            #    self.enable_rf.value = False
 
         except Exception as e:
             self.error_print(
@@ -443,6 +450,10 @@ class Satellite:
         else:
             self.error_print("[ERROR][CAMERA]TCA Not Initialized")
             self.hardware["CAM"] = False
+
+        if self.f_fsk:
+            self.debug_print("Next restart will be in LoRa mode.")
+            self.f_fsk = False
 
         """
         Prints init State of PySquared Hardware
@@ -689,6 +700,7 @@ class Satellite:
     """
 
     def watchdog_pet(self):
+        ...
         self.watchdog_pin.value = True
         time.sleep(0.01)
         self.watchdog_pin.value = False

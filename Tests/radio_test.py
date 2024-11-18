@@ -11,7 +11,11 @@ from time import sleep
 test_message = "Hello There!"
 debug_mode = True
 number_of_attempts = 0
-cube_callsign = "K06AZM"
+cube_callsign = ""
+
+if cube_callsign == "":
+    print("No cube callsign!")
+    exit()
 
 # Radio Configuration Setup Here
 radio_cfg = {
@@ -22,6 +26,14 @@ radio_cfg = {
     "receive_timeout": 5,
     "enable_crc": False,
 }
+
+if input("FSK or LoRa? [L/f]") == "F":
+    cubesat.f_fsk = True
+    del cubesat
+    print("Resetting in FSK")
+    from pysquared import cubesat
+
+print("FSK: " + str(cubesat.f_fsk))
 
 options = ["A", "B", "C"]
 
@@ -158,7 +170,12 @@ def client(passcode):
     elif chosen_command == "7":
         packet = b"\x00\x00\x00\x00" + passcode.encode() + b"\x56\xc4"
     elif chosen_command == "8":
-        packet = b"\x00\x00\x00\x00" + passcode.encode() + b"RP" + input("Message to Repeat: ")
+        packet = (
+            b"\x00\x00\x00\x00"
+            + passcode.encode()
+            + b"RP"
+            + input("Message to Repeat: ")
+        )
     else:
         print(
             "Command is not valid or not implemented open radio_test.py and add them yourself!"
@@ -169,24 +186,28 @@ def client(passcode):
         msg = cubesat.radio1.receive()
 
         if msg is not None:
-            msg_string = ''.join([chr(b) for b in msg])
+            msg_string = "".join([chr(b) for b in msg])
             print(f"Message Received {msg_string}")
             print(msg_string[:6])
 
-            if msg_string[:6]==cube_callsign:
+            if msg_string[:6] == cube_callsign:
                 time.sleep(0.1)
                 tries += 1
                 if tries > 5:
                     print("We tried 5 times! And there was no response. Quitting.")
                     break
-                success = cubesat.radio1.send(packet)
+                success = cubesat.radio1.send_with_ack(packet)
                 print("Success " + str(success))
                 if success is True:
                     response = cubesat.radio1.receive(keep_listening=True)
                     time.sleep(0.5)
 
                     if response is not None:
-                        print("msg: {}, RSSI: {}".format(response, cubesat.radio1.last_rssi - 137))
+                        print(
+                            "msg: {}, RSSI: {}".format(
+                                response, cubesat.radio1.last_rssi - 137
+                            )
+                        )
                         break
                     else:
                         debug_print("No response, trying again (" + str(tries) + ")")
