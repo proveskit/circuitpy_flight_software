@@ -19,7 +19,9 @@ def debug_print(statement):
     if c.debug:
         print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
+
 f = functions.functions(c)
+
 
 def initial_boot():
     c.watchdog_pet()
@@ -30,6 +32,7 @@ def initial_boot():
     f.state_of_health()
     f.listen()
     c.watchdog_pet()
+
 
 try:
     c.c_boot += 1  # Increment boot number
