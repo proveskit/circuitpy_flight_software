@@ -340,7 +340,7 @@ class functions:
     def detumble(self, dur=7, margin=0.2, seq=118):
         self.debug_print("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
-        self.cubesat.all_faces_on()
+
         try:
             import Big_Data
 

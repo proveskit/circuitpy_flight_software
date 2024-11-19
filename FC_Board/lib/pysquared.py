@@ -330,6 +330,7 @@ class Satellite:
             self.spi0cs2.switch_to_output()
             self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
+            self.can_bus.sleep()
 
         except Exception as e:
             self.debug_print(
@@ -446,6 +447,7 @@ class Satellite:
                 self.error_print(
                     "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
                 )
+                self.hardware["CAM"] = False
 
         else:
             self.error_print("[ERROR][CAMERA]TCA Not Initialized")
