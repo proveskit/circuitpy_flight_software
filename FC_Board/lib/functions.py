@@ -211,7 +211,7 @@ class functions:
         try:
             self.debug_print("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
+            received = self.cubesat.radio1.receive(keep_listening=True)
         except Exception as e:
             self.debug_print(
                 "An Error has occured while listening: "
