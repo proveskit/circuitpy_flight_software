@@ -25,7 +25,7 @@ class Field:
                 self.debug_print("I am beaconing: " + str(msg))
                 print(
                     "Message Success: "
-                    + str(self.cubesat.radio1.send_with_ack(bytes(msg, "UTF-8")))
+                    + str(self.cubesat.radio1.send(bytes(msg, "UTF-8")))
                 )
             else:
                 self.debug_print(
