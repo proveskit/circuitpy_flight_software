@@ -20,6 +20,9 @@ def debug_print(statement):
         print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
 
+f = functions.functions(c)
+
+
 def initial_boot():
     c.watchdog_pet()
     f.beacon()
@@ -29,9 +32,6 @@ def initial_boot():
     f.state_of_health()
     f.listen()
     c.watchdog_pet()
-
-
-f = functions.functions(c)
 
 
 try:
