@@ -6,6 +6,9 @@ This is where the processes get scheduled, and satellite operations are handeled
 """
 
 from pysquared import cubesat as c
+
+c.watchdog_pet()
+
 import asyncio
 import time
 import traceback
