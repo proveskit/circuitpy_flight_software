@@ -101,7 +101,7 @@ class Satellite:
         self.vlowbatt = 6.0
         self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
         self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
-        self.REBOOT_TIME = 600  # 10 minutes
+        self.REBOOT_TIME = 3600  # 1 hour
         self.turbo_clock = False
 
         """

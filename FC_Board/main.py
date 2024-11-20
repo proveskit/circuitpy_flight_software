@@ -125,7 +125,7 @@ try:
 
         elif c.power_mode == "maximum":
             c.RGB = (0, 255, 0)
-            normal_power_operations()
+            main()
 
         else:
             f.listen()

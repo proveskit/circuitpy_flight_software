@@ -34,7 +34,7 @@ class functions:
         self.Errorcount = 0
         self.facestring = [None, None, None, None, None]
         self.jokes = [
-            "Hey Its pretty cold up here, did someone forget to pay the electric bill?",
+            "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
             "sudo rf - rf*",
             "Why did the astronaut break up with his girlfriend? He needed space.",
             "Why did the sun go to school? To get a little brighter.",
@@ -65,7 +65,10 @@ class functions:
             "I am sorry David, I am afrain I can not do that.",
             "My memory is volatile like RAM, so it only makes sense that I forget things.",
             "Imagine it gets stuck and just keeps repeating this joke every 2 mins",
-            "Check Engine: Error Code 404: Joke Not Found"
+            "Check Engine: Error Code 404: Joke Not Found",
+            "CQ CQ KN6NAQ ... KN6NAT are you out there?",
+            "Woah is that the Launcher Orbiter?????",
+            "Everything in life is a spring if you think hard enough!",
         ]
         self.last_battery_temp = 20
         self.sleep_duration = 30
