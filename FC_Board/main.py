@@ -52,20 +52,6 @@ finally:
     debug_print("Something went wrong!")
 
 
-def listen_loiter():
-    c.watchdog_pet()
-    f.listen()
-    c.watchdog_pet()
-
-    c.radio1.sleep()
-    f.safe_sleep(30)
-
-    #f.listen()
-    c.watchdog_pet()
-
-    #f.listen()
-    c.watchdog_pet()
-
 def send_imu():
     debug_print("Looking to get imu data...")
     IMUData = []
@@ -78,25 +64,25 @@ def send_imu():
 def main():
     f.beacon()
     
-    listen_loiter()
+    f.listen_loiter()
 
     f.state_of_health()
 
-    listen_loiter()
+    f.listen_loiter()
 
     f.all_face_data()
     c.watchdog_pet()
     f.send_face()
     
-    listen_loiter()
+    f.listen_loiter()
 
     send_imu()
     
-    listen_loiter()
+    f.listen_loiter()
 
     f.joke()
 
-    listen_loiter()
+    f.listen_loiter()
 
 
 
