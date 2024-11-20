@@ -151,7 +151,7 @@ class functions:
             lora_beacon = (
                 f"{self.callsign} Hello I am Orpheus! I am: "
                 + str(self.cubesat.power_mode)
-                + f"UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count}"
+                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
