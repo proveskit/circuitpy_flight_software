@@ -69,7 +69,7 @@ class functions:
         ]
         self.last_battery_temp = 20
         self.sleep_duration = 30
-        self.callsign = "K06AZM"
+        self.callsign = "KO6AZM"
         self.state_bool = False
         self.face_data_baton = False
         self.detumble_enable_z = True
