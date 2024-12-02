@@ -101,6 +101,7 @@ class Satellite:
         self.vlowbatt = 6.0
         self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
         self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
+        self.REBOOT_TIME = 3600  # 1 hour
         self.turbo_clock = False
 
         """
@@ -330,6 +331,7 @@ class Satellite:
             self.spi0cs2.switch_to_output()
             self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
+            self.can_bus.sleep()
 
         except Exception as e:
             self.debug_print(
@@ -446,6 +448,7 @@ class Satellite:
                 self.error_print(
                     "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
                 )
+                self.hardware["CAM"] = False
 
         else:
             self.error_print("[ERROR][CAMERA]TCA Not Initialized")
@@ -591,7 +594,6 @@ class Satellite:
         if self.hardware["SDcard"]:
             try:
                 umount("/sd")
-                self.spi1.deinit()
                 time.sleep(3)
             except Exception as e:
                 self.error_print(
@@ -700,7 +702,6 @@ class Satellite:
     """
 
     def watchdog_pet(self):
-        ...
         self.watchdog_pin.value = True
         time.sleep(0.01)
         self.watchdog_pin.value = False
@@ -708,7 +709,7 @@ class Satellite:
     def check_reboot(self):
         self.UPTIME = self.uptime
         self.debug_print(str("Current up time: " + str(self.UPTIME)))
-        if self.UPTIME > 86400:
+        if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
 
     def powermode(self, mode):

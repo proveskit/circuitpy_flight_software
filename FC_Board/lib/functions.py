@@ -34,10 +34,45 @@ class functions:
         self.Errorcount = 0
         self.facestring = [None, None, None, None, None]
         self.jokes = [
-            "Hey Its pretty cold up here, did someone forget to pay the electric bill?"
+            "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
+            "sudo rf - rf*",
+            "Why did the astronaut break up with his girlfriend? He needed space.",
+            "Why did the sun go to school? To get a little brighter.",
+            "why is the mall called the mall? because instead of going to one store you go to them all",
+            "Alien detected. Blurring photo...",
+            "Wait it is all open source? Always has been... www.github.com/proveskit",
+            "What did 0 say to 1? You're a bit too much.",
+            "Pleiades - Orpheus has been recently acquired by the Onion News Network",
+            "This jokesat was brought to you by the Bronco Space Ministry of Labor and Job Placement",
+            "Catch you on the next pass!",
+            "Pleiades - Orpheus was not The Impostor",
+            "Sorry for messing with your long-exposure astrophoto!",
+            "Better buy a telescope. Wanna see me. Buy a telescope. Gonna be in space.",
+            "According to all known laws of aviation, there is no way bees should be able to fly...",
+            "You lost the game ",
+            "Bobby Tables is a good friend of mine",
+            "Why did the computer cross the road? To get a byte to eat!",
+            "Why are the astronauts not hungry when they got to space? They had a big launch.",
+            "Why did the computer get glasses? To improve its web sight!",
+            "What are computers favorite snacks? Chips!",
+            "Wait! I think I see a White 2019 Subaru Crosstrek 2.0i Premium",
+            "IS THAT A SUPRA?!",
+            "Finally escpaed the LA Traffic",
+            "My CubeSat is really good at jokes, but its delivery is always delayed.",
+            "exec order 66",
+            "I had a joke about UDP, but I am not sure if you'd get it.",
+            "I am not saying FSK modulation is the best way to send jokes, but at least it is never monotone!",
+            "I am sorry David, I am afrain I can not do that.",
+            "My memory is volatile like RAM, so it only makes sense that I forget things.",
+            "Imagine it gets stuck and just keeps repeating this joke every 2 mins",
+            "Check Engine: Error Code 404: Joke Not Found",
+            "CQ CQ KN6NAQ ... KN6NAT are you out there?",
+            "Woah is that the Launcher Orbiter?????",
+            "Everything in life is a spring if you think hard enough!",
         ]
         self.last_battery_temp = 20
-        self.callsign = ""
+        self.sleep_duration = 30
+        self.callsign = "KO6AZM"
         self.state_bool = False
         self.face_data_baton = False
         self.detumble_enable_z = True
@@ -67,6 +102,18 @@ class functions:
             iterations += 1
 
             self.cubesat.watchdog_pet()
+
+    def listen_loiter(self):
+        self.debug_print("Listening for 10 seconds")
+        self.cubesat.watchdog_pet()
+        self.cubesat.radio1.receive_timeout = 10
+        self.listen()
+        self.cubesat.watchdog_pet()
+
+        self.debug_print("Sleeping for 20 seconds")
+        self.cubesat.watchdog_pet()
+        self.safe_sleep(self.sleep_duration)
+        self.cubesat.watchdog_pet()
 
     """
     Radio Functions
@@ -105,11 +152,10 @@ class functions:
 
         try:
             lora_beacon = (
-                f"{self.callsign} Hello I am Yearling^2! I am in: "
+                f"{self.callsign} Hello I am Orpheus! I am: "
                 + str(self.cubesat.power_mode)
-                + " power mode. V_Batt = "
-                + str(self.cubesat.battery_voltage)
-                + f"V. IHBPFJASTMNE! {self.callsign}"
+                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
+                + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
             self.debug_print(
@@ -211,7 +257,7 @@ class functions:
         try:
             self.debug_print("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive(keep_listening=True)
+            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.debug_print(
                 "An Error has occured while listening: "
@@ -340,7 +386,7 @@ class functions:
     def detumble(self, dur=7, margin=0.2, seq=118):
         self.debug_print("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
-        self.cubesat.all_faces_on()
+
         try:
             import Big_Data
 
