@@ -61,9 +61,10 @@ def send_imu():
     c.watchdog_pet()
     f.send(IMUData)
 
+
 def main():
     f.beacon()
-    
+
     f.listen_loiter()
 
     f.state_of_health()
@@ -73,18 +74,16 @@ def main():
     f.all_face_data()
     c.watchdog_pet()
     f.send_face()
-    
+
     f.listen_loiter()
 
     send_imu()
-    
+
     f.listen_loiter()
 
     f.joke()
 
     f.listen_loiter()
-
-
 
 
 def critical_power_operations():
@@ -101,7 +100,6 @@ def minimum_power_operations():
     c.watchdog_pet()
 
     f.Short_Hybernate()
-
 
 
 ######################### MAIN LOOP ##############################
