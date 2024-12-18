@@ -20,11 +20,11 @@ def debug_print(statement):
 
     # Defining Operations Within The Power Modes
     """These functions is called when the satellite transitions between various power states.
-    It generally thse modes manage the battery, checks the state of health of the system, 
-    performs a reboot check, and then puts the system into a short hibernation 
+    It generally thse modes manage the battery, checks the state of health of the system,
+    performs a reboot check, and then puts the system into a short hibernation
     mode to conserve power.
 
-    When in low or critical power modes, the satellite will not perform any complex tasks. 
+    When in low or critical power modes, the satellite will not perform any complex tasks.
 
     The sub-functions that can be called are:
     - `battery_manager()`: Manages and monitors the battery status.

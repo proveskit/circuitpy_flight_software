@@ -1,3 +1,0 @@
-.PHONY: fmt
-fmt:
-	black .
