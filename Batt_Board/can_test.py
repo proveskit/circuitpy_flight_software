@@ -1,9 +1,9 @@
-from pysquared_eps import cubesat as c
-import battery_functions
+from pysquared import cubesat as c
+import functions
 import can_bus_helper
 import time
 
-f = battery_functions.functions(c)
+f = functions.functions(c)
 
 cb = can_bus_helper.CanBusHelper(c.can_bus, f, True)
 

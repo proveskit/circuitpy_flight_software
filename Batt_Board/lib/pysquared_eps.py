@@ -1,6 +1,6 @@
 """
 CircuitPython driver for PySquared satellite board.
-PySquared Hardware Version: mainboard-v01
+PySquared Hardware Version: batteryboard v3c
 CircuitPython Version: 9.0.0 alpha
 Library Repo:
 
@@ -17,8 +17,9 @@ import gc
 # Hardware Specific Libs
 import neopixel  # RGB LED
 import adafruit_pca9685  # LED Driver
-import adafruit_tca9548a  # I2C Multiplexer
 import adafruit_pct2075  # Temperature Sensor
+import adafruit_max31856  # Thermocouple
+import adafruit_vl6180x  # LiDAR Distance Sensor for Antenna
 import adafruit_ina219  # Power Monitor
 
 # CAN Bus Import
@@ -28,10 +29,6 @@ from adafruit_mcp2515 import MCP2515 as CAN
 from os import listdir, stat, statvfs, mkdir, chdir
 from bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
-
-# Thermoucouple ADC
-import adafruit_ads1x15.ads1015 as ADS
-from adafruit_ads1x15.analog_in import AnalogIn
 
 # NVM register numbers
 _BOOTCNT = const(0)
@@ -77,6 +74,7 @@ class Satellite:
             self.hardware["Face3"] = True
             self.Face4.duty_cycle = 0xFFFF
             self.hardware["Face4"] = True
+            self.cam.duty_cycle = 0xFFFF
 
     def all_faces_off(self):
         # De-Power Faces
@@ -96,6 +94,8 @@ class Satellite:
             self.Face4.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face4"] = False
+            time.sleep(0.1)
+            self.cam.duty_cycle = 0x0000
 
     def debug_print(self, statement):
         if self.debug:
@@ -123,13 +123,13 @@ class Satellite:
         self.hardware = {
             "WDT": False,
             "NEO": False,
-            "TCA": False,
             "SOLAR": False,
             "PWR": False,
             "FLD": False,
             "TEMP": False,
             "COUPLE": False,
             "CAN": False,
+            "LIDAR": False,
             "Face0": False,
             "Face1": False,
             "Face2": False,
@@ -143,18 +143,53 @@ class Satellite:
         self._resetReg = digitalio.DigitalInOut(board.VBUS_RESET)
         self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
 
+        # Define 5V Enable
+        self._5V_enable = digitalio.DigitalInOut(board.ENABLE_5V)
+        self._5V_enable.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
+        try:
+            self._5V_enable.value = True
+            self.debug_print("5V Enabled")
+        except Exception as e:
+            self.debug_print(
+                "Error Setting 5V Enable: " + "".join(traceback.format_exception(e))
+            )
+
         # Define SPI,I2C,UART | paasing I2C1 to BigData
         try:
             self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA, timeout=5)
+        except Exception as e:
+            self.debug_print(
+                "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+        except Exception as e:
+            self.debug_print(
+                "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.i2c1 = busio.I2C(
                 board.I2C1_SCL, board.I2C1_SDA, timeout=5, frequency=100000
             )
+        except Exception as e:
+            self.debug_print(
+                "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.spi1 = busio.SPI(board.SPI1_SCK, board.SPI1_MOSI, board.SPI1_MISO)
+        except Exception as e:
+            self.debug_print(
+                "ERROR INITIALIZING SPI1: " + "".join(traceback.format_exception(e))
+            )
+
+        try:
             self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
         except Exception as e:
             self.debug_print(
-                "ERROR INITIALIZING BUSSES: " + "".join(traceback.format_exception(e))
+                "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
             )
 
         # Initialize LED Driver
@@ -174,15 +209,12 @@ class Satellite:
             self.Face2 = self.faces.channels[2]
             self.Face3 = self.faces.channels[3]
             self.Face4 = self.faces.channels[4]
+            self.cam = self.faces.channels[5]
             self.all_faces_on()
         except Exception as e:
             self.debug_print(
                 "ERROR INITIALIZING FACES: " + "".join(traceback.format_exception(e))
             )
-
-        # Define I2C Reset
-        self._i2c_reset = digitalio.DigitalInOut(board.I2C_RESET)
-        self._i2c_reset.switch_to_output(value=True)
 
         if self.c_boot > 200:
             self.c_boot = 0
@@ -191,28 +223,18 @@ class Satellite:
             self.f_softboot = False
 
         # Define radio
-        _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
-        self.enable_rf = digitalio.DigitalInOut(board.RF_ENABLE)
+        self.enable_rf = digitalio.DigitalInOut(board.ENABLE_RF)
 
         # self.enable_rf.switch_to_output(value=False) # if U21
         self.enable_rf.switch_to_output(value=True)  # if U7
-        _rf_cs1.switch_to_output(value=True)
 
         # Define Heater Pins
-        try:
-            if self.hardware["FLD"]:
-                self.heater = self.faces.channels[15]
-        except Exception as e:
-            self.debug_print(
-                "[WARNING][Battery_Heater]" + "".join(traceback.format_exception(e))
-            )
+        self.heater = pwmio.PWMOut(board.ENABLE_HEATER, frequency=1000, duty_cycle=0)
 
         # Initialize Neopixel
         try:
-            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
-            self.neopwr.switch_to_output(value=True)
             self.neopixel = neopixel.NeoPixel(
-                board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB
+                board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
             )
             self.neopixel[0] = (0, 0, 255)
             self.hardware["NEO"] = True
@@ -241,8 +263,15 @@ class Satellite:
                 "[ERROR][SOLAR Power Monitor]" + "".join(traceback.format_exception(e))
             )
 
+        # Initialize LiDAR
+        try:
+            self.LiDAR = adafruit_vl6180x.VL6180X(self.i2c1, offset=0)
+            self.hardware["LiDAR"] = True
+        except Exception as e:
+            self.debug_print("[ERROR][LiDAR]" + "".join(traceback.format_exception(e)))
+
         # Define Charge Indicate Pin
-        self.charge_indicate = digitalio.DigitalInOut(board.IS_CHARGING)
+        self.charge_indicate = digitalio.DigitalInOut(board.CHRG)
         self.charge_indicate.switch_to_input(pull=digitalio.Pull.DOWN)
 
         # Initialize PCT2075 Temperature Sensor
@@ -255,8 +284,11 @@ class Satellite:
             )
 
         # Initialize Thermocouple ADC
+        self.spi1_cs0 = digitalio.DigitalInOut(board.SPI1_CS0)
+        self.spi1_cs0.direction = digitalio.Direction.OUTPUT
+
         try:
-            self.thermocouple = ADS.ADS1015(self.i2c0, address=0x48)
+            self.thermocouple = adafruit_max31856.MAX31856(self.spi1, self.spi1_cs0)
             self.hardware["COUPLE"] = True
             self.debug_print("[ACTIVE][Thermocouple]")
         except Exception as e:
@@ -264,24 +296,11 @@ class Satellite:
                 "[ERROR][THERMOCOUPLE]" + "".join(traceback.format_exception(e))
             )
 
-        # Initialize TCA
-        try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c0, address=int(0x77))
-            for channel in range(8):
-                if self.tca[channel].try_lock():
-                    self.debug_print("Channel {}:".format(channel))
-                    addresses = self.tca[channel].scan()
-                    print([hex(address) for address in addresses if address != 0x70])
-                    self.tca[channel].unlock()
-            self.hardware["TCA"] = True
-        except Exception as e:
-            self.debug_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
-
         # Initialize CAN Transceiver
         try:
-            self.spi1cs0 = digitalio.DigitalInOut(board.SPI1_CS0)
-            self.spi1cs0.switch_to_output()
-            self.can_bus = CAN(self.spi1, self.spi1cs0, loopback=True, silent=True)
+            self.spi0cs0 = digitalio.DigitalInOut(board.SPI0_CS0)
+            self.spi0cs0.switch_to_output()
+            self.can_bus = CAN(self.spi0, self.spi0cs0, loopback=True, silent=True)
             self.hardware["CAN"] = True
 
         except Exception as e:
@@ -289,8 +308,24 @@ class Satellite:
                 "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
             )
 
-        # Prints init state of PySquared hardware
-        self.debug_print(str(self.hardware))
+        """
+        Prints init State of PySquared Hardware
+        """
+        self.debug_print("PySquared Hardware Initialization Complete!")
+
+        if self.debug:
+            # Find the length of the longest key
+            max_key_length = max(len(key) for key in self.hardware.keys())
+
+            print("=" * 16)
+            print("Device  | Status")
+            for key, value in self.hardware.items():
+                padded_key = key + " " * (max_key_length - len(key))
+                if value:
+                    print(co(f"|{padded_key} | {value} |", "green"))
+                else:
+                    print(co(f"|{padded_key} | {value}|", "red"))
+            print("=" * 16)
 
         # set PyCubed power mode
         self.power_mode = "normal"
@@ -321,12 +356,12 @@ class Satellite:
             self.debug_print("[WARNING] neopixel not initialized")
 
     # =======================================================#
-    # Before Flight Flags                                   #
+    # Before Flight Flags                                    #
     # =======================================================#
-    # These flags should be set as follows before flight:   #
-    # burnarm = True                                        #
-    # burned = False                                        #
-    # dist = 0                                              #
+    # These flags should be set as follows before flight:    #
+    # burnarm = True                                         #
+    # burned = False                                         #
+    # dist = 0                                               #
     # =======================================================#
     @property
     def burnarm(self):
@@ -355,6 +390,7 @@ class Satellite:
     def arm_satellite(self):
         self.burnarm = True
         self.burned = False
+        self.f_triedburn = False
         self.dist = 0
         print("[Satellite Armed]")
 
@@ -577,6 +613,20 @@ class Satellite:
         return self.CURRENTTIME - self.BOOTTIME
 
     @property
+    def fc_wdt(self):
+        return self._5V_enable.value
+
+    @fc_wdt.setter
+    def fc_wdt(self, value):
+        try:
+            self._5V_enable.value = value
+        except Exception as e:
+            self.debug_print(
+                "Error Setting FC Watchdog Status: "
+                + "".join(traceback.format_exception(e))
+            )
+
+    @property
     def reset_vbus(self):
         try:
             self._resetReg.drive_mode = digitalio.DriveMode.PUSH_PULL
@@ -587,7 +637,7 @@ class Satellite:
             )
 
     # =======================================================#
-    # Thermal Management                                    #
+    # Thermal Management                                     #
     # =======================================================#
     @property
     def internal_temperature(self):
@@ -596,34 +646,29 @@ class Satellite:
     @property
     def battery_temperature(self):
         if self.hardware["COUPLE"]:
-            chan = AnalogIn(self.thermocouple, ADS.P1)
-            tip = (chan.voltage - 1.25) / 0.005
-            return tip
+            return self.thermocouple.temperature
         else:
             self.debug_print("[WARNING] Thermocouple not initialized")
 
     def heater_on(self):
-        if self.hardware["FLD"]:
-            try:
-                self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
-                if self.f_brownout:
-                    pass
-                else:
-                    self.f_brownout = True
-                    self.heating = True
-                    self._relayA.value = 1
-                    self.RGB = (255, 165, 0)
-                    # Pause to ensure relay is open
-                    time.sleep(0.25)
-                    self.heater.duty_cycle = 0x7FFF
-            except Exception as e:
-                self.debug_print(
-                    "[ERROR] Cant turn on heater: "
-                    + "".join(traceback.format_exception(e))
-                )
-                self.heater.duty_cycle = 0x0000
-        else:
-            self.debug_print("[WARNING] LED Driver not initialized")
+
+        try:
+            self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
+            if self.f_brownout:
+                pass
+            else:
+                self.f_brownout = True
+                self.heating = True
+                self._relayA.value = 1
+                self.RGB = (255, 165, 0)
+                # Pause to ensure relay is open
+                time.sleep(0.25)
+                self.heater.duty_cycle = 0x7FFF
+        except Exception as e:
+            self.debug_print(
+                "[ERROR] Cant turn on heater: " + "".join(traceback.format_exception(e))
+            )
+            self.heater.duty_cycle = 0x0000
 
     def heater_off(self):
         if self.hardware["FLD"]:
@@ -644,6 +689,28 @@ class Satellite:
                 self.heater.duty_cycle = 0x0000
         else:
             self.debug_print("[WARNING] LED Driver not initialized")
+
+    # =======================================================#
+    # Burn Wire                                              #
+    # =======================================================#
+
+    def distance(self):
+        if self.hardware["LiDAR"]:
+            try:
+                distance_mm = 0
+                for _ in range(10):
+                    distance_mm += self.LiDAR.range
+                    time.sleep(0.01)
+                self.debug_print("distance measured = {0}mm".format(distance_mm / 10))
+                return distance_mm / 10
+            except Exception as e:
+                self.debug_print(
+                    "LiDAR error: " + "".join(traceback.format_exception(e))
+                )
+                return 0
+        else:
+            self.debug_print("[WARNING] LiDAR not initialized")
+            return 0
 
     def burn(self, burn_num, dutycycle=0, freq=1000, duration=1):
         """
@@ -701,6 +768,135 @@ class Satellite:
             self.RGB = (0, 0, 0)
             burnwire.deinit()
             self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
+
+    def smart_burn(self, burn_num, dutycycle=0.1):
+        """
+        Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
+        has been installed.
+
+        IMPORTANT: See "Burn Wire Info & Usage" of https://pycubed.org/resources
+        before attempting to use this function!
+
+        burn_num:  (string) which burn wire circuit to operate, must be either '1' or '2'
+        dutycycle: (float) duty cycle percent, must be 0.0 to 100
+        freq:      (float) frequency in Hz of the PWM pulse, default is 1000 Hz
+        duration:  (float) duration in seconds the burn wire should be on
+        """
+
+        freq = 1000
+
+        distance1 = 0
+        distance2 = 0
+        # self.dist=self.distance()
+
+        try:
+            # convert duty cycle % into 16-bit fractional up time
+            dtycycl = int((dutycycle / 100) * (0xFFFF))
+            self.debug_print("----- SMART BURN WIRE CONFIGURATION -----")
+            self.debug_print(
+                "\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})".format(
+                    freq, (100 * dtycycl / 0xFFFF), dtycycl
+                )
+            )
+            # create our PWM object for the respective pin
+            # not active since duty_cycle is set to 0 (for now)
+            if "1" in burn_num:
+                burnwire = pwmio.PWMOut(board.ENABLE_BURN, frequency=freq, duty_cycle=0)
+            else:
+                return False
+
+            try:
+                distance1 = self.distance()
+                self.debug_print(str(distance1))
+                if (
+                    distance1 > self.dist + 2
+                    and distance1 > 4
+                    or self.f_triedburn == True
+                ):
+                    self.burned = True
+                    self.f_brownout = True
+                    raise TypeError(
+                        "Wire seems to have burned and satellite browned out"
+                    )
+                else:
+                    self.dist = int(distance1)
+                    self.burnarm = True
+                if self.burnarm:
+                    self.burnarm = False
+                    self.f_triedburn = True
+
+                    # Configure the relay control pin & open relay
+                    self.RGB = (0, 165, 0)
+
+                    self._relayA.drive_mode = digitalio.DriveMode.PUSH_PULL
+                    self.RGB = (255, 165, 0)
+                    self._relayA.value = 1
+
+                    # Pause to ensure relay is open
+                    time.sleep(0.5)
+
+                    # Start the Burn
+                    burnwire.duty_cycle = dtycycl
+
+                    # Burn Timer
+                    start_time = time.monotonic()
+
+                    # Monitor the burn
+                    while not self.burned:
+                        distance2 = self.distance()
+                        self.debug_print(str(distance2))
+                        if distance2 > distance1 + 1 or distance2 > 10:
+                            self._relayA.value = 0
+                            burnwire.duty_cycle = 0
+                            self.burned = True
+                            self.f_triedburn = False
+                        else:
+                            distance1 = distance2
+                            time_elapsed = time.monotonic() - start_time
+                            print("Time Elapsed: " + str(time_elapsed))
+                            if time_elapsed > 4:
+                                self._relayA.value = 0
+                                burnwire.duty_cycle = 0
+                                self.burned = False
+                                self.RGB = (0, 0, 255)
+                                time.sleep(10)
+                                self.f_triedburn = False
+                                break
+
+                    time.sleep(5)
+                    distance2 = self.distance()
+                else:
+                    pass
+                if distance2 > distance1 + 2 or distance2 > 10:
+                    self.burned = True
+                    self.f_triedburn = False
+            except Exception as e:
+                self.debug_print(
+                    "Error in Burn Sequence: " + "".join(traceback.format_exception(e))
+                )
+                self.debug_print("Error: " + str(e))
+                if "no attribute 'LiDAR'" in str(e):
+                    self.debug_print("Burning without LiDAR")
+                    time.sleep(120)  # Set to 120 for flight
+                    self.burnarm = False
+                    self.burned = True
+                    self.f_triedburn = True
+                    self.burn("1", dutycycle, freq, 4)
+                    time.sleep(5)
+
+            finally:
+                self._relayA.value = 0
+                burnwire.duty_cycle = 0
+                self.RGB = (0, 0, 0)
+                burnwire.deinit()
+                self._relayA.drive_mode = digitalio.DriveMode.OPEN_DRAIN
+
+            return True
+        except Exception as e:
+            self.debug_print(
+                "Error with Burn Wire: " + "".join(traceback.format_exception(e))
+            )
+            return False
 
 
 print("Initializing Power Management Systems...")
