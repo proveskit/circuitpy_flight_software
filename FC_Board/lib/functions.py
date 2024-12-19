@@ -18,11 +18,11 @@ from packet_sender import PacketSender
 
 class functions:
 
-    def debug_print(self, statement):
+    def debug_print(self, statement) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat):
+    def __init__(self, cubesat) -> None:
         self.cubesat = cubesat
         self.battery = BatteryHelper(cubesat)
         self.debug = cubesat.debug
@@ -86,7 +86,7 @@ class functions:
     def current_check(self):
         return self.cubesat.current_draw
 
-    def safe_sleep(self, duration=15):
+    def safe_sleep(self, duration: int = 15) -> None:
         self.debug_print("Setting Safe Sleep Mode")
 
         self.cubesat.can_bus.sleep()
@@ -103,7 +103,7 @@ class functions:
 
             self.cubesat.watchdog_pet()
 
-    def listen_loiter(self):
+    def listen_loiter(self) -> None:
         self.debug_print("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
@@ -119,7 +119,7 @@ class functions:
     Radio Functions
     """
 
-    def send(self, msg):
+    def send(self, msg) -> None:
         """Calls the RFM9x to send a message. Currently only sends with default settings.
 
         Args:
@@ -137,7 +137,7 @@ class functions:
         del self.field
         del Field
 
-    def send_packets(self, data):
+    def send_packets(self, data) -> None:
         """Sends packets of data over the radio with delay between packets.
 
         Args:
@@ -146,7 +146,7 @@ class functions:
         """
         self.ps.send_data(data)
 
-    def beacon(self):
+    def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
         import Field
 
@@ -175,10 +175,10 @@ class functions:
         del self.field
         del Field
 
-    def joke(self):
+    def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
-    def format_state_of_health(self, hardware):
+    def format_state_of_health(self, hardware : dict) -> str:
         to_return = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -192,7 +192,7 @@ class functions:
 
         return to_return
 
-    def state_of_health(self):
+    def state_of_health(self) -> None:
         import Field
 
         self.state_list = []
@@ -238,7 +238,7 @@ class functions:
         del self.field
         del Field
 
-    def send_face(self):
+    def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
         import Field
 
@@ -280,7 +280,7 @@ class functions:
 
         return False
 
-    def listen_joke(self):
+    def listen_joke(self) -> bool:
         try:
             self.debug_print("Listening")
             self.cubesat.radio1.receive_timeout = 10
@@ -352,7 +352,7 @@ class functions:
 
         return data
 
-    def OTA(self):
+    def OTA(self) -> None:
         # resets file system to whatever new file is received
         self.debug_print("Implement an OTA Function Here")
         pass
@@ -361,7 +361,7 @@ class functions:
     Logging Functions
     """
 
-    def log_face_data(self, data):
+    def log_face_data(self, data) -> None:
 
         self.debug_print("Logging Face Data")
         try:
@@ -369,7 +369,7 @@ class functions:
         except Exception as e:
             self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
-    def log_error_data(self, data):
+    def log_error_data(self, data) -> None:
 
         self.debug_print("Logging Error Data")
         try:
@@ -383,7 +383,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur=7, margin=0.2, seq=118):
+    def detumble(self, dur=7, margin=0.2, seq=118) -> None:
         self.debug_print("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
@@ -404,7 +404,7 @@ class functions:
                 + "".join(traceback.format_exception(e))
             )
 
-        def actuate(dipole, duration):
+        def actuate(dipole, duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
             if abs(dipole[0]) > 1:
                 a.Face2.drive = 52
@@ -416,7 +416,7 @@ class functions:
                 a.Face4.drive = 52
                 a.drvz_actuate(duration)
 
-        def do_detumble():
+        def do_detumble() -> None:
             try:
                 import detumble
 
@@ -446,7 +446,7 @@ class functions:
             )
         self.cubesat.RGB = (100, 100, 50)
 
-    def Short_Hybernate(self):
+    def Short_Hybernate(self) -> bool:
         self.debug_print("Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
@@ -458,7 +458,7 @@ class functions:
         self.cubesat.enable_rf.value = True
         return True
 
-    def Long_Hybernate(self):
+    def Long_Hybernate(self) -> bool:
         self.debug_print("LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
