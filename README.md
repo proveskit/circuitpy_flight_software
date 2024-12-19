@@ -1,12 +1,16 @@
 # flight_controller_software
-Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed! 
 
-Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software! 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
+
+Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed!
+
+Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software!
 
 # Usage
-Depending on whether you are trying to use the CircuitPython or PicoSDK software, there are some different steps you need to follow. 
+Depending on whether you are trying to use the CircuitPython or PicoSDK software, there are some different steps you need to follow.
 
-For CircuitPython load new software by doing the following: 
+For CircuitPython load new software by doing the following:
 1. Clone the branch you wish to put on your board to your local machine.
 2. Connect to the target board so it mounts as an external drive.
 3. Access the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
@@ -26,7 +30,21 @@ __For Battery Board__
 from pysquared_eps import cubesat as c
 ```
 
-# General Structure: 
+# Development Getting Started
+We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+
+We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to set up your python virtual environment (venv).
+
+1. Create your venv `python3 -m venv venv`
+2. Activate your venv `source ./venv/bin/activate`
+3. Install required packages `pip install -r requirements.txt`
+
+## Precommit hooks
+Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. To install the precommit hook:
+
+1. Install the precommit hook with `pre-commit install`
+
+## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
@@ -57,10 +75,3 @@ This software contains all of the libraries required to operate the sensors, pys
 - **pysquared_rfm9x.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
 ## tests
 This software is used for performing tests on the satellite
-
-## Linting setup
-
-1. Create your venv `python3 -m venv venv`
-2. Activate your venv `source ./venv/bin/activate`
-3. Install required packages `pip install -r requirements.txt`
-4. Run the automatic formatter with `make fmt`

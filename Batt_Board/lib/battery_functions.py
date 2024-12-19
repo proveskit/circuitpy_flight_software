@@ -1,6 +1,6 @@
 """
-This is the class that contains all of the functions for our CubeSat. 
-We pass the cubesat object to it for the definitions and then it executes 
+This is the class that contains all of the functions for our CubeSat.
+We pass the cubesat object to it for the definitions and then it executes
 our will.
 Authors: Nicole Maggard and Michael Pham 12/26/2023
 """

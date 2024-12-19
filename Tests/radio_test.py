@@ -48,20 +48,20 @@ cubesat.radio1.receive_timeout = radio_cfg["receive_timeout"]
 cubesat.radio1.enable_crc = False
 
 print(
-    """ 
-======================================= 
-|                                     | 
-|              WELCOME!               | 
+    """
+=======================================
+|                                     |
+|              WELCOME!               |
 |       Radio Test Version 1.0        |
 |                                     |
 =======================================
-|       Please Select Your Node       | 
+|       Please Select Your Node       |
 | 'A': Device Under Test              |
-| 'B': Receiver                       | 
+| 'B': Receiver                       |
 ================ OR ===================
 |      Act as a client                |
 | 'C': for an active satalite         |
-======================================= 
+=======================================
 """
 )
 
@@ -239,9 +239,9 @@ if device_selection not in options:
 
 else:
     print(
-        """ 
-    ======================================= 
-    |                                     | 
+        """
+    =======================================
+    |                                     |
     |       Verbose Output? (Y/N)         |
     |                                     |
     =======================================
@@ -256,10 +256,10 @@ else:
         debug_mode = False
 
 print(
-    """ 
-======================================= 
-|                                     | 
-|        Beginning Radio Test         | 
+    """
+=======================================
+|                                     |
+|        Beginning Radio Test         |
 |       Radio Test Version 1.0        |
 |                                     |
 =======================================
