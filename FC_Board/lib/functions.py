@@ -14,28 +14,29 @@ from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
-from typing import List, Dict, OrderedDict, Literal, Union
-
+from typing import List, Dict, OrderedDict, Literal, Union, Any
+import circuitpython_typing
+from pysquared import Satellite
 
 
 class functions:
 
-    def debug_print(self, statement) -> None:
+    def debug_print(self, statement: str) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat) -> None:
-        self.cubesat = cubesat
-        self.battery = BatteryHelper(cubesat)
-        self.debug = cubesat.debug
+    def __init__(self, cubesat: Satellite) -> None:
+        self.cubesat: Satellite = cubesat
+        self.battery: BatteryHelper = BatteryHelper(cubesat)
+        self.debug: bool = cubesat.debug
         self.debug_print("Initializing Functionalities")
 
-        self.pm = PacketManager(max_packet_size=128)
-        self.ps = PacketSender(cubesat.radio1, self.pm, max_retries=3)
+        self.pm: PacketManager = PacketManager(max_packet_size=128)
+        self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        self.Errorcount = 0
-        self.facestring = [None, None, None, None, None]
-        self.jokes = [
+        self.Errorcount: int = 0
+        self.facestring: list = [None, None, None, None, None]
+        self.jokes: list[str] = [
             "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
             "sudo rf - rf*",
             "Why did the astronaut break up with his girlfriend? He needed space.",
@@ -72,20 +73,20 @@ class functions:
             "Woah is that the Launcher Orbiter?????",
             "Everything in life is a spring if you think hard enough!",
         ]
-        self.last_battery_temp = 20
-        self.sleep_duration = 30
-        self.callsign = "KO6AZM"
-        self.state_bool = False
-        self.face_data_baton = False
-        self.detumble_enable_z = True
-        self.detumble_enable_x = True
-        self.detumble_enable_y = True
+        self.last_battery_temp: float = 20
+        self.sleep_duration: int = 30
+        self.callsign: str = "KO6AZM"
+        self.state_bool: bool = False
+        self.face_data_baton: bool = False
+        self.detumble_enable_z: bool = True
+        self.detumble_enable_x: bool = True
+        self.detumble_enable_y: bool = True
 
     """
     Satellite Management Functions
     """
 
-    def current_check(self):
+    def current_check(self) -> float:
         return self.cubesat.current_draw
 
     def safe_sleep(self, duration: int = 15) -> None:
@@ -139,7 +140,7 @@ class functions:
         del self.field
         del Field
 
-    def send_packets(self, data) -> None:
+    def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
 
         Args:
@@ -252,7 +253,7 @@ class functions:
         del self.field
         del Field
 
-    def listen(self):
+    def listen(self) -> bool:
         import cdh
 
         # This just passes the message through. Maybe add more functionality later.
@@ -304,7 +305,7 @@ class functions:
     change to remove fet values, move to pysquared
     """
 
-    def all_face_data(self):
+    def all_face_data(self) -> list:
 
         # self.cubesat.all_faces_on()
         self.debug_print(gc.mem_free())
@@ -329,7 +330,7 @@ class functions:
 
         return self.facestring
 
-    def get_battery_data(self):
+    def get_battery_data(self) -> Union[tuple[float, float, float, float, bool, float], None]:
 
         try:
             return self.battery.get_power_metrics()
@@ -340,7 +341,7 @@ class functions:
             )
             return None
 
-    def get_imu_data(self):
+    def get_imu_data(self) -> List[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
 
         try:
             data = []
@@ -385,7 +386,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur=7, margin=0.2, seq=118) -> None:
+    def detumble(self, dur: int = 7, margin: float = 0.2, seq: int = 118) -> None:
         self.debug_print("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
@@ -406,7 +407,7 @@ class functions:
                 + "".join(traceback.format_exception(e))
             )
 
-        def actuate(dipole, duration) -> None:
+        def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
             if abs(dipole[0]) > 1:
                 a.Face2.drive = 52
