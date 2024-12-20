@@ -14,6 +14,8 @@ from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
+from typing import List, Dict, OrderedDict, Literal, Union
+
 
 
 class functions:
@@ -119,7 +121,7 @@ class functions:
     Radio Functions
     """
 
-    def send(self, msg) -> None:
+    def send(self, msg: Union[str, bytearray]) -> None:
         """Calls the RFM9x to send a message. Currently only sends with default settings.
 
         Args:
@@ -178,7 +180,7 @@ class functions:
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
-    def format_state_of_health(self, hardware : dict) -> str:
+    def format_state_of_health(self, hardware : OrderedDict[str, bool]) -> str:
         to_return = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -446,7 +448,7 @@ class functions:
             )
         self.cubesat.RGB = (100, 100, 50)
 
-    def Short_Hybernate(self) -> bool:
+    def Short_Hybernate(self) -> Literal[True]:
         self.debug_print("Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
@@ -458,7 +460,7 @@ class functions:
         self.cubesat.enable_rf.value = True
         return True
 
-    def Long_Hybernate(self) -> bool:
+    def Long_Hybernate(self) -> Literal[True]:
         self.debug_print("LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
