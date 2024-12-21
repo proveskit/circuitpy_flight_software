@@ -14,8 +14,11 @@ from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
-from typing import List, Dict, OrderedDict, Literal, Union, Any
-import circuitpython_typing
+try:
+    from typing import List, Dict, OrderedDict, Literal, Union, Any
+    import circuitpython_typing
+except:
+    pass
 from pysquared import Satellite
 
 
