@@ -1,0 +1,26 @@
+import time
+from pysquared import cubesat as c
+
+print("=" * 70)
+print("Initializing Simple Repeater Commanding Script")
+print("=" * 70)
+
+c.radio1.node = 0xFA
+c.radio1.destination = 0xFB
+c.radio1.tx_power = 20
+passcode = "1234"
+
+while True:
+
+    packet = (
+            b"\x00\x00\x00\x00"
+            + passcode.encode()
+            + b"RP"
+            + input("Message to Repeat: ")
+        )
+    
+    c.radio1.send(packet, keep_listening=True)
+
+    time.sleep(1)
+
+    print(f"{c.radio1.receive(keep_listening=True)} RSSI: {c.radio1.last_rssi}")
