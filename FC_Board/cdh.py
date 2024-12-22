@@ -1,15 +1,10 @@
 import time
 import random
+import config
 
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
-jokereply = [
-    "Your Mom",
-    "Your Mum",
-    "Your Face",
-    "not True lol",
-    "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?",
-]
+jokereply = config.jokeReplies
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
 super_secret_code = b"ABCD"  # put your own code here

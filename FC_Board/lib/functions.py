@@ -10,6 +10,7 @@ import alarm
 import gc
 import traceback
 import random
+import config
 from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
@@ -38,6 +39,7 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
+<<<<<<< HEAD
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = [
@@ -85,6 +87,20 @@ class functions:
         self.detumble_enable_z: bool = True
         self.detumble_enable_x: bool = True
         self.detumble_enable_y: bool = True
+=======
+        # might need to config these as well
+        self.Errorcount = 0
+        self.facestring = [None, None, None, None, None]
+        self.jokes = config.jokes
+        self.last_battery_temp = 20
+        self.sleep_duration = 30
+        self.callsign = config.radioCallsign
+        self.state_bool = False
+        self.face_data_baton = False
+        self.detumble_enable_z = True
+        self.detumble_enable_x = True
+        self.detumble_enable_y = True
+>>>>>>> 27dd537 (first iteration of config file)
 
     """
     Satellite Management Functions
@@ -159,7 +175,7 @@ class functions:
 
         try:
             lora_beacon = (
-                f"{self.callsign} Hello I am Orpheus! I am: "
+                f"{self.callsign} Hello I am {config.cubesatName}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
                 + f"IHBPFJASTMNE! {self.callsign}"
