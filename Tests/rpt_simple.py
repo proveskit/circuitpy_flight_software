@@ -8,7 +8,9 @@ print("=" * 70)
 c.radio1.node = 0xFA
 c.radio1.destination = 0xFB
 c.radio1.tx_power = 20
-passcode = "1234"
+c.radio1.spreading_factor = 8
+c.radio1.coding_rate = 5
+passcode = ""
 
 while True:
 
