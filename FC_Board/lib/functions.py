@@ -14,6 +14,7 @@ from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
+
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any
     import circuitpython_typing
@@ -184,7 +185,7 @@ class functions:
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
-    def format_state_of_health(self, hardware : OrderedDict[str, bool]) -> str:
+    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -333,7 +334,9 @@ class functions:
 
         return self.facestring
 
-    def get_battery_data(self) -> Union[tuple[float, float, float, float, bool, float], None]:
+    def get_battery_data(
+        self,
+    ) -> Union[tuple[float, float, float, float, bool, float], None]:
 
         try:
             return self.battery.get_power_metrics()
@@ -344,7 +347,13 @@ class functions:
             )
             return None
 
-    def get_imu_data(self) -> List[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
+    def get_imu_data(
+        self,
+    ) -> List[
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[float, float, float],
+    ]:
 
         try:
             data = []

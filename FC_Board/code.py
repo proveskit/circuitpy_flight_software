@@ -4,7 +4,7 @@
 
 """
 Built for the PySquared FC Board
-Version: 2.0.0 
+Version: 2.0.0
 Published: Nov 19, 2024
 """
 
