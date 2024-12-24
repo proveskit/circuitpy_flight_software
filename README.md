@@ -40,9 +40,13 @@ We have a few python tools to make development safer, easier, and more consisten
 3. Install required packages `pip install -r requirements.txt`
 
 ## Precommit hooks
-Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. To install the precommit hook:
+Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly.
 
+To install the precommit hook:
 1. Install the precommit hook with `pre-commit install`
+
+To run the precommit hook:
+1. Run the precomit hook against all files with `pre-commit run --all-files`
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
