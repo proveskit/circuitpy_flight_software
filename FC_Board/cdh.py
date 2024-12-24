@@ -7,18 +7,10 @@ import config
 jokereply = config.jokeReplies
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY
-super_secret_code = b"ABCD"  # put your own code here
-repeat_code = b"RP"
+super_secret_code = config.super_secret_code
+repeat_code = config.repeat_code
 print(f"Super secret code is: {super_secret_code}")
-commands = {
-    b"\x8eb": "noop",
-    b"\xd4\x9f": "hreset",  # new
-    b"\x12\x06": "shutdown",
-    b"8\x93": "query",  # new
-    b"\x96\xa2": "exec_cmd",
-    b"\xa5\xb4": "joke_reply",
-    b"\x56\xc4": "FSK",
-}
+commands = config.commands
 
 
 ############### hot start helper ###############
