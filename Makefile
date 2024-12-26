@@ -4,4 +4,4 @@ fmt:
 
 .PHONY: test
 test:
-	pytest Tests/unit_tests
+	pytest FC_Board/tests
