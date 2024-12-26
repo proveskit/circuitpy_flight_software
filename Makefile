@@ -4,4 +4,4 @@ fmt:
 
 .PHONY: test
 test:
-	pytest CircuitPy/FC_Board/tests
+	pytest Tests/unit_tests

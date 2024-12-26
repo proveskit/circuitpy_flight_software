@@ -1,9 +1,7 @@
-# How to run:
-# 1. Make sure your virtual environment is activated
-# 2. pip install pytest (pytest --version to check if you already have pytest installed)
-# 3. cd Tests > cd unit_tests > pytest test_detumble.py
+# After following the necessary steps in README.md, you can use "make test" to run all tests in the unit_tests folder
+# To run this file specifically: cd Tests > cd unit_tests > pytest test_detumble.py
 # pytest test_detumble.py -v displays which tests ran and their respective results (fail or pass)
-# Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=/home/taylorg/spaceLab/pyProvesKit/circuitpy_flight_software
+# Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=<path to this repo>
 
 import pytest
 from Batt_Board import detumble

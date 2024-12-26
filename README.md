@@ -1,4 +1,8 @@
 # flight_controller_software
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
+
 Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed!
 
 Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software!
@@ -15,6 +19,36 @@ For CircuitPython load new software by doing the following:
   storage.erase_filesystem()
   ```
 4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
+5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
+
+__For Flight Controller Board__
+```py
+from pysquared import cubesat as c
+```
+__For Battery Board__
+```py
+from pysquared_eps import cubesat as c
+```
+
+# Development Getting Started
+We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+
+We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to set up your python virtual environment (venv).
+
+1. Create your venv `python3 -m venv venv`
+2. Activate your venv `source ./venv/bin/activate`
+3. Install required packages `pip install -r requirements.txt`
+
+## Precommit hooks
+Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly.
+
+To install the precommit hook:
+
+1. Install the precommit hook with `pre-commit install`
+
+To run the precommit hook:
+
+1. Run the precomit hook against all files with `pre-commit run --all-files`
 
 # General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit

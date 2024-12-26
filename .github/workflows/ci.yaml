@@ -31,4 +31,4 @@ jobs:
           pip install -r requirements.txt
       - name: Test with pytest
         run: |
-          pytest CircuitPy/FC_Board/tests
+          pytest Tests/unit_tests
