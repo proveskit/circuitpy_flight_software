@@ -11,11 +11,3 @@ repos:
     rev: 24.4.2
     hooks:
     -   id: black
-
-#-   repo: local
-#    hooks:
-#    -   id: run-pytest
-#        name: Run pytest
-#        entry: pytest Tests/unit_tests/test_detumble.py
-#        language: system
-#        types: [python]

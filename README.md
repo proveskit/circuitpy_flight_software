@@ -1,8 +1,4 @@
 # flight_controller_software
-
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
-
 Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed!
 
 Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software!
@@ -18,33 +14,9 @@ For CircuitPython load new software by doing the following:
   import storage
   storage.erase_filesystem()
   ```
-4. The target board will now disappear and remount. Once remounted, copy and paste the contents of the flight software folder for the target board from your GitHub repo.
-5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
+4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
 
-__For Flight Controller Board__
-```py
-from pysquared import cubesat as c
-```
-__For Battery Board__
-```py
-from pysquared_eps import cubesat as c
-```
-
-# Development Getting Started
-We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
-
-We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to set up your python virtual environment (venv).
-
-1. Create your venv `python3 -m venv venv`
-2. Activate your venv `source ./venv/bin/activate`
-3. Install required packages `pip install -r requirements.txt`
-
-## Precommit hooks
-Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. To install the precommit hook:
-
-1. Install the precommit hook with `pre-commit install`
-
-## General Structure:
+# General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
@@ -75,3 +47,15 @@ This software contains all of the libraries required to operate the sensors, pys
 - **pysquared_rfm9x.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
 ## tests
 This software is used for performing tests on the satellite
+
+## Linting setup
+
+1. Create your venv `python3 -m venv venv`
+2. Activate your venv `source ./venv/bin/activate`
+3. Install required packages `pip install -r requirements.txt`
+4. Run the automatic formatter with `make fmt`
+
+## Testing setup
+
+1. Follow the steps to set up your venv and install packages in the linting setup
+2. Run tests with `make test`
