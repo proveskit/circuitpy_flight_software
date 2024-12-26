@@ -48,9 +48,9 @@ To install the precommit hook:
 
 To run the precommit hook:
 
-1. Run the precomit hook against all files with `pre-commit run --all-files`
+1. Run the precommit hook against all files with `pre-commit run --all-files`
 
-# General Structure:
+## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
