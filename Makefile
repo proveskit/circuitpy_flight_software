@@ -1,6 +1,6 @@
 .PHONY: fmt
 fmt:
-	black .
+	pre-commit run --all-files
 
 .PHONY: test
 test:
