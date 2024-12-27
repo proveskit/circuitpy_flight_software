@@ -15,25 +15,32 @@ from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
 
+try:
+    from typing import List, Dict, OrderedDict, Literal, Union, Any
+    import circuitpython_typing
+except:
+    pass
+from pysquared import Satellite
+
 
 class functions:
 
-    def debug_print(self, statement):
+    def debug_print(self, statement: str) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat):
-        self.cubesat = cubesat
-        self.battery = BatteryHelper(cubesat)
-        self.debug = cubesat.debug
+    def __init__(self, cubesat: Satellite) -> None:
+        self.cubesat: Satellite = cubesat
+        self.battery: BatteryHelper = BatteryHelper(cubesat)
+        self.debug: bool = cubesat.debug
         self.debug_print("Initializing Functionalities")
 
-        self.pm = PacketManager(max_packet_size=128)
-        self.ps = PacketSender(cubesat.radio1, self.pm, max_retries=3)
+        self.pm: PacketManager = PacketManager(max_packet_size=128)
+        self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        self.Errorcount = 0
-        self.facestring = [None, None, None, None, None]
-        self.jokes = [
+        self.Errorcount: int = 0
+        self.facestring: list = [None, None, None, None, None]
+        self.jokes: list[str] = [
             "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
             "sudo rf - rf*",
             "Why did the astronaut break up with his girlfriend? He needed space.",
@@ -70,23 +77,23 @@ class functions:
             "Woah is that the Launcher Orbiter?????",
             "Everything in life is a spring if you think hard enough!",
         ]
-        self.last_battery_temp = 20
-        self.sleep_duration = 30
-        self.callsign = "KO6AZM"
-        self.state_bool = False
-        self.face_data_baton = False
-        self.detumble_enable_z = True
-        self.detumble_enable_x = True
-        self.detumble_enable_y = True
+        self.last_battery_temp: float = 20
+        self.sleep_duration: int = 30
+        self.callsign: str = "KO6AZM"
+        self.state_bool: bool = False
+        self.face_data_baton: bool = False
+        self.detumble_enable_z: bool = True
+        self.detumble_enable_x: bool = True
+        self.detumble_enable_y: bool = True
 
     """
     Satellite Management Functions
     """
 
-    def current_check(self):
+    def current_check(self) -> float:
         return self.cubesat.current_draw
 
-    def safe_sleep(self, duration=15):
+    def safe_sleep(self, duration: int = 15) -> None:
         self.debug_print("Setting Safe Sleep Mode")
 
         self.cubesat.can_bus.sleep()
@@ -103,7 +110,7 @@ class functions:
 
             self.cubesat.watchdog_pet()
 
-    def listen_loiter(self):
+    def listen_loiter(self) -> None:
         self.debug_print("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
@@ -119,7 +126,7 @@ class functions:
     Radio Functions
     """
 
-    def send(self, msg):
+    def send(self, msg: Union[str, bytearray]) -> None:
         """Calls the RFM9x to send a message. Currently only sends with default settings.
 
         Args:
@@ -137,7 +144,7 @@ class functions:
         del self.field
         del Field
 
-    def send_packets(self, data):
+    def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
 
         Args:
@@ -146,7 +153,7 @@ class functions:
         """
         self.ps.send_data(data)
 
-    def beacon(self):
+    def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
         import Field
 
@@ -175,10 +182,10 @@ class functions:
         del self.field
         del Field
 
-    def joke(self):
+    def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
-    def format_state_of_health(self, hardware):
+    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
@@ -192,7 +199,7 @@ class functions:
 
         return to_return
 
-    def state_of_health(self):
+    def state_of_health(self) -> None:
         import Field
 
         self.state_list = []
@@ -238,7 +245,7 @@ class functions:
         del self.field
         del Field
 
-    def send_face(self):
+    def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
         import Field
 
@@ -250,7 +257,7 @@ class functions:
         del self.field
         del Field
 
-    def listen(self):
+    def listen(self) -> bool:
         import cdh
 
         # This just passes the message through. Maybe add more functionality later.
@@ -280,7 +287,7 @@ class functions:
 
         return False
 
-    def listen_joke(self):
+    def listen_joke(self) -> bool:
         try:
             self.debug_print("Listening")
             self.cubesat.radio1.receive_timeout = 10
@@ -302,7 +309,7 @@ class functions:
     change to remove fet values, move to pysquared
     """
 
-    def all_face_data(self):
+    def all_face_data(self) -> list:
 
         # self.cubesat.all_faces_on()
         self.debug_print(gc.mem_free())
@@ -327,7 +334,9 @@ class functions:
 
         return self.facestring
 
-    def get_battery_data(self):
+    def get_battery_data(
+        self,
+    ) -> Union[tuple[float, float, float, float, bool, float], None]:
 
         try:
             return self.battery.get_power_metrics()
@@ -338,7 +347,13 @@ class functions:
             )
             return None
 
-    def get_imu_data(self):
+    def get_imu_data(
+        self,
+    ) -> List[
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[float, float, float],
+    ]:
 
         try:
             data = []
@@ -352,7 +367,7 @@ class functions:
 
         return data
 
-    def OTA(self):
+    def OTA(self) -> None:
         # resets file system to whatever new file is received
         self.debug_print("Implement an OTA Function Here")
         pass
@@ -361,7 +376,7 @@ class functions:
     Logging Functions
     """
 
-    def log_face_data(self, data):
+    def log_face_data(self, data) -> None:
 
         self.debug_print("Logging Face Data")
         try:
@@ -369,7 +384,7 @@ class functions:
         except Exception as e:
             self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
-    def log_error_data(self, data):
+    def log_error_data(self, data) -> None:
 
         self.debug_print("Logging Error Data")
         try:
@@ -383,7 +398,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur=7, margin=0.2, seq=118):
+    def detumble(self, dur: int = 7, margin: float = 0.2, seq: int = 118) -> None:
         self.debug_print("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
@@ -404,7 +419,7 @@ class functions:
                 + "".join(traceback.format_exception(e))
             )
 
-        def actuate(dipole, duration):
+        def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
             if abs(dipole[0]) > 1:
                 a.Face2.drive = 52
@@ -416,7 +431,7 @@ class functions:
                 a.Face4.drive = 52
                 a.drvz_actuate(duration)
 
-        def do_detumble():
+        def do_detumble() -> None:
             try:
                 import detumble
 
@@ -446,7 +461,7 @@ class functions:
             )
         self.cubesat.RGB = (100, 100, 50)
 
-    def Short_Hybernate(self):
+    def Short_Hybernate(self) -> Literal[True]:
         self.debug_print("Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
@@ -458,7 +473,7 @@ class functions:
         self.cubesat.enable_rf.value = True
         return True
 
-    def Long_Hybernate(self):
+    def Long_Hybernate(self) -> Literal[True]:
         self.debug_print("LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
