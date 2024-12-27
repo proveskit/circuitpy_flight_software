@@ -4,8 +4,9 @@
 # Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=<path to this repo>
 
 import pytest
-from Batt_Board import detumble
-from FC_Board import detumble
+
+# from Batt_Board import detumble
+import detumble
 
 
 def test_dot_product():

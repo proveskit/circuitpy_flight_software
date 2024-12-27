@@ -48,7 +48,7 @@ To install the precommit hook:
 
 To run the precommit hook:
 
-1. Run the precommit hook against all files with `pre-commit run --all-files`
+1. Run the precommit hook against all files with `make fmt`
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
@@ -81,13 +81,6 @@ This software contains all of the libraries required to operate the sensors, pys
 - **pysquared_rfm9x.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
 ## tests
 This software is used for performing tests on the satellite
-
-## Linting setup
-
-1. Create your venv `python3 -m venv venv`
-2. Activate your venv `source ./venv/bin/activate`
-3. Install required packages `pip install -r requirements.txt`
-4. Run the automatic formatter with `make fmt`
 
 ## Testing setup
 

@@ -1,7 +1,7 @@
 .PHONY: fmt
 fmt:
-	black .
+	pre-commit run --all-files
 
 .PHONY: test
 test:
-	pytest Tests/unit_tests
+	pytest FC_Board/tests
