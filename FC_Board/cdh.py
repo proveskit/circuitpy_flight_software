@@ -1,16 +1,18 @@
 import time
 import random
-import config
+import commandsConfig
+import json
 
-# our 4 byte code to authorize commands
-# pass-code for DEMO PURPOSES ONLY
-jokereply = config.jokeReplies
-# our 4 byte code to authorize commands
-# pass-code for DEMO PURPOSES ONLY
-super_secret_code = config.super_secret_code
-repeat_code = config.repeat_code
+commands = commandsConfig.commands
+# parses config data from json file & assigns data to variables
+with open("config.json", "r") as json_file:
+    json_data = json_file.read()
+parsed_data = json.loads(json_data)
+
+jokereply = parsed_data["jokereply"]
+super_secret_code = parsed_data["super_secret_code"].encode("utf-8")
+repeat_code = parsed_data["repeat_code"].encode("utf-8")
 print(f"Super secret code is: {super_secret_code}")
-commands = config.commands
 
 
 ############### hot start helper ###############
