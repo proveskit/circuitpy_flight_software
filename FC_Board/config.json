@@ -4,7 +4,7 @@
     "super_secret_code": "ABCD",
     "repeat_code": "RP",
     "ErrorCount": 0,
-    "last_battery_temp": 20,
+    "last_battery_temp": 20.0,
     "sleep_duration": 30,
     "state_bool": false,
     "face_data_baton": false,
