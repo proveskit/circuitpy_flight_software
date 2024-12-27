@@ -13,6 +13,6 @@ c.radio1.coding_rate = 5
 
 while True:
     
-    print(f"Time[{time.monotonic}] Received: {c.radio1.receive(keep_listening=True)} RSSI: {c.radio1.last_rssi}")
+    print(f"Time[{time.monotonic()}] Received: {c.radio1.receive(keep_listening=True)} RSSI: {c.radio1.last_rssi}")
 
     time.sleep(1)
