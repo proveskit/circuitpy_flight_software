@@ -9,20 +9,26 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
-import board, machine, microcontroller
-import busio, time, sys, traceback
-from storage import mount, umount, VfsFat
-import digitalio, sdcardio, pwmio
-from os import listdir, stat, statvfs, mkdir, chdir
-from bitflags import bitFlag, multiBitFlag, multiByte
-from micropython import const
+import board, machine, microcontroller  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+import busio, time, sys, traceback  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+from storage import (
+    mount,
+    umount,
+    VfsFat,
+)  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+import digitalio, sdcardio  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+from os import stat, mkdir, chdir
+from bitflags import bitFlag, multiBitFlag
+from micropython import (
+    const,
+)  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
 from debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
 from adafruit_rfm import rfm9x  # Radio
 from adafruit_rfm import rfm9xfsk  # Radio
-import neopixel  # RGB LED
+import neopixel  # RGB LED # mpy module which IDE intellesense cannot read, Issue #27
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer

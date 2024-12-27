@@ -30,7 +30,9 @@ Implementation Notes
 """
 
 import time
-from micropython import const
+from micropython import (
+    const,
+)  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
 
 try:
     from typing import List

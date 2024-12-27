@@ -1,6 +1,4 @@
 from debugcolor import co
-import time
-import traceback
 import gc
 
 
