@@ -18,7 +18,7 @@ For CircuitPython load new software by doing the following:
   import storage
   storage.erase_filesystem()
   ```
-4. The target board will now disappear and remount. Once remounted, copy and paste the contents of the flight software folder for the target board from your GitHub repo.
+4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
 5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
 
 __For Flight Controller Board__
@@ -43,10 +43,12 @@ We have a few python tools to make development safer, easier, and more consisten
 Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly.
 
 To install the precommit hook:
+
 1. Install the precommit hook with `pre-commit install`
 
 To run the precommit hook:
-1. Run the precomit hook against all files with `pre-commit run --all-files`
+
+1. Run the precommit hook against all files with `make fmt`
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
@@ -79,3 +81,8 @@ This software contains all of the libraries required to operate the sensors, pys
 - **pysquared_rfm9x.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
 ## tests
 This software is used for performing tests on the satellite
+
+## Testing setup
+
+1. Follow the steps to set up your venv and install packages in the linting setup
+2. Run tests with `make test`

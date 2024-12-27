@@ -1,4 +1,5 @@
-
+__pycache__/
+.pytest_cache
 .DS_Store
 CircuitPy/.DS_Store
 CircuitPy/FC_Board/.DS_Store
