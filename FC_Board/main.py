@@ -5,17 +5,22 @@ Updated again for Orpheus by Michael Pham 9/30/2024
 This is where the processes get scheduled, and satellite operations are handeled
 """
 
-from lib.pysquared import cubesat as c
-
-c.watchdog_pet()
-
-import asyncio
 import time
 import traceback
 import gc  # Garbage collection
-import microcontroller  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
-import lib.functions as functions
-from lib.debugcolor import co
+
+try:
+    # IDE only imports
+    from ..lib.proveskit_functions.pysquared import cubesat as c
+    from ..lib.proveskit_functions.functions import functions
+    from ..lib.proveskit_functions.debugcolor import co
+except:
+    # Board only imports
+    pass
+
+import microcontroller  # circuitpython module will need stub/mock for IDE intellisense, Issue #27
+
+c.watchdog_pet()
 
 beacon_interval = 15
 
