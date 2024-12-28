@@ -4,7 +4,7 @@ fmt:
 
 .PHONY: test
 test:
-	pytest tests/unit
+	python3 -m pytest tests/unit
 
 install-libraries: \
 	adafruit-drv2605 \

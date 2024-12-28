@@ -1,3 +1,7 @@
+print("Welcome to the Proves REPL!")
+print("Run watchdog_init() to initialize the watchdog timer.")
+
+
 def watchdog_init():
     import board
     import time
