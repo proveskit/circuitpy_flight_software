@@ -6,7 +6,7 @@
 import pytest
 
 # from Batt_Board import detumble
-import FC_Board.detumble as detumble
+import proves.lib.detumble as detumble
 
 
 def test_dot_product():
