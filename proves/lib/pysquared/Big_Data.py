@@ -38,7 +38,7 @@ class Face:
 
         if "MCP" in senlist:
             try:
-                from ..adafruit_mcp9808.adafruit_mcp9808 import MCP9808
+                from lib.adafruit_mcp9808 import MCP9808
 
                 self.mcp = MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
@@ -47,7 +47,7 @@ class Face:
 
         if "VEML" in senlist:
             try:
-                from ..adafruit_veml7700.adafruit_veml7700 import VEML7700
+                from lib.adafruit_veml7700 import VEML7700
 
                 self.veml = VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
@@ -56,7 +56,7 @@ class Face:
 
         if "DRV" in senlist:
             try:
-                from ..adafruit_drv2605.adafruit_drv2605 import DRV2605
+                from lib.adafruit_drv2605 import DRV2605
 
                 self.drv = DRV2605(self.tca[address])
                 self.sensors["DRV"] = True

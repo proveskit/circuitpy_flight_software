@@ -259,7 +259,7 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import cdh
+        import pysquared.lib.pysquared.cdh as cdh
 
         # This just passes the message through. Maybe add more functionality later.
         try:

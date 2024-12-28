@@ -26,13 +26,12 @@ from debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
-from ..adafruit_rfm.adafruit_rfm import rfm9x  # Radio
-from ..adafruit_rfm.adafruit_rfm import rfm9xfsk  # Radio
-from ..adafruit_neopixel.neopixel import NeoPixel, GRB  # RGB LED
-from ..adafruit_lsm6ds.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-from ..adafruit_lis2mdl.adafruit_lis2mdl import LIS2MDL  # Magnetometer
-from ..adafruit_tca9548a.adafruit_tca9548a import TCA9548A  # I2C Multiplexer
-from ..adafruit_ov5640.adafruit_ov5640 import (
+from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
+from lib.neopixel import NeoPixel, GRB  # RGB LED
+from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
+from lib.adafruit_lis2mdl import LIS2MDL  # Magnetometer
+from lib.adafruit_tca9548a import TCA9548A  # I2C Multiplexer
+from lib.adafruit_ov5640 import (
     OV5640,
     OV5640_SIZE_QVGA,
     OV5640_COLOR_JPEG,
@@ -40,7 +39,7 @@ from ..adafruit_ov5640.adafruit_ov5640 import (
 import rv3028
 
 # CAN Bus Import
-from ..adafruit_mcp2515.adafruit_mcp2515 import MCP2515 as CAN
+from lib.adafruit_mcp2515 import MCP2515 as CAN
 
 
 # NVM register numbers

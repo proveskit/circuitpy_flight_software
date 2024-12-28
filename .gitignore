@@ -3,4 +3,5 @@ __pycache__/
 .pytest_cache
 venv
 **/*.mpy
-artifacts/
+proves/lib/adafruit*
+proves/lib/neopixel.py
