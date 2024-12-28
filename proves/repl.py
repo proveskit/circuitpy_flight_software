@@ -1,7 +1,12 @@
-import board
-import time
-import digitalio
+print("Welcome to the Proves REPL!")
+print("Run watchdog_init() to initialize the watchdog timer.")
 
-watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
-watchdog_pin.direction = digitalio.Direction.OUTPUT
-watchdog_pin.value = False
+
+def watchdog_init():
+    import board
+    import time
+    import digitalio
+
+    watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
+    watchdog_pin.direction = digitalio.Direction.OUTPUT
+    watchdog_pin.value = False
