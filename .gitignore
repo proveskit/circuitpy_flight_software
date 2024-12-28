@@ -1,17 +1,8 @@
+**/.DS_Store
 __pycache__/
 .pytest_cache
-.DS_Store
-CircuitPy/.DS_Store
-CircuitPy/FC_Board/.DS_Store
-.DS_Store
-CircuitPy/.DS_Store
-CircuitPy/FC_Board/.DS_Store
-.DS_Store
-CircuitPy/.DS_Store
-CircuitPy/.DS_Store
-CircuitPy/FC_Board/.DS_Store
-.DS_Store
-CircuitPy/.DS_Store
-CircuitPy/FC_Board/.DS_Store
-CircuitPy/FC_Board/.DS_Store
 venv
+# **/*.mpy
+# proves/lib/adafruit*
+# proves/lib/asyncio*
+# proves/lib/neopixel.py

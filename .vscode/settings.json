@@ -1,6 +1,6 @@
 {
     "python.testing.pytestArgs": [
-        "CircuitPy"
+        "tests/unit"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
