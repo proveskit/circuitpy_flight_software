@@ -44,7 +44,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c)
+    f = functions(c)
 
     def initial_boot():
         c.watchdog_pet()

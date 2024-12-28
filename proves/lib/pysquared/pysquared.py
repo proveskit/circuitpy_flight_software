@@ -18,12 +18,13 @@ from storage import (
 )  # circuitpython module will need stub/mock for IDE intellisense, Issue #27
 import digitalio, sdcardio  # circuitpython module will need stub/mock for IDE intellisense, Issue #27
 from os import stat, mkdir, chdir
-from bitflags import bitFlag, multiBitFlag
 from micropython import (
     const,
 )  # circuitpython module will need stub/mock for IDE intellisense, Issue #27
-from debugcolor import co
 from collections import OrderedDict
+
+from lib.pysquared.bitflags import bitFlag, multiBitFlag
+from lib.pysquared.debugcolor import co
 
 # Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
@@ -36,7 +37,7 @@ from lib.adafruit_ov5640 import (
     OV5640_SIZE_QVGA,
     OV5640_COLOR_JPEG,
 )  # Camera
-import rv3028
+from lib.pysquared.rv3028 import RV3028
 
 # CAN Bus Import
 from lib.adafruit_mcp2515 import MCP2515 as CAN
@@ -351,7 +352,7 @@ class Satellite:
         RTC Initialization
         """
         try:
-            self.rtc = rv3028.RV3028(self.i2c1)
+            self.rtc = RV3028(self.i2c1)
 
             # Still need to test these configs
             self.rtc.configure_backup_switchover(mode="level", interrupt=True)

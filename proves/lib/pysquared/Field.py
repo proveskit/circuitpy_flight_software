@@ -4,7 +4,7 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 import traceback
 
 

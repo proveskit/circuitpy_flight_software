@@ -1,4 +1,4 @@
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 import gc
 
 

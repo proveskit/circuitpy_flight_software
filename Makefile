@@ -4,7 +4,7 @@ fmt:
 
 .PHONY: test
 test:
-	pytest tests
+	pytest tests/unit
 
 install-libraries: \
 	adafruit-drv2605 \
@@ -27,6 +27,7 @@ $(LIBDIR):
 	mkdir -p $(LIBDIR)
 
 # Library Versions
+ADAFRUIT_ASYNCIO_VERSION ?= 1.3.3
 ADAFRUIT_DRV2605_VERSION ?= 1.3.4
 ADAFRUIT_LIS2MDL_VERSION ?= 2.1.23
 ADAFRUIT_LSM303_ACCEL_VERSION ?= 1.1.22
@@ -41,6 +42,11 @@ ADAFRUIT_RFM_VERSION ?= 1.0.3
 ADAFRUIT_TCA9548A_VERSION ?= 0.7.4
 ADAFRUIT_TICKS_VERSION ?= 1.1.1
 ADAFRUIT_VEML7700_VERSION ?= 2.0.2
+
+.PHONY: adafruit-asyncio
+adafruit-asyncio: $(LIBDIR)
+	pip install git+https://github.com/adafruit/adafruit_circuitpython_asyncio@$(ADAFRUIT_ASYNCIO_VERSION) --target $(LIBDIR) --no-deps
+	rm -rf $(LIBDIR)/adafruit_circuitpython_asyncio-0.0.0+auto.0.dist-info
 
 .PHONY: adafruit-drv2605
 adafruit-drv2605: $(LIBDIR)

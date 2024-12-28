@@ -4,4 +4,5 @@ __pycache__/
 venv
 **/*.mpy
 proves/lib/adafruit*
+proves/lib/asyncio*
 proves/lib/neopixel.py
