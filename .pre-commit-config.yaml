@@ -11,3 +11,5 @@ repos:
     rev: 24.4.2
     hooks:
     -   id: black
+
+exclude: 'lib/adafruit_.*|lib/asyncio/.*|lib/neopixel\.py'

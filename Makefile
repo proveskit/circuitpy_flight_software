@@ -7,6 +7,7 @@ test:
 	python3 -m pytest tests/unit
 
 download-libraries: \
+	adafruit-asyncio \
 	adafruit-drv2605 \
 	adafruit-lis2mdl \
 	adafruit-lsm303-accel \
