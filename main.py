@@ -24,7 +24,7 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    from pysquared import cubesat as c
+    from lib.pysquared import cubesat as c
 
     c.watchdog_pet()
 
@@ -33,8 +33,8 @@ try:
     import traceback
     import gc  # Garbage collection
     import microcontroller
-    import functions
-    from debugcolor import co
+    import lib.functions as functions
+    from lib.debugcolor import co
 
     beacon_interval = 15
 

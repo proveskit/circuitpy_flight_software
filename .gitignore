@@ -3,6 +3,6 @@ __pycache__/
 .pytest_cache
 venv
 **/*.mpy
-proves/lib/adafruit*
-proves/lib/asyncio*
-proves/lib/neopixel.py
+lib/adafruit*
+lib/asyncio*
+lib/neopixel.py

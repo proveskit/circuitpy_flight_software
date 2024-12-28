@@ -23,7 +23,7 @@ download-libraries: \
 	adafruit-ticks \
 	adafruit-veml7700
 
-LIBDIR ?= proves/lib
+LIBDIR ?= lib
 $(LIBDIR):
 	mkdir -p $(LIBDIR)
 
