@@ -32,6 +32,13 @@ import adafruit_ov5640
 # CAN Bus Import
 from adafruit_mcp2515 import MCP2515 as CAN
 
+# Importing typing libraries
+try:
+    from typing import List, Dict, OrderedDict, Literal, Union, Any
+    import circuitpython_typing
+except:
+    pass
+
 
 # NVM register numbers
 _BOOTCNT = const(0)
@@ -51,30 +58,32 @@ class Satellite:
     """
 
     # General NVM counters
-    c_boot = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_error_count = multiBitFlag(register=_ERRORCNT, lowest_bit=0, num_bits=8)
-    c_distance = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
+    c_boot: multiBitFlag = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
+    c_vbusrst: multiBitFlag = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
+    c_error_count: multiBitFlag = multiBitFlag(
+        register=_ERRORCNT, lowest_bit=0, num_bits=8
+    )
+    c_distance: multiBitFlag = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
+    c_ichrg: multiBitFlag = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
 
     # Define NVM flags
-    f_softboot = bitFlag(register=_FLAG, bit=0)
-    f_solar = bitFlag(register=_FLAG, bit=1)
-    f_burnarm = bitFlag(register=_FLAG, bit=2)
-    f_brownout = bitFlag(register=_FLAG, bit=3)
-    f_triedburn = bitFlag(register=_FLAG, bit=4)
-    f_shtdwn = bitFlag(register=_FLAG, bit=5)
-    f_burned = bitFlag(register=_FLAG, bit=6)
-    f_fsk = bitFlag(register=_FLAG, bit=7)
+    f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
+    f_solar: bitFlag = bitFlag(register=_FLAG, bit=1)
+    f_burnarm: bitFlag = bitFlag(register=_FLAG, bit=2)
+    f_brownout: bitFlag = bitFlag(register=_FLAG, bit=3)
+    f_triedburn: bitFlag = bitFlag(register=_FLAG, bit=4)
+    f_shtdwn: bitFlag = bitFlag(register=_FLAG, bit=5)
+    f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
+    f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
 
-    def debug_print(self, statement):
+    def debug_print(self, statement: Any):
         """
         A method for printing debug statements.
         """
         if self.debug:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
-    def error_print(self, statement):
+    def error_print(self, statement: Any):
         self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
@@ -83,38 +92,42 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug = True  # Define verbose output here. True or False
-        self.legacy = False  # Define if the board is used with legacy or not
-        self.heating = False  # Currently not used
-        self.orpheus = True  # Define if the board is used with Orpheus or not
-        self.is_licensed = True
+        self.debug: bool = True  # Define verbose output here. True or False
+        self.legacy: bool = False  # Define if the board is used with legacy or not
+        self.heating: bool = False  # Currently not used
+        self.orpheus: bool = True  # Define if the board is used with Orpheus or not
+        self.is_licensed: bool = True
 
         """
         Define the normal power modes
         """
         self.NORMAL_TEMP = 20
-        self.NORMAL_BATT_TEMP = 1  # Set to 0 BEFORE FLIGHT!!!!!
-        self.NORMAL_MICRO_TEMP = 20
-        self.NORMAL_CHARGE_CURRENT = 0.5
-        self.NORMAL_BATTERY_VOLTAGE = 6.9  # 6.9
-        self.CRITICAL_BATTERY_VOLTAGE = 6.6  # 6.6
-        self.vlowbatt = 6.0
-        self.battery_voltage = 3.3  # default value for testing REPLACE WITH REAL VALUE
-        self.current_draw = 255  # default value for testing REPLACE WITH REAL VALUE
-        self.REBOOT_TIME = 3600  # 1 hour
+        self.NORMAL_BATT_TEMP: int = 1  # Set to 0 BEFORE FLIGHT!!!!!
+        self.NORMAL_MICRO_TEMP: int = 20
+        self.NORMAL_CHARGE_CURRENT: float = 0.5
+        self.NORMAL_BATTERY_VOLTAGE: float = 6.9  # 6.9
+        self.CRITICAL_BATTERY_VOLTAGE: float = 6.6  # 6.6
+        self.vlowbatt: float = 6.0
+        self.battery_voltage: float = (
+            3.3  # default value for testing REPLACE WITH REAL VALUE
+        )
+        self.current_draw: float = (
+            255  # default value for testing REPLACE WITH REAL VALUE
+        )
+        self.REBOOT_TIME: int = 3600  # 1 hour
         self.turbo_clock = False
 
         """
         Setting up data buffers
         """
-        self.data_cache = {}
-        self.filenumbers = {}
-        self.image_packets = 0
-        self.urate = 9600
-        self.buffer = None
-        self.buffer_size = 1
-        self.send_buff = memoryview(SEND_BUFF)
-        self.micro = microcontroller
+        self.data_cache: dict = {}
+        self.filenumbers: dict = {}
+        self.image_packets: int = 0
+        self.urate: int = 9600
+        self.buffer: bytearray = None
+        self.buffer_size: int = 1
+        self.send_buff: memoryview = memoryview(SEND_BUFF)
+        self.micro: microcontroller = microcontroller
 
         self.battery_voltage = None
         self.draw_current = None
@@ -127,12 +140,12 @@ class Satellite:
         Define the boot time and current time
         """
         self.c_boot += 1
-        self.BOOTTIME = 1577836800
+        self.BOOTTIME: int = 1577836800
         self.debug_print(f"Boot time: {self.BOOTTIME}s")
-        self.CURRENTTIME = self.BOOTTIME
-        self.UPTIME = 0
+        self.CURRENTTIME: int = self.BOOTTIME
+        self.UPTIME: int = 0
 
-        self.radio_cfg = {
+        self.radio_cfg: dict[str, float] = {
             "id": 0xFB,
             "gs": 0xFA,
             "freq": 437.4,
@@ -142,7 +155,7 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
-        self.hardware = OrderedDict(
+        self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
                 ("I2C0", False),
                 ("SPI0", False),
@@ -223,11 +236,13 @@ class Satellite:
 
         try:
             if not self.orpheus:
-                self.uart = busio.UART(board.TX, board.RX, baudrate=self.urate)
+                self.uart: circuitpython_typing.ByteStream = busio.UART(
+                    board.TX, board.RX, baudrate=self.urate
+                )
                 self.hardware["UART"] = True
             else:
                 # Orpheus uses the I2C0 Connection for UART
-                self.uart = busio.UART(
+                self.uart: circuitpython_typing.ByteStream = busio.UART(
                     board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
                 )
                 self.hardware["UART"] = True
@@ -252,10 +267,10 @@ class Satellite:
         Radio 1 Initialization
         """
         # Define Radio Ditial IO Pins
-        _rf_cs1 = digitalio.DigitalInOut(board.SPI0_CS0)
-        _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
-        self.radio1_DIO0 = digitalio.DigitalInOut(board.RF1_IO0)
-        self.radio1_DIO4 = digitalio.DigitalInOut(board.RF1_IO4)
+        _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
+        _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
+        self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
+        self.radio1_DIO4: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO4)
 
         # Configure Radio Pins
 
