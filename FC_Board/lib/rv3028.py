@@ -5,7 +5,7 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-import adafruit_bus_device.i2c_device as i2c_device  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+import adafruit_bus_device.i2c_device as i2c_device
 
 
 class RV3028:
