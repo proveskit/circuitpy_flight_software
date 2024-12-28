@@ -10,17 +10,19 @@ import alarm
 import gc
 import traceback
 import random
+from micropython import const
+
 from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
 from packet_sender import PacketSender
+from pysquared import Satellite
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any
     import circuitpython_typing
 except:
     pass
-from pysquared import Satellite
 
 
 class functions:
@@ -96,7 +98,8 @@ class functions:
     def safe_sleep(self, duration: int = 15) -> None:
         self.debug_print("Setting Safe Sleep Mode")
 
-        self.cubesat.can_bus.sleep()
+        # TODO(nateinaction): Accessing private method. Ability to sleep the canbus should be made in upstream. Search for this comment to find other usages.
+        self.cubesat.can_bus._set_mode(0x20)
 
         iterations = 0
 
@@ -185,6 +188,16 @@ class functions:
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
+    def last_radio_temp(self) -> int:
+        """Tries to grab former temp from module"""
+        _RH_RF95_REG_5B_FORMER_TEMP = const(0x5B)
+        raw_temp = self.cubesat.radio1.read_u8(_RH_RF95_REG_5B_FORMER_TEMP)
+        temp = raw_temp & 0x7F
+        if (raw_temp & 0x80) == 0x80:
+            temp = ~temp + 0x01
+
+        return temp + 143  # Added prescalar for temp
+
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return = ""
         for key, value in hardware.items():
@@ -213,7 +226,7 @@ class functions:
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.cubesat.radio1.former_temperature}",
+                f"RT:{self.last_radio_temp()}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.cubesat.c_error_count}",
