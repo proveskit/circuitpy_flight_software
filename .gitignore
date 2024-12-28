@@ -3,4 +3,4 @@ __pycache__/
 .pytest_cache
 venv
 **/*.mpy
-FC_Board/lib/
+artifacts/

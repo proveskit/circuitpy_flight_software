@@ -1,2 +1,0 @@
-.. automodule:: neopixel
-   :members:

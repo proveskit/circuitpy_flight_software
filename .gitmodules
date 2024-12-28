@@ -1,42 +1,42 @@
-[submodule "lib/adafruit_tca9548a"]
-	path = lib/adafruit_tca9548a
+[submodule "src/lib/adafruit_tca9548a"]
+	path = src/lib/adafruit_tca9548a
 	url = https://github.com/adafruit/Adafruit_CircuitPython_TCA9548A
-[submodule "lib/adafruit_ticks"]
-	path = lib/adafruit_ticks
+[submodule "src/lib/adafruit_ticks"]
+	path = src/lib/adafruit_ticks
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Ticks
-[submodule "lib/adafruit_rfm"]
-	path = lib/adafruit_rfm
+[submodule "src/lib/adafruit_rfm"]
+	path = src/lib/adafruit_rfm
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM
-[submodule "lib/adafruit_register"]
-	path = lib/adafruit_register
+[submodule "src/lib/adafruit_register"]
+	path = src/lib/adafruit_register
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register
-[submodule "lib/adafruit_pca9685"]
-	path = lib/adafruit_pca9685
+[submodule "src/lib/adafruit_pca9685"]
+	path = src/lib/adafruit_pca9685
 	url = https://github.com/adafruit/Adafruit_CircuitPython_OV5640
-[submodule "lib/adafruit_ov5640"]
-	path = lib/adafruit_ov5640
+[submodule "src/lib/adafruit_ov5640"]
+	path = src/lib/adafruit_ov5640
 	url = https://github.com/adafruit/Adafruit_CircuitPython_OV5640
-[submodule "lib/adafruit_mcp9808"]
-	path = lib/adafruit_mcp9808
+[submodule "src/lib/adafruit_mcp9808"]
+	path = src/lib/adafruit_mcp9808
 	url = https://github.com/adafruit/Adafruit_CircuitPython_MCP9808
-[submodule "lib/adafruit_mcp2515"]
-	path = lib/adafruit_mcp2515
+[submodule "src/lib/adafruit_mcp2515"]
+	path = src/lib/adafruit_mcp2515
 	url = https://github.com/adafruit/Adafruit_CircuitPython_MCP2515
-[submodule "lib/adafruit_lsm303_accel"]
-	path = lib/adafruit_lsm303_accel
+[submodule "src/lib/adafruit_lsm303_accel"]
+	path = src/lib/adafruit_lsm303_accel
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LSM303_Accel
-[submodule "lib/adafruit_lsm6ds"]
-	path = lib/adafruit_lsm6ds
+[submodule "src/lib/adafruit_lsm6ds"]
+	path = src/lib/adafruit_lsm6ds
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LSM6DS
-[submodule "lib/adafruit_lis2mdl"]
-	path = lib/adafruit_lis2mdl
+[submodule "src/lib/adafruit_lis2mdl"]
+	path = src/lib/adafruit_lis2mdl
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LIS2MDL
-[submodule "lib/adafruit_drv2605"]
-	path = lib/adafruit_drv2605
+[submodule "src/lib/adafruit_drv2605"]
+	path = src/lib/adafruit_drv2605
 	url = https://github.com/adafruit/Adafruit_CircuitPython_DRV2605
-[submodule "lib/adafruit_neopixel"]
-	path = lib/adafruit_neopixel
+[submodule "src/lib/adafruit_neopixel"]
+	path = src/lib/adafruit_neopixel
 	url = https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel
-[submodule "lib/adafruit_veml7700"]
-	path = lib/adafruit_veml7700
+[submodule "src/lib/adafruit_veml7700"]
+	path = src/lib/adafruit_veml7700
 	url = https://github.com/adafruit/Adafruit_CircuitPython_VEML7700
