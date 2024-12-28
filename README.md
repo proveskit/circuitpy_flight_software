@@ -38,6 +38,7 @@ We have a few python tools to make development safer, easier, and more consisten
 1. Create your venv `python3 -m venv venv`
 2. Activate your venv `source ./venv/bin/activate`
 3. Install required packages `pip install -r requirements.txt`
+4. Download necessary libraries `make download-libraries`
 
 ## Precommit hooks
 Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly.

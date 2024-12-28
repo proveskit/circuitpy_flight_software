@@ -1,6 +1,7 @@
 **/.DS_Store
 __pycache__/
 .pytest_cache
+artifacts/
 venv
 **/*.mpy
 lib/adafruit*
