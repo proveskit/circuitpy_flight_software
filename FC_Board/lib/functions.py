@@ -45,14 +45,14 @@ class functions:
         parsed_data = json.loads(json_data)
 
         self.cubesatName: str = parsed_data["cubesatName"]
-        self.Errorcount: int = parsed_data["ErrorCount"]
-        self.facestring: list = parsed_data["facestring"]
+        self.Errorcount: int = 0
+        self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = parsed_data["jokes"]
         self.last_battery_temp: float = parsed_data["last_battery_temp"]
         self.sleep_duration: int = parsed_data["sleep_duration"]
         self.callsign: str = parsed_data["callsign"]
-        self.state_bool: bool = parsed_data["state_bool"]
-        self.face_data_baton: bool = parsed_data["face_data_baton"]
+        self.state_bool: bool = False
+        self.face_data_baton: bool = False
         self.detumble_enable_z: bool = parsed_data["detumble_enable_z"]
         self.detumble_enable_x: bool = parsed_data["detumble_enable_x"]
         self.detumble_enable_y: bool = parsed_data["detumble_enable_y"]
