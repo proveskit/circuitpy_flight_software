@@ -33,8 +33,8 @@ try:
     import traceback
     import gc  # Garbage collection
     import microcontroller
-    import lib.functions as functions
-    from lib.debugcolor import co
+    import lib.pysquared.functions as functions
+    from lib.pysquared.debugcolor import co
 
     beacon_interval = 15
 

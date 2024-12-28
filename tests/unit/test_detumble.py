@@ -6,7 +6,7 @@
 import pytest
 
 # from Batt_Board import detumble
-import lib.detumble as detumble
+import lib.pysquared.detumble as detumble
 
 
 def test_dot_product():
