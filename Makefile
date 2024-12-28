@@ -20,6 +20,7 @@ test: ## Run tests
 .PHONY: build
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	mkdir -p artifacts/proves
+	rm -rf artifacts/proves/*
 	cp ./*.py artifacts/proves/
 	find ./lib -type d -name '__pycache__' -prune -o -type f -print | cpio -pdm artifacts/proves/
 	cd artifacts && zip -r proves.zip proves

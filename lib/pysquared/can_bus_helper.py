@@ -1,11 +1,11 @@
 import traceback
 import time
 
-from adafruit_mcp2515.canio import (
+from lib.adafruit_mcp2515.canio import (
     Message,
     RemoteTransmissionRequest,
 )  # pylint: disable=import-error
-from debugcolor import co  # pylint: disable=import-error
+from lib.pysquared.debugcolor import co  # pylint: disable=import-error
 
 # There may be an AI induced error with the traceback statements
 

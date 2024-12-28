@@ -5,8 +5,8 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-from debugcolor import co
 import traceback
+from lib.pysquared.debugcolor import co
 
 
 class Field:

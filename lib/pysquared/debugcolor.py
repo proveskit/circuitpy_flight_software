@@ -1,5 +1,5 @@
 """
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 print(co(msg='hello!',color='red'))
 """
 

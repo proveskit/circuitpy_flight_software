@@ -24,7 +24,7 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    from lib.pysquared import cubesat as c
+    from lib.pysquared.pysquared import cubesat as c
 
     c.watchdog_pet()
 
