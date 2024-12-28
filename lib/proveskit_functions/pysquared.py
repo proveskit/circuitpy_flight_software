@@ -26,17 +26,21 @@ from debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
-from adafruit_rfm.adafruit_rfm import rfm9x  # Radio
-from adafruit_rfm.adafruit_rfm import rfm9xfsk  # Radio
-import adafruit_neopixel.neopixel as neopixel  # RGB LED # mpy module which IDE intellisense cannot read, Issue #27
-from adafruit_lsm6ds.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-import adafruit_lis2mdl.adafruit_lis2mdl as adafruit_lsm6ds  # Magnetometer
-import adafruit_tca9548a.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
+from ..adafruit_rfm.adafruit_rfm import rfm9x  # Radio
+from ..adafruit_rfm.adafruit_rfm import rfm9xfsk  # Radio
+from ..adafruit_neopixel.neopixel import NeoPixel, GRB  # RGB LED
+from ..adafruit_lsm6ds.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
+from ..adafruit_lis2mdl.adafruit_lis2mdl import LIS2MDL  # Magnetometer
+from ..adafruit_tca9548a.adafruit_tca9548a import TCA9548A  # I2C Multiplexer
+from ..adafruit_ov5640.adafruit_ov5640 import (
+    OV5640,
+    OV5640_SIZE_QVGA,
+    OV5640_COLOR_JPEG,
+)  # Camera
 import rv3028
-import adafruit_ov5640.adafruit_ov5640 as adafruit_ov5640  # Camera
 
 # CAN Bus Import
-from adafruit_mcp2515.adafruit_mcp2515 import MCP2515 as CAN
+from ..adafruit_mcp2515.adafruit_mcp2515 import MCP2515 as CAN
 
 
 # NVM register numbers
@@ -323,7 +327,7 @@ class Satellite:
 
         # Initialize Magnetometer
         try:
-            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
+            self.mangetometer = LIS2MDL(self.i2c1)
             self.hardware["Mag"] = True
         except Exception as e:
             self.error_print("[ERROR][Magnetometer]")
@@ -381,9 +385,7 @@ class Satellite:
         try:
             self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
             self.neopwr.switch_to_output(value=True)
-            self.neopixel = neopixel.NeoPixel(
-                board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
-            )
+            self.neopixel = NeoPixel(board.NEOPIX, 1, brightness=0.2, pixel_order=GRB)
             self.neopixel[0] = (0, 0, 255)
             self.hardware["NEOPIX"] = True
         except Exception as e:
@@ -395,7 +397,7 @@ class Satellite:
         TCA Multiplexer Initialization
         """
         try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c1, address=int(0x77))
+            self.tca = TCA9548A(self.i2c1, address=int(0x77))
             self.hardware["TCA"] = True
         except OSError:
             self.error_print(
@@ -416,7 +418,7 @@ class Satellite:
         """
         if self.hardware["TCA"] is True:
             try:
-                self.cam = adafruit_ov5640.OV5640(
+                self.cam = OV5640(
                     self.tca[5],
                     data_pins=(
                         board.D2,
@@ -434,10 +436,10 @@ class Satellite:
                     mclk=None,
                     shutdown=None,
                     reset=None,
-                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
+                    size=OV5640_SIZE_QVGA,
                 )
 
-                self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
+                self.cam.colorspace = OV5640_COLOR_JPEG
                 self.cam.flip_y = False
                 self.cam.flip_x = False
                 self.cam.test_pattern = False

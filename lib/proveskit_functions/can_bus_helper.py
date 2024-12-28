@@ -1,7 +1,7 @@
 import traceback
 import time
 
-from adafruit_mcp2515.adafruit_mcp2515.canio import (
+from ..adafruit_mcp2515.adafruit_mcp2515.canio import (
     Message,
     RemoteTransmissionRequest,
 )  # pylint: disable=import-error

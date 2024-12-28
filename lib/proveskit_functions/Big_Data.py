@@ -38,27 +38,27 @@ class Face:
 
         if "MCP" in senlist:
             try:
-                import adafruit_mcp9808.adafruit_mcp9808 as adafruit_mcp9808
+                from ..adafruit_mcp9808.adafruit_mcp9808 import MCP9808
 
-                self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
+                self.mcp = MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
                 self.debug_print("[ERROR][Temperature Sensor]" + str(e))
 
         if "VEML" in senlist:
             try:
-                import adafruit_veml7700.adafruit_veml7700 as adafruit_veml7700
+                from ..adafruit_veml7700.adafruit_veml7700 import VEML7700
 
-                self.veml = adafruit_veml7700.VEML7700(self.tca[address])
+                self.veml = VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
                 self.debug_print("[ERROR][Light Sensor]" + str(e))
 
         if "DRV" in senlist:
             try:
-                import adafruit_drv2605.adafruit_drv2605 as adafruit_drv2605
+                from ..adafruit_drv2605.adafruit_drv2605 import DRV2605
 
-                self.drv = adafruit_drv2605.DRV2605(self.tca[address])
+                self.drv = DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
                 self.debug_print("[ERROR][Motor Driver]" + str(e))

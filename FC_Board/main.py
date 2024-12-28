@@ -16,7 +16,9 @@ try:
     from ..lib.proveskit_functions.debugcolor import co
 except:
     # Board only imports
-    pass
+    from proveskit_functions.pysquared import cubesat as c
+    from proveskit_functions.functions import functions
+    from proveskit_functions.debugcolor import co
 
 import microcontroller  # circuitpython module will need stub/mock for IDE intellisense, Issue #27
 
