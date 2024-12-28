@@ -6,7 +6,7 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-import alarm  # circuitpython module will need stub/mock for IDE intellesense, Issue #27
+import alarm
 import gc
 import traceback
 import random
