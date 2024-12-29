@@ -1,8 +1,6 @@
 {
     "cubesatName": "Orpheus",
     "callsign": "KO6AZM",
-    "super_secret_code": "ABCD",
-    "repeat_code": "RP",
     "last_battery_temp": 20.0,
     "sleep_duration": 30,
     "detumble_enable_z": true,
@@ -45,6 +43,8 @@
         "Woah is that the Launcher Orbiter?????",
         "Everything in life is a spring if you think hard enough!"
     ],
+    "super_secret_code": "ABCD",
+    "repeat_code": "RP",
     "jokereply": [
         "Your Mom",
         "Your Mum",
