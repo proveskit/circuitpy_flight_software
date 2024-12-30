@@ -84,7 +84,9 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
+        self.c_error_count: multiBitFlag = (
+            self.c_error_count + 1
+        ) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -101,7 +103,7 @@ class Satellite:
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP = 20
+        self.NORMAL_TEMP: int = 20
         self.NORMAL_BATT_TEMP: int = 1  # Set to 0 BEFORE FLIGHT!!!!!
         self.NORMAL_MICRO_TEMP: int = 20
         self.NORMAL_CHARGE_CURRENT: float = 0.5
@@ -289,7 +291,7 @@ class Satellite:
 
         try:
             if self.f_fsk:
-                self.radio1 = rfm9xfsk.RFM9xFSK(
+                self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
                     self.spi0,
                     _rf_cs1,
                     _rf_rst1,
@@ -302,7 +304,7 @@ class Satellite:
             else:
                 # Default LoRa Modulation Settings
                 # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-                self.radio1 = rfm9x.RFM9x(
+                self.radio1: rfm9x.RFM9x = rfm9x.RFM9x(
                     self.spi0,
                     _rf_cs1,
                     _rf_rst1,
@@ -517,7 +519,7 @@ class Satellite:
             self.debug_print("[WARNING] TCA not initialized")
             return
 
-        channel_to_face = {
+        channel_to_face: dict[int, str] = {
             0: "Face0",
             1: "Face1",
             2: "Face2",
@@ -546,7 +548,7 @@ class Satellite:
 
         try:
             self.debug_print(f"Channel {channel}:")
-            addresses = self.tca[channel].scan()
+            addresses: list[int] = self.tca[channel].scan()
             valid_addresses: list[int] = [
                 addr for addr in addresses if addr not in [0x00, 0x19, 0x1E, 0x6B, 0x77]
             ]
@@ -752,22 +754,22 @@ class Satellite:
             if "crit" in mode:
                 self.neopixel.brightness = 0
                 self.enable_rf.value = False
-                self.power_mode = "critical"
+                self.power_mode: str = "critical"
 
             elif "min" in mode:
                 self.neopixel.brightness = 0
                 self.enable_rf.value = False
 
-                self.power_mode = "minimum"
+                self.power_mode: str = "minimum"
 
             elif "norm" in mode:
                 self.enable_rf.value = True
-                self.power_mode = "normal"
+                self.power_mode: str = "normal"
                 # don't forget to reconfigure radios, gps, etc...
 
             elif "max" in mode:
                 self.enable_rf.value = True
-                self.power_mode = "maximum"
+                self.power_mode: str = "maximum"
         except Exception as e:
             self.error_print(
                 "Error in changing operations of powermode: "
@@ -778,7 +780,7 @@ class Satellite:
     SD Card Functions
     """
 
-    def log(self, filedir: str, msg) -> None:
+    def log(self, filedir: str, msg: str) -> None:
         if self.hardware["SDcard"]:
             try:
                 self.debug_print(f"writing {msg} to {filedir}")
@@ -838,10 +840,10 @@ class Satellite:
         """
         if self.hardware["SDcard"]:
             try:
-                ff = ""
-                n = 0
-                _folder = substring[: substring.rfind("/") + 1]
-                _file = substring[substring.rfind("/") + 1 :]
+                ff: str = ""
+                n: int = 0
+                _folder: str = substring[: substring.rfind("/") + 1]
+                _file: str = substring[substring.rfind("/") + 1 :]
                 self.debug_print(
                     "Creating new file in directory: /sd{} with file prefix: {}".format(
                         _folder, _file
@@ -862,21 +864,23 @@ class Satellite:
                         )
                         return None
                 for i in range(0xFFFF):
-                    ff = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
+                    ff: str = "/sd{}{}{:05}.txt".format(
+                        _folder, _file, (n + i) % 0xFFFF
+                    )
                     try:
                         if n is not None:
                             stat(ff)
                     except Exception as e:
                         self.error_print("file number is {}".format(n))
                         self.error_print(e)
-                        n = (n + i) % 0xFFFF
+                        n: int = (n + i) % 0xFFFF
                         # print('file number is',n)
                         break
                 self.debug_print("creating file..." + str(ff))
                 if binary:
-                    b = "ab"
+                    b: str = "ab"
                 else:
-                    b = "a"
+                    b: str = "a"
                 with open(ff, b) as f:
                     f.tell()
                 chdir("/")
