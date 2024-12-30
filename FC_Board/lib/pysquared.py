@@ -76,19 +76,19 @@ class Satellite:
     f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
     f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
 
-    def debug_print(self, statement: Any):
+    def debug_print(self, statement: Any) -> None:
         """
         A method for printing debug statements.
         """
         if self.debug:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
-    def error_print(self, statement: Any):
+    def error_print(self, statement: Any) -> None:
         self.c_error_count = (self.c_error_count + 1) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
@@ -115,7 +115,7 @@ class Satellite:
             255  # default value for testing REPLACE WITH REAL VALUE
         )
         self.REBOOT_TIME: int = 3600  # 1 hour
-        self.turbo_clock = False
+        self.turbo_clock: bool = False
 
         """
         Setting up data buffers
@@ -192,7 +192,9 @@ class Satellite:
         Setting up the watchdog pin.
         """
 
-        self.watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
+        self.watchdog_pin: digitalio.DigitalInOut = digitalio.DigitalInOut(
+            board.WDT_WDI
+        )
         self.watchdog_pin.direction = digitalio.Direction.OUTPUT
         self.watchdog_pin.value = False
 
@@ -206,7 +208,7 @@ class Satellite:
         """
         try:
             if not self.orpheus:
-                self.i2c0 = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
+                self.i2c0: busio.I2C = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
                 self.hardware["I2C0"] = True
             else:
                 self.debug_print("[Orpheus] I2C0 not initialized")
@@ -217,7 +219,9 @@ class Satellite:
             )
 
         try:
-            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
+            self.spi0: busio.SPI = busio.SPI(
+                board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO
+            )
             self.hardware["SPI0"] = True
 
         except Exception as e:
@@ -226,7 +230,9 @@ class Satellite:
             )
 
         try:
-            self.i2c1 = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
+            self.i2c1: busio.I2C = busio.I2C(
+                board.I2C1_SCL, board.I2C1_SDA, frequency=100000
+            )
             self.hardware["I2C1"] = True
 
         except Exception as e:
@@ -255,11 +261,13 @@ class Satellite:
         ######## Temporary Fix for RF_ENAB ########
         #                                         #
         if self.legacy:
-            self.enable_rf = digitalio.DigitalInOut(board.RF_ENAB)
+            self.enable_rf: digitalio.DigitalInOut = digitalio.DigitalInOut(
+                board.RF_ENAB
+            )
             # self.enable_rf.switch_to_output(value=False) # if U21
             self.enable_rf.switch_to_output(value=True)  # if U7
         else:
-            self.enable_rf = True
+            self.enable_rf: bool = True
         #                                         #
         ######## Temporary Fix for RF_ENAB ########
 
@@ -325,14 +333,16 @@ class Satellite:
         IMU Initialization
         """
         try:
-            self.imu = LSM6DSOX(self.i2c1)
+            self.imu: LSM6DSOX = LSM6DSOX(self.i2c1)
             self.hardware["IMU"] = True
         except Exception as e:
             self.error_print("[ERROR][IMU]" + "".join(traceback.format_exception(e)))
 
         # Initialize Magnetometer
         try:
-            self.mangetometer = adafruit_lis2mdl.LIS2MDL(self.i2c1)
+            self.mangetometer: adafruit_lis2mdl.LIS2MDL = adafruit_lis2mdl.LIS2MDL(
+                self.i2c1
+            )
             self.hardware["Mag"] = True
         except Exception as e:
             self.error_print("[ERROR][Magnetometer]")
@@ -342,9 +352,11 @@ class Satellite:
         CAN Transceiver Initialization
         """
         try:
-            self.spi0cs2 = digitalio.DigitalInOut(board.SPI0_CS2)
+            self.spi0cs2: digitalio.DigitalInOut = digitalio.DigitalInOut(
+                board.SPI0_CS2
+            )
             self.spi0cs2.switch_to_output()
-            self.can_bus = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
+            self.can_bus: CAN = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
             self.can_bus.sleep()
 
@@ -357,7 +369,7 @@ class Satellite:
         RTC Initialization
         """
         try:
-            self.rtc = rv3028.RV3028(self.i2c1)
+            self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
             # Still need to test these configs
             self.rtc.configure_backup_switchover(mode="level", interrupt=True)
@@ -388,9 +400,9 @@ class Satellite:
         Neopixel Initialization
         """
         try:
-            self.neopwr = digitalio.DigitalInOut(board.NEO_PWR)
+            self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
             self.neopwr.switch_to_output(value=True)
-            self.neopixel = neopixel.NeoPixel(
+            self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
                 board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
             )
             self.neopixel[0] = (0, 0, 255)
@@ -404,7 +416,9 @@ class Satellite:
         TCA Multiplexer Initialization
         """
         try:
-            self.tca = adafruit_tca9548a.TCA9548A(self.i2c1, address=int(0x77))
+            self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
+                self.i2c1, address=int(0x77)
+            )
             self.hardware["TCA"] = True
         except OSError:
             self.error_print(
@@ -425,7 +439,7 @@ class Satellite:
         """
         if self.hardware["TCA"] is True:
             try:
-                self.cam = adafruit_ov5640.OV5640(
+                self.cam: adafruit_ov5640.OV5640 = adafruit_ov5640.OV5640(
                     self.tca[5],
                     data_pins=(
                         board.D2,
@@ -480,25 +494,25 @@ class Satellite:
 
         if self.debug:
             # Find the length of the longest key
-            max_key_length = max(len(key) for key in self.hardware.keys())
+            max_key_length: int = max(len(key) for key in self.hardware.keys())
 
             print("=" * 16)
             print("Device  | Status")
             for key, value in self.hardware.items():
-                padded_key = key + " " * (max_key_length - len(key))
+                padded_key: str = key + " " * (max_key_length - len(key))
                 if value:
                     print(co(f"|{padded_key} | {value} |", "green"))
                 else:
                     print(co(f"|{padded_key} | {value}|", "red"))
             print("=" * 16)
         # set power mode
-        self.power_mode = "normal"
+        self.power_mode: str = "normal"
 
     """
     Init Helper Functions
     """
 
-    def scan_tca_channels(self):
+    def scan_tca_channels(self) -> None:
         if not self.hardware["TCA"]:
             self.debug_print("[WARNING] TCA not initialized")
             return
@@ -524,14 +538,16 @@ class Satellite:
             except Exception as e:
                 self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
 
-    def _scan_single_channel(self, channel, channel_to_face):
+    def _scan_single_channel(
+        self, channel: int, channel_to_face: dict[int, str]
+    ) -> None:
         if not self.tca[channel].try_lock():
             return
 
         try:
             self.debug_print(f"Channel {channel}:")
             addresses = self.tca[channel].scan()
-            valid_addresses = [
+            valid_addresses: list[int] = [
                 addr for addr in addresses if addr not in [0x00, 0x19, 0x1E, 0x6B, 0x77]
             ]
 
@@ -552,12 +568,12 @@ class Satellite:
     """
 
     @property
-    def turbo(self):
+    def turbo(self) -> bool:
         return self.turbo_clock
 
     @turbo.setter
-    def turbo(self, value):
-        self.turbo_clock = value
+    def turbo(self, value: bool) -> None:
+        self.turbo_clock: bool = value
 
         try:
             if value is True:
@@ -569,27 +585,27 @@ class Satellite:
             self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
 
     @property
-    def burnarm(self):
+    def burnarm(self) -> bitFlag:
         return self.f_burnarm
 
     @burnarm.setter
-    def burnarm(self, value):
-        self.f_burnarm = value
+    def burnarm(self, value: bitFlag) -> None:
+        self.f_burnarm: bitFlag = value
 
     @property
-    def burned(self):
+    def burned(self) -> bitFlag:
         return self.f_burned
 
     @burned.setter
-    def burned(self, value):
-        self.f_burned = value
+    def burned(self, value: bitFlag) -> None:
+        self.f_burned: bitFlag = value
 
     @property
-    def RGB(self):
+    def RGB(self) -> tuple[int, int, int]:
         return self.neopixel[0]
 
     @RGB.setter
-    def RGB(self, value):
+    def RGB(self, value: tuple[int, int, int]) -> None:
         if self.hardware["NEOPIX"]:
             try:
                 self.neopixel[0] = value
@@ -599,12 +615,12 @@ class Satellite:
             self.error_print("[WARNING] NEOPIXEL not initialized")
 
     @property
-    def uptime(self):
-        self.CURRENTTIME = const(time.time())
+    def uptime(self) -> int:
+        self.CURRENTTIME: int = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
     @property
-    def reset_vbus(self):
+    def reset_vbus(self) -> None:
         # unmount SD card to avoid errors
         if self.hardware["SDcard"]:
             try:
@@ -622,42 +638,42 @@ class Satellite:
             )
 
     @property
-    def gyro(self):
+    def gyro(self) -> tuple[float, float, float]:
         try:
             return self.imu.gyro
         except Exception as e:
             self.error_print("[ERROR][GYRO]" + "".join(traceback.format_exception(e)))
 
     @property
-    def accel(self):
+    def accel(self) -> tuple[float, float, float]:
         try:
             return self.imu.acceleration
         except Exception as e:
             self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
 
     @property
-    def internal_temperature(self):
+    def internal_temperature(self) -> float:
         try:
             return self.imu.temperature
         except Exception as e:
             self.error_print("[ERROR][TEMP]" + "".join(traceback.format_exception(e)))
 
     @property
-    def mag(self):
+    def mag(self) -> tuple[float, float, float]:
         try:
             return self.mangetometer.magnetic
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
 
     @property
-    def time(self):
+    def time(self) -> tuple[int, int, int]:
         try:
             return self.rtc.get_time()
         except Exception as e:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @time.setter
-    def time(self, hours, minutes, seconds):
+    def time(self, hours: int, minutes: int, seconds: int) -> None:
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_time(hours, minutes, seconds)
@@ -669,14 +685,14 @@ class Satellite:
             self.error_print("[WARNING] RTC not initialized")
 
     @property
-    def date(self):
+    def date(self) -> tuple[int, int, int, int]:
         try:
             return self.rtc.get_date()
         except Exception as e:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @date.setter
-    def date(self, year, month, date, weekday):
+    def date(self, year: int, month: int, date: int, weekday: int) -> None:
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_date(year, month, date, weekday)
@@ -691,14 +707,14 @@ class Satellite:
     Camera Functions
     """
 
-    def take_image(self):
+    def take_image(self) -> None:
         try:
             gc.collect()
-            self.buffer_size = self.cam.height * self.cam.width // self.cam.quality
-            self.buffer = bytearray(self.buffer_size)
+            self.buffer_size: int = self.cam.height * self.cam.width // self.cam.quality
+            self.buffer: bytearray = bytearray(self.buffer_size)
             self.cam.capture(self.buffer)
 
-            eoi = self.buffer.find(b"\xff\xd9")
+            eoi: int = self.buffer.find(b"\xff\xd9")
             if eoi != -1:
                 # terminate the JPEG data just after the EOI marker
                 print(memoryview(self.buffer)[: eoi + 2].hex())
@@ -710,24 +726,24 @@ class Satellite:
             self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
 
         finally:
-            self.buffer = None
+            self.buffer: bytearray = None
 
     """
     Maintenence Functions
     """
 
-    def watchdog_pet(self):
+    def watchdog_pet(self) -> None:
         self.watchdog_pin.value = True
         time.sleep(0.01)
         self.watchdog_pin.value = False
 
-    def check_reboot(self):
-        self.UPTIME = self.uptime
+    def check_reboot(self) -> None:
+        self.UPTIME: int = self.uptime
         self.debug_print(str("Current up time: " + str(self.UPTIME)))
         if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
 
-    def powermode(self, mode):
+    def powermode(self, mode: str) -> None:
         """
         Configure the hardware for minimum or normal power consumption
         Add custom modes for mission-specific control
@@ -762,7 +778,7 @@ class Satellite:
     SD Card Functions
     """
 
-    def log(self, filedir, msg):
+    def log(self, filedir: str, msg) -> None:
         if self.hardware["SDcard"]:
             try:
                 self.debug_print(f"writing {msg} to {filedir}")
@@ -776,7 +792,7 @@ class Satellite:
         else:
             self.error_print("[WARNING] SD Card not initialized")
 
-    def print_file(self, filedir=None, binary=False):
+    def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir == None:
                 raise Exception("file directory is empty")
@@ -794,7 +810,7 @@ class Satellite:
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
             )
 
-    def read_file(self, filedir=None, binary=False):
+    def read_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir == None:
                 raise Exception("file directory is empty")
@@ -814,7 +830,7 @@ class Satellite:
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
             )
 
-    def new_file(self, substring, binary=False):
+    def new_file(self, substring: str, binary: bool = False) -> Union[str, None]:
         """
         substring something like '/data/DATA_'
         directory is created on the SD!
