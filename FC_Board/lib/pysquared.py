@@ -34,7 +34,7 @@ from adafruit_mcp2515 import MCP2515 as CAN
 
 # Importing typing libraries
 try:
-    from typing import List, Dict, OrderedDict, Literal, Union, Any
+    from typing import List, Dict, OrderedDict, Literal, Union, Any, TextIO
     import circuitpython_typing
 except:
     pass
@@ -640,35 +640,35 @@ class Satellite:
             )
 
     @property
-    def gyro(self) -> tuple[float, float, float]:
+    def gyro(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.gyro
         except Exception as e:
             self.error_print("[ERROR][GYRO]" + "".join(traceback.format_exception(e)))
 
     @property
-    def accel(self) -> tuple[float, float, float]:
+    def accel(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.acceleration
         except Exception as e:
             self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
 
     @property
-    def internal_temperature(self) -> float:
+    def internal_temperature(self) -> Union[float, None]:
         try:
             return self.imu.temperature
         except Exception as e:
             self.error_print("[ERROR][TEMP]" + "".join(traceback.format_exception(e)))
 
     @property
-    def mag(self) -> tuple[float, float, float]:
+    def mag(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.mangetometer.magnetic
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
 
     @property
-    def time(self) -> tuple[int, int, int]:
+    def time(self) -> Union[tuple[int, int, int], None]:
         try:
             return self.rtc.get_time()
         except Exception as e:
@@ -687,7 +687,7 @@ class Satellite:
             self.error_print("[WARNING] RTC not initialized")
 
     @property
-    def date(self) -> tuple[int, int, int, int]:
+    def date(self) -> Union[tuple[int, int, int, int], None]:
         try:
             return self.rtc.get_date()
         except Exception as e:
@@ -812,7 +812,9 @@ class Satellite:
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
             )
 
-    def read_file(self, filedir: str = None, binary: bool = False) -> None:
+    def read_file(
+        self, filedir: str = None, binary: bool = False
+    ) -> Union[bytes, TextIO, None]:
         try:
             if filedir == None:
                 raise Exception("file directory is empty")
