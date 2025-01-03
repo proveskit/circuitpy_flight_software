@@ -49,7 +49,7 @@ _ICHRG = const(11)
 _DIST = const(13)
 _FLAG = const(16)
 
-SEND_BUFF = bytearray(252)
+SEND_BUFF: bytearray = bytearray(252)
 
 
 class Satellite:
@@ -136,12 +136,15 @@ class Satellite:
         self.micro: microcontroller = microcontroller
 
         # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
-        self.battery_voltage = None
-        self.draw_current = None
-        self.charge_voltage = None
-        self.charge_current = None
-        self.is_charging = None
-        self.battery_percentage = None
+        # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
+        # None as a state instead of the values to better manage some conditions with Orpheus.
+        # I need to get a better understanding for the values and flow before potentially refactoring code here.
+        self.battery_voltage: float = None
+        self.draw_current: float = None
+        self.charge_voltage: float = None
+        self.charge_current: float = None
+        self.is_charging: bool = None
+        self.battery_percentage: float = None
 
         """
         Define the boot time and current time

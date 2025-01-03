@@ -25,7 +25,7 @@ from pysquared import Satellite
 
 class functions:
 
-    def debug_print(self, statement: str) -> None:
+    def debug_print(self, statement: Any) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
