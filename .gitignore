@@ -9,6 +9,7 @@ adafruit_drv2605.py
 adafruit_lsm303_accel.py
 adafruit_lsm6ds/
 adafruit_mcp9808.py
+adafruit_register/
 adafruit_tca9548a.py
 adafruit_veml7700.py
 neopixel.py
