@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 artifacts/
 venv
+
+# libs
+adafruit_drv2605.py
