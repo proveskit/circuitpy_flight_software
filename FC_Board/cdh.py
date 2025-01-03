@@ -4,14 +4,13 @@ import commandsConfig
 import json
 
 commands = commandsConfig.commands
-# parses config data from json file & assigns data to variables
-with open("config.json", "r") as json_file:
-    json_data = json_file.read()
-parsed_data = json.loads(json_data)
-
-jokereply = parsed_data["jokereply"]
-super_secret_code = parsed_data["super_secret_code"].encode("utf-8")
-repeat_code = parsed_data["repeat_code"].encode("utf-8")
+# parses toml & assigns data to variables
+with open("settings.json", "r") as f:
+    json_data = f.read()
+config = json.loads(json_data)
+jokereply = config["jokereply"]
+super_secret_code = config["super_secret_code"].encode("utf-8")
+repeat_code = config["repeat_code"].encode("utf-8")
 print(f"Super secret code is: {super_secret_code}")
 
 
