@@ -81,8 +81,8 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
     def __init__(self):
-        # parses toml & assigns data to variables
-        with open("settings.json", "r") as f:
+        # parses json & assigns data to variables
+        with open("config.json", "r") as f:
             json_data = f.read()
         config = json.loads(json_data)
 

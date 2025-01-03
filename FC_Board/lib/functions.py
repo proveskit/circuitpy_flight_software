@@ -39,8 +39,8 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        # parses toml & assigns data to variables
-        with open("settings.json", "r") as f:
+        # parses json & assigns data to variables
+        with open("config.json", "r") as f:
             json_data = f.read()
         config = json.loads(json_data)
 
