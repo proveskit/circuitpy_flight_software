@@ -122,15 +122,20 @@ class Satellite:
         """
         Setting up data buffers
         """
+        # TODO(blakejameson): is this line in use? Remove if not?
         self.data_cache: dict = {}
+        # TODO(blakejameson): is this line in use? Remove if not?
         self.filenumbers: dict = {}
+        # TODO(blakejameson): is this line in use? Remove if not?
         self.image_packets: int = 0
         self.urate: int = 9600
         self.buffer: bytearray = None
         self.buffer_size: int = 1
+        # TODO(blakejameson): is this line in use? Remove if not?
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
 
+        # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
         self.battery_voltage = None
         self.draw_current = None
         self.charge_voltage = None
