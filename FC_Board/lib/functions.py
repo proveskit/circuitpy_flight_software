@@ -25,7 +25,7 @@ from pysquared import Satellite
 
 class functions:
 
-    def debug_print(self, statement: str) -> None:
+    def debug_print(self, statement: Any) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
@@ -98,11 +98,13 @@ class functions:
 
         self.cubesat.can_bus.sleep()
 
-        iterations = 0
+        iterations: int = 0
 
         while duration > 15 and iterations < 12:
 
-            time_alarm = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 15)
+            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+                monotonic_time=time.monotonic() + 15
+            )
 
             alarm.light_sleep_until_alarms(time_alarm)
             duration -= 15
@@ -134,8 +136,8 @@ class functions:
         """
         import Field
 
-        self.field = Field.Field(self.cubesat, self.debug)
-        message = f"{self.callsign} " + str(msg) + f" {self.callsign}"
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
             self.debug_print(f"Sent Packet: " + message)
@@ -158,7 +160,7 @@ class functions:
         import Field
 
         try:
-            lora_beacon = (
+            lora_beacon: str = (
                 f"{self.callsign} Hello I am Orpheus! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
@@ -169,7 +171,7 @@ class functions:
                 "Error with obtaining power data: "
                 + "".join(traceback.format_exception(e))
             )
-            lora_beacon = (
+            lora_beacon: str = (
                 f"{self.callsign} Hello I am Yearling^2! I am in: "
                 + "an unidentified"
                 + " power mode. V_Batt = "
@@ -177,7 +179,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
@@ -186,7 +188,7 @@ class functions:
         self.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
-        to_return = ""
+        to_return: str = ""
         for key, value in hardware.items():
             to_return = to_return + key + "="
             if value:
@@ -202,10 +204,10 @@ class functions:
     def state_of_health(self) -> None:
         import Field
 
-        self.state_list = []
+        self.state_list: list = []
         # list of state information
         try:
-            self.state_list = [
+            self.state_list: list = [
                 f"PM:{self.cubesat.power_mode}",
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
@@ -227,21 +229,21 @@ class functions:
                 + "".join(traceback.format_exception(e))
             )
 
-        self.field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
-            self.state_bool = True
+            self.state_bool: bool = True
         else:
             self.field.Beacon(
                 f"{self.callsign} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
-            self.state_bool = False
+            self.state_bool: bool = False
         del self.field
         del Field
 
@@ -249,7 +251,7 @@ class functions:
         """Calls the data transmit function from the field class"""
         import Field
 
-        self.field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
         self.debug_print("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
@@ -321,10 +323,10 @@ class functions:
             self.debug_print(gc.mem_free())
 
             gc.collect()
-            a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
             self.debug_print(gc.mem_free())
 
-            self.facestring = a.Face_Test_All()
+            self.facestring: list = a.Face_Test_All()
 
             del a
             del Big_Data
@@ -356,7 +358,7 @@ class functions:
     ]:
 
         try:
-            data = []
+            data: list = []
             data.append(self.cubesat.accel)
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
@@ -405,7 +407,7 @@ class functions:
         try:
             import Big_Data
 
-            a = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
         except Exception as e:
             self.debug_print(
                 "Error Importing Big Data: " + "".join(traceback.format_exception(e))
