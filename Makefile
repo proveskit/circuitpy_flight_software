@@ -18,7 +18,7 @@ test: ## Run tests
 ##@ Build
 
 .PHONY: build
-build: ## Build the project, store the result in the artifacts directory
+build: download-libraries ## Build the project, store the result in the artifacts directory
 	mkdir -p artifacts
 	zip -r artifacts/proves.zip FC_Board
 
