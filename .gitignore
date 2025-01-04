@@ -5,6 +5,7 @@ artifacts/
 venv
 
 # libs
+asyncio/
 adafruit_drv2605.py
 adafruit_lis2mdl.py
 adafruit_lsm303_accel.py
