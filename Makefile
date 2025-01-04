@@ -20,6 +20,7 @@ test: ## Run tests
 .PHONY: build
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	mkdir -p artifacts
+	rm -rf artifacts/FC_Board/
 	cp -r FC_Board artifacts/FC_Board
 	find artifacts/FC_Board -type d -name '__pycache__' -exec rm -rf {} +
 	rm -rf artifacts/FC_Board/tests
