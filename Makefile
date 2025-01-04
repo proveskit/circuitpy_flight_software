@@ -22,6 +22,7 @@ build: download-libraries ## Build the project, store the result in the artifact
 	mkdir -p artifacts
 	cp -r FC_Board artifacts/FC_Board
 	find artifacts/FC_Board -type d -name '__pycache__' -exec rm -rf {} +
+	rm -rf artifacts/FC_Board/tests
 	zip -r artifacts/proves.zip artifacts/FC_Board
 
 ##@ Library Management
