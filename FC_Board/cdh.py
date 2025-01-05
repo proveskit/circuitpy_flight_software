@@ -1,29 +1,17 @@
 import time
 import random
+import commandsConfig
+import json
 
-# our 4 byte code to authorize commands
-# pass-code for DEMO PURPOSES ONLY
-jokereply = [
-    "Your Mom",
-    "Your Mum",
-    "Your Face",
-    "not True lol",
-    "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?",
-]
-# our 4 byte code to authorize commands
-# pass-code for DEMO PURPOSES ONLY
-super_secret_code = b"ABCD"  # put your own code here
-repeat_code = b"RP"
+commands = commandsConfig.commands
+# parses json & assigns data to variables
+with open("config.json", "r") as f:
+    json_data = f.read()
+config = json.loads(json_data)
+jokereply = config["jokereply"]
+super_secret_code = config["super_secret_code"].encode("utf-8")
+repeat_code = config["repeat_code"].encode("utf-8")
 print(f"Super secret code is: {super_secret_code}")
-commands = {
-    b"\x8eb": "noop",
-    b"\xd4\x9f": "hreset",  # new
-    b"\x12\x06": "shutdown",
-    b"8\x93": "query",  # new
-    b"\x96\xa2": "exec_cmd",
-    b"\xa5\xb4": "joke_reply",
-    b"\x56\xc4": "FSK",
-}
 
 
 ############### hot start helper ###############

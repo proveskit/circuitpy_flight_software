@@ -28,6 +28,7 @@ import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
 import rv3028
 import adafruit_ov5640
+import json
 
 # CAN Bus Import
 from adafruit_mcp2515 import MCP2515 as CAN
@@ -91,33 +92,44 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
     def __init__(self) -> None:
+        # parses json & assigns data to variables
+        with open("config.json", "r") as f:
+            json_data = f.read()
+        config = json.loads(json_data)
+
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = True  # Define verbose output here. True or False
-        self.legacy: bool = False  # Define if the board is used with legacy or not
-        self.heating: bool = False  # Currently not used
-        self.orpheus: bool = True  # Define if the board is used with Orpheus or not
-        self.is_licensed: bool = True
+        self.debug: bool = config["debug"]  # Define verbose output here. True or False
+        self.legacy: bool = config[
+            "legacy"
+        ]  # Define if the board is used with legacy or not
+        self.heating: bool = config["heating"]  # Currently not used
+        self.orpheus: bool = config[
+            "orpheus"
+        ]  # Define if the board is used with Orpheus or not
+        self.is_licensed: bool = config["is_licensed"]
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = 20
-        self.NORMAL_BATT_TEMP: int = 1  # Set to 0 BEFORE FLIGHT!!!!!
-        self.NORMAL_MICRO_TEMP: int = 20
-        self.NORMAL_CHARGE_CURRENT: float = 0.5
-        self.NORMAL_BATTERY_VOLTAGE: float = 6.9  # 6.9
-        self.CRITICAL_BATTERY_VOLTAGE: float = 6.6  # 6.6
-        self.vlowbatt: float = 6.0
-        self.battery_voltage: float = (
-            3.3  # default value for testing REPLACE WITH REAL VALUE
-        )
-        self.current_draw: float = (
-            255  # default value for testing REPLACE WITH REAL VALUE
-        )
-        self.REBOOT_TIME: int = 3600  # 1 hour
-        self.turbo_clock: bool = False
+        self.NORMAL_TEMP: int = config["NORMAL_TEMP"]
+        self.NORMAL_BATT_TEMP: int = config[
+            "NORMAL_BATT_TEMP"
+        ]  # Set to 0 BEFORE FLIGHT!!!!!
+        self.NORMAL_MICRO_TEMP: int = config["NORMAL_MICRO_TEMP"]
+        self.NORMAL_CHARGE_CURRENT: float = config["NORMAL_CHARGE_CURRENT"]
+        self.NORMAL_BATTERY_VOLTAGE: float = config["NORMAL_BATTERY_VOLTAGE"]  # 6.9
+        self.CRITICAL_BATTERY_VOLTAGE: float = config["CRITICAL_BATTERY_VOLTAGE"]  # 6.6
+        self.vlowbatt: float = config["vlowbatt"]
+        self.battery_voltage: float = config[
+            "battery_voltage"
+        ]  # default value for testing REPLACE WITH REAL VALUE
+        self.current_draw: float = config[
+            "current_draw"
+        ]  # default value for testing REPLACE WITH REAL VALUE
+        self.REBOOT_TIME: int = config["REBOOT_TIME"]  # 1 hour
+        self.turbo_clock: bool = config["turbo_clock"]
 
         """
         Setting up data buffers

@@ -10,6 +10,7 @@ import alarm
 import gc
 import traceback
 import random
+import json
 from debugcolor import co
 from battery_helper import BatteryHelper
 from packet_manager import PacketManager
@@ -38,53 +39,23 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
+        # parses json & assigns data to variables
+        with open("config.json", "r") as f:
+            json_data = f.read()
+        config = json.loads(json_data)
+
+        self.cubesatName: str = config["cubesatName"]
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = [
-            "Hey it is pretty cold up here, did someone forget to pay the electric bill?",
-            "sudo rf - rf*",
-            "Why did the astronaut break up with his girlfriend? He needed space.",
-            "Why did the sun go to school? To get a little brighter.",
-            "why is the mall called the mall? because instead of going to one store you go to them all",
-            "Alien detected. Blurring photo...",
-            "Wait it is all open source? Always has been... www.github.com/proveskit",
-            "What did 0 say to 1? You're a bit too much.",
-            "Pleiades - Orpheus has been recently acquired by the Onion News Network",
-            "This jokesat was brought to you by the Bronco Space Ministry of Labor and Job Placement",
-            "Catch you on the next pass!",
-            "Pleiades - Orpheus was not The Impostor",
-            "Sorry for messing with your long-exposure astrophoto!",
-            "Better buy a telescope. Wanna see me. Buy a telescope. Gonna be in space.",
-            "According to all known laws of aviation, there is no way bees should be able to fly...",
-            "You lost the game ",
-            "Bobby Tables is a good friend of mine",
-            "Why did the computer cross the road? To get a byte to eat!",
-            "Why are the astronauts not hungry when they got to space? They had a big launch.",
-            "Why did the computer get glasses? To improve its web sight!",
-            "What are computers favorite snacks? Chips!",
-            "Wait! I think I see a White 2019 Subaru Crosstrek 2.0i Premium",
-            "IS THAT A SUPRA?!",
-            "Finally escpaed the LA Traffic",
-            "My CubeSat is really good at jokes, but its delivery is always delayed.",
-            "exec order 66",
-            "I had a joke about UDP, but I am not sure if you'd get it.",
-            "I am not saying FSK modulation is the best way to send jokes, but at least it is never monotone!",
-            "I am sorry David, I am afrain I can not do that.",
-            "My memory is volatile like RAM, so it only makes sense that I forget things.",
-            "Imagine it gets stuck and just keeps repeating this joke every 2 mins",
-            "Check Engine: Error Code 404: Joke Not Found",
-            "CQ CQ KN6NAQ ... KN6NAT are you out there?",
-            "Woah is that the Launcher Orbiter?????",
-            "Everything in life is a spring if you think hard enough!",
-        ]
-        self.last_battery_temp: float = 20
-        self.sleep_duration: int = 30
-        self.callsign: str = "KO6AZM"
+        self.jokes: list[str] = config["jokes"]
+        self.last_battery_temp: float = config["last_battery_temp"]
+        self.sleep_duration: int = config["sleep_duration"]
+        self.callsign: str = config["callsign"]
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = True
-        self.detumble_enable_x: bool = True
-        self.detumble_enable_y: bool = True
+        self.detumble_enable_z: bool = config["detumble_enable_z"]
+        self.detumble_enable_x: bool = config["detumble_enable_x"]
+        self.detumble_enable_y: bool = config["detumble_enable_y"]
 
     """
     Satellite Management Functions
@@ -161,7 +132,7 @@ class functions:
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am Orpheus! I am: "
+                f"{self.callsign} Hello I am {self.cubesatName}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
                 + f"IHBPFJASTMNE! {self.callsign}"
