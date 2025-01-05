@@ -9,6 +9,7 @@ asyncio/
 adafruit_drv2605.py
 adafruit_lis2mdl.py
 adafruit_lsm303_accel.py
+adafruit_lsm6ds/
 adafruit_mcp9808.py
 adafruit_ov5640/
 adafruit_pca9685.py
