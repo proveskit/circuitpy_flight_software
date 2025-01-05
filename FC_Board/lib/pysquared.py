@@ -355,7 +355,7 @@ class Satellite:
         IMU Initialization
         """
         try:
-            self.imu: LSM6DSOX = LSM6DSOX(self.i2c1)
+            self.imu = LSM6DSOX(i2c_bus=self.i2c1, address=0x6B)
             self.hardware["IMU"] = True
         except Exception as e:
             self.error_print("[ERROR][IMU]" + "".join(traceback.format_exception(e)))
