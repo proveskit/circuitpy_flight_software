@@ -159,6 +159,15 @@ class functions:
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
+    def last_radio_temp(self) -> int:
+        """Tries to grab former temp from module"""
+        raw_temp = self.cubesat.radio1.read_u8(0x5B)
+        temp = raw_temp & 0x7F
+        if (raw_temp & 0x80) == 0x80:
+            temp = ~temp + 0x01
+
+        return temp + 143  # Added prescalar for temp
+
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
         for key, value in hardware.items():
@@ -187,7 +196,7 @@ class functions:
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.c_boot}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.cubesat.radio1.former_temperature}",
+                f"RT:{self.last_radio_temp()}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.cubesat.c_error_count}",
