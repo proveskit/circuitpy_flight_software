@@ -380,7 +380,8 @@ class Satellite:
             self.spi0cs2.switch_to_output()
             self.can_bus: CAN = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
-            self.can_bus.sleep()
+            # TODO(nateinaction): Accessing private method. Ability to sleep the canbus should be made in upstream. Search for this comment to find other usages.
+            self.cubesat.can_bus._set_mode(0x20)
 
         except Exception as e:
             self.debug_print(
