@@ -3,9 +3,9 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
 
-Software for CircuitPython flight software in the PROVES Kit. Currently this repo is reflecting PROVES Kit V1.5, where there is independant code for both the Flight Controller (FC) Board and Battery (Batt) Board. The file tree has been updated to reflect this. Please access either the **FC_Board (for Flight Controller software)** or **Batt_Board (For Battery Board Software)** as needed!
+Software for CircuitPython flight software in the PROVES Kit. Currently this repo is reflecting PROVES Kit V1.5, where there is independent code for both the Flight Controller (FC) Board and Battery (Batt) Board. The file tree has been updated to reflect this. Please access either the **FC_Board (for Flight Controller software)** or **Batt_Board (For Battery Board Software)** as needed!
 
-If this is your first time using CircuitPython, it is highly recommendd that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview?gad_source=1&gbraid=0AAAAADx9JvTRorSR2psQubn32WqebKusM&gclid=CjwKCAiA-Oi7BhA1EiwA2rIu28YArt-jNTE3W3uwE055Tp7hyH9c9pE_NsqIOOh1aopnW00qXGBedRoChysQAvD_BwE) to help you get started!
+If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview?gad_source=1&gbraid=0AAAAADx9JvTRorSR2psQubn32WqebKusM&gclid=CjwKCAiA-Oi7BhA1EiwA2rIu28YArt-jNTE3W3uwE055Tp7hyH9c9pE_NsqIOOh1aopnW00qXGBedRoChysQAvD_BwE) to help you get started!
 
 # Usage
 If you have just received a clean PROVES Board, ensure you have loaded the latest firmware from that board's GitHub Repo. Currently the [latest FC Board firmware](https://github.com/proveskit/flight_controller_board/tree/main/Firmware) is `FC_FIRM_V2.uf2`.
