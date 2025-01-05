@@ -132,7 +132,7 @@ class functions:
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am {self.cubesatName}! I am:
+                f"{self.callsign} Hello I am {self.cubesatName}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
                 + f"IHBPFJASTMNE! {self.callsign}"
