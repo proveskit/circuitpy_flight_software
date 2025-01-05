@@ -1,7 +1,3 @@
-import board
-import time
-import digitalio
+print("Initializing a cubesat object as `c` in the REPL...")
 
-watchdog_pin = digitalio.DigitalInOut(board.WDT_WDI)
-watchdog_pin.direction = digitalio.Direction.OUTPUT
-watchdog_pin.value = False
+from pysquared import cubesat as c

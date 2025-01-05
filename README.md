@@ -1,23 +1,25 @@
-# flight_controller_software
+# circuitpy_flight_software
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
 
-Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed!
+Software for CircuitPython flight software in the PROVES Kit. Currently this repo is reflecting PROVES Kit V1.5, where there is independent code for both the Flight Controller (FC) Board and Battery (Batt) Board. The file tree has been updated to reflect this. Please access either the **FC_Board (for Flight Controller software)** or **Batt_Board (For Battery Board Software)** as needed!
 
-Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software!
+If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview?gad_source=1&gbraid=0AAAAADx9JvTRorSR2psQubn32WqebKusM&gclid=CjwKCAiA-Oi7BhA1EiwA2rIu28YArt-jNTE3W3uwE055Tp7hyH9c9pE_NsqIOOh1aopnW00qXGBedRoChysQAvD_BwE) to help you get started!
 
 # Usage
-Depending on whether you are trying to use the CircuitPython or PicoSDK software, there are some different steps you need to follow.
+If you have just received a clean PROVES Board, ensure you have loaded the latest firmware from that board's GitHub Repo. Currently the [latest FC Board firmware](https://github.com/proveskit/flight_controller_board/tree/main/Firmware) is `FC_FIRM_V2.uf2`.
 
-For CircuitPython load new software by doing the following:
+## Updating CircuitPython Code on a PROVES Board
+You can cleanly load new software by doing the following:
 1. Clone the branch you wish to put on your board to your local machine.
 2. Connect to the target board so it mounts as an external drive.
-3. Access the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
+3. If many files have changed, the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
   ```py
   import storage
   storage.erase_filesystem()
   ```
+  > NOTE: If you have only changed one or two files, it is fine to just drag and drop them onto the external drive to overwrite the existing files.
 4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
 5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
 
@@ -26,10 +28,10 @@ __For Flight Controller Board__
 from pysquared import cubesat as c
 ```
 __For Battery Board__
+> NOTE: Battery Board Support will be deprecated in PROVES Kit V2.
 ```py
 from pysquared_eps import cubesat as c
 ```
-
 # Development Getting Started
 We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
