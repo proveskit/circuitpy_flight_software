@@ -9,8 +9,7 @@ adafruit-circuitpython-neopixel==6.3.12
 adafruit-circuitpython-ov5640==1.2.1
 adafruit-circuitpython-pca9685==3.4.16
 adafruit-circuitpython-register==1.10.1
-# Need replacement for def former_temperature() to remove
-# adafruit-circuitpython-rfm==1.0.3
+adafruit-circuitpython-rfm==1.0.3
 adafruit-circuitpython-tca9548a==0.7.4
 adafruit-circuitpython-ticks==1.1.1
 adafruit-circuitpython-veml7700==2.0.2
