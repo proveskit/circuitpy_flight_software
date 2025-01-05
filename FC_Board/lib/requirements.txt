@@ -2,17 +2,14 @@ adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circui
 adafruit-circuitpython-drv2605==1.3.4
 adafruit-circuitpython-lis2mdl==2.1.23
 adafruit-circuitpython-lsm303-accel==1.1.22
-# Causes behavior change, needs additional investigation
-# adafruit-circuitpython-lsm6ds==4.5.13
-# Need replacement for def sleep() to remove
-# adafruit-circuitpython-mcp2515==1.1.6
+adafruit-circuitpython-lsm6ds==4.5.13
+adafruit-circuitpython-mcp2515==1.1.6
 adafruit-circuitpython-mcp9808==3.3.24
 adafruit-circuitpython-neopixel==6.3.12
 adafruit-circuitpython-ov5640==1.2.1
 adafruit-circuitpython-pca9685==3.4.16
 adafruit-circuitpython-register==1.10.1
-# Need replacement for def former_temperature() to remove
-# adafruit-circuitpython-rfm==1.0.3
+adafruit-circuitpython-rfm==1.0.3
 adafruit-circuitpython-tca9548a==0.7.4
 adafruit-circuitpython-ticks==1.1.1
 adafruit-circuitpython-veml7700==2.0.2
