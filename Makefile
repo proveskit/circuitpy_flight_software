@@ -29,5 +29,6 @@ build: download-libraries ## Build the project, store the result in the artifact
 ##@ Library Management
 
 download-libraries: ## Download the required libraries
-	pip3 install --requirement FC_Board/lib/requirements.txt --target FC_Board/lib --no-deps
-	rm -rf FC_Board/lib/*.dist-info
+	@echo "Downloading libraries..."
+	@pip3 install --requirement FC_Board/lib/requirements.txt --target FC_Board/lib --no-deps --upgrade --quiet
+	@rm -rf FC_Board/lib/*.dist-info
