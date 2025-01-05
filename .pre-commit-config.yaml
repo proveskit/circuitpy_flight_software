@@ -14,9 +14,4 @@ repos:
       args: [ --fix, --select, I ]
     - id: ruff-format
 
--   repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-    -   id: black
-
 exclude: 'lib/adafruit_.*|lib/asyncio/.*|lib/neopixel\.py'
