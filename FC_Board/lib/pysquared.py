@@ -9,12 +9,18 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
-import board, machine, microcontroller
-import busio, time, sys, traceback
+import board
+import machine
+import microcontroller
+import busio
+import time
+import sys
+import traceback
 from storage import mount, umount, VfsFat
-import digitalio, sdcardio, pwmio
-from os import listdir, stat, statvfs, mkdir, chdir
-from bitflags import bitFlag, multiBitFlag, multiByte
+import digitalio
+import sdcardio
+from os import stat, mkdir, chdir
+from bitflags import bitFlag, multiBitFlag
 from micropython import const
 from debugcolor import co
 from collections import OrderedDict
@@ -764,7 +770,7 @@ class Satellite:
 
     def print_file(self, filedir=None, binary=False):
         try:
-            if filedir == None:
+            if filedir is None:
                 raise Exception("file directory is empty")
             self.debug_print(f"--- Printing File: {filedir} ---")
             if binary:
@@ -782,7 +788,7 @@ class Satellite:
 
     def read_file(self, filedir=None, binary=False):
         try:
-            if filedir == None:
+            if filedir is None:
                 raise Exception("file directory is empty")
             self.debug_print(f"--- reading File: {filedir} ---")
             if binary:

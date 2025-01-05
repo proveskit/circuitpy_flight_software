@@ -1,7 +1,3 @@
-import board
-import busio
-import digitalio
-import time
 from pysquared import cubesat
 
 test_message = "Hello There!"

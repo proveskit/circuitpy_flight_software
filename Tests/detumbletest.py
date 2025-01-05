@@ -1,8 +1,5 @@
 from pysquared import cubesat as c
-import asyncio
 import time
-import traceback
-import gc  # Garbage collection
 import functions
 from debugcolor import co
 

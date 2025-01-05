@@ -1,9 +1,10 @@
 __pycache__/
-.pytest_cache
 .DS_Store
+.pytest_cache
+.ruff_cache/
+**/*.mpy
 artifacts/
 venv
-**/*.mpy
 
 # libs
 FC_Board/lib/adafruit*

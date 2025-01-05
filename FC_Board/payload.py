@@ -5,9 +5,6 @@ Yearling-2 contains simply a bno085 9 DOF sensor that is being implemented in th
 Author: Nicole Maggard
 """
 
-import time
-import board
-import busio
 import traceback
 from debugcolor import co
 import adafruit_bno055

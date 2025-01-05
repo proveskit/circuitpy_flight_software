@@ -9,7 +9,6 @@ Published: Nov 19, 2024
 """
 
 import time
-import microcontroller
 
 print("=" * 70)
 print("Hello World!")
@@ -24,7 +23,6 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    import main
 
 except Exception as e:
     print(e)

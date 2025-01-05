@@ -17,13 +17,13 @@ class PacketManager:
         - 2 bytes: Number of missing packets
         - Remaining bytes: Missing packet sequence numbers
         """
-        header = b"\xFF\xFF" + len(missing_packets).to_bytes(2, "big")
+        header = b"\xff\xff" + len(missing_packets).to_bytes(2, "big")
         payload = b"".join(seq.to_bytes(2, "big") for seq in missing_packets)
         return header + payload
 
     def is_retransmit_request(self, packet):
         """Check if packet is a retransmit request"""
-        return len(packet) >= 4 and packet[:2] == b"\xFF\xFF"
+        return len(packet) >= 4 and packet[:2] == b"\xff\xff"
 
     def parse_retransmit_request(self, packet):
         """Extract missing packet numbers from retransmit request"""
@@ -85,7 +85,7 @@ class PacketManager:
         # Sort packets by sequence number
         try:
             packets = sorted(packets, key=lambda p: int.from_bytes(p[:2], "big"))
-        except:
+        except Exception:
             return None
 
         # Verify all packets are present

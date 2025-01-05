@@ -1,9 +1,7 @@
-import time
 from pysquared import cubesat
 
 
 class Yagi:
-
     def __init__(self):
         self.cubesat = cubesat
         self.cubesat.radio1.spreading_factor = 8

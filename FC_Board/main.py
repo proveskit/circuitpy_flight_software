@@ -5,19 +5,16 @@ Updated again for Orpheus by Michael Pham 9/30/2024
 This is where the processes get scheduled, and satellite operations are handeled
 """
 
-from pysquared import cubesat as c
-
-c.watchdog_pet()
-
-import asyncio
-import time
-import traceback
 import gc  # Garbage collection
 import microcontroller
-import functions
-from debugcolor import co
+import time
+import traceback
 
-beacon_interval = 15
+from debugcolor import co
+from pysquared import cubesat as c
+import functions
+
+c.watchdog_pet()
 
 
 def debug_print(statement):
@@ -87,7 +84,6 @@ def main():
 
 
 def critical_power_operations():
-
     initial_boot()
     c.watchdog_pet()
 
@@ -95,7 +91,6 @@ def critical_power_operations():
 
 
 def minimum_power_operations():
-
     initial_boot()
     c.watchdog_pet()
 
@@ -104,7 +99,6 @@ def minimum_power_operations():
 
 ######################### MAIN LOOP ##############################
 try:
-
     while True:
         # L0 automatic tasks no matter the battery level
         c.check_reboot()

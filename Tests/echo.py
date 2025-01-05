@@ -90,7 +90,6 @@ def banger():
 
 
 while True:
-
     # banger()
 
     if yagiMode:

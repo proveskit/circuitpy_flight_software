@@ -32,7 +32,7 @@ def hotstart_handler(cubesat, msg):
     try:
         cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
         cubesat.radio1.destination = cubesat.cfg["gs"]  # target gs radiohead ID
-    except:
+    except Exception:
         pass
     # check that message is for me
     if msg[0] == cubesat.radio1.node:
@@ -121,7 +121,7 @@ def hreset(cubesat):
         cubesat.radio1.send(data=b"resetting")
         cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
         cubesat.micro.reset()
-    except:
+    except Exception:
         pass
 
 
