@@ -101,7 +101,9 @@ class Satellite:
         Big init routine as the whole board is brought up. Starting with config variables.
         """
         self.debug: bool = config["debug"]  # Define verbose output here. True or False
-        self.legacy: bool = config["legacy"]  # Define if the board is used with legacy or not
+        self.legacy: bool = config[
+            "legacy"
+        ]  # Define if the board is used with legacy or not
         self.heating: bool = config["heating"]  # Currently not used
         self.orpheus: bool = config[
             "orpheus"
