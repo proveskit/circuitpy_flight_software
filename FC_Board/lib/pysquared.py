@@ -355,7 +355,7 @@ class Satellite:
         IMU Initialization
         """
         try:
-            self.imu = LSM6DSOX(i2c_bus=self.i2c1, address=0x6B)
+            self.imu: LSM6DSOX = LSM6DSOX(i2c_bus=self.i2c1, address=0x6B)
             self.hardware["IMU"] = True
         except Exception as e:
             self.error_print("[ERROR][IMU]" + "".join(traceback.format_exception(e)))
@@ -381,7 +381,7 @@ class Satellite:
             self.can_bus: CAN = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
             self.hardware["CAN"] = True
             # TODO(nateinaction): Accessing private method. Ability to sleep the canbus should be made in upstream. Search for this comment to find other usages.
-            self.cubesat.can_bus._set_mode(0x20)
+            self.can_bus._set_mode(0x20)
 
         except Exception as e:
             self.debug_print(
