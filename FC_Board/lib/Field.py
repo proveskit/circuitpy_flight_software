@@ -4,8 +4,9 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-from debugcolor import co
 import traceback
+
+from debugcolor import co
 
 
 class Field:

@@ -3,10 +3,9 @@
 # pytest test_detumble.py -v displays which tests ran and their respective results (fail or pass)
 # Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=<path to this repo>
 
-import pytest
-
 # from Batt_Board import detumble
 import detumble
+import pytest
 
 
 def test_dot_product():

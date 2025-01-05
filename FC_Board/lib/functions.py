@@ -5,12 +5,12 @@ our will.
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-import alarm
 import gc
 import random
 import time
 import traceback
 
+import alarm
 from battery_helper import BatteryHelper
 from debugcolor import co
 from packet_manager import PacketManager
@@ -18,7 +18,7 @@ from packet_sender import PacketSender
 from pysquared import Satellite
 
 try:
-    from typing import List, OrderedDict, Literal, Union
+    from typing import List, Literal, OrderedDict, Union
 except ImportError:
     pass
 

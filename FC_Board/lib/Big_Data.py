@@ -1,5 +1,6 @@
-from debugcolor import co
 import gc
+
+from debugcolor import co
 
 
 class Face:

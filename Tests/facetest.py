@@ -1,11 +1,12 @@
-import board
-import busio
 import time
+
+import adafruit_drv2605
+import adafruit_mcp9808
 import adafruit_pca9685
 import adafruit_tca9548a
 import adafruit_veml7700
-import adafruit_mcp9808
-import adafruit_drv2605
+import board
+import busio
 import ina219
 
 i2c = busio.I2C(board.SCL0, board.SDA0)

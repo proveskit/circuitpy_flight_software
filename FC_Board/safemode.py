@@ -1,5 +1,6 @@
-import microcontroller
 import time
+
+import microcontroller
 
 print("I am in safemode. Help!")
 

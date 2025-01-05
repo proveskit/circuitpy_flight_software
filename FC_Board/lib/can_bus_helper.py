@@ -1,5 +1,5 @@
-import traceback
 import time
+import traceback
 
 from adafruit_mcp2515.canio import (
     Message,

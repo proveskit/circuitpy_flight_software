@@ -5,6 +5,7 @@
 # The is a test script to facilitate a simple ping pong style communications test between two radios.
 
 import time
+
 from pysquared import cubesat
 
 test_message = "Hello There!"

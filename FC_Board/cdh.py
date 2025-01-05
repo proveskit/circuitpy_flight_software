@@ -1,5 +1,5 @@
-import time
 import random
+import time
 
 # our 4 byte code to authorize commands
 # pass-code for DEMO PURPOSES ONLY

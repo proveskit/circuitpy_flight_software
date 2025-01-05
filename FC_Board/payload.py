@@ -6,8 +6,9 @@ Author: Nicole Maggard
 """
 
 import traceback
-from debugcolor import co
+
 import adafruit_bno055
+from debugcolor import co
 
 
 class PAYLOAD:

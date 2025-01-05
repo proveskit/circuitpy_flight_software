@@ -9,35 +9,37 @@ Library Repo:
 
 # Common CircuitPython Libs
 import gc
+import sys
+import time
+import traceback
+from collections import OrderedDict
+from os import chdir, mkdir, stat
+
+import adafruit_lis2mdl  # Magnetometer
+import adafruit_ov5640
+import adafruit_tca9548a  # I2C Multiplexer
 import board
+import busio
+import digitalio
 import machine
 import microcontroller
-import busio
-import time
-import sys
-import traceback
-from storage import mount, umount, VfsFat
-import digitalio
-import sdcardio
-from os import stat, mkdir, chdir
-from bitflags import bitFlag, multiBitFlag
-from micropython import const
-from debugcolor import co
-from collections import OrderedDict
-
-# Hardware Specific Libs
-from adafruit_rfm import rfm9x  # Radio
-from adafruit_rfm import rfm9xfsk  # Radio
 import neopixel  # RGB LED
-from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-import adafruit_lis2mdl  # Magnetometer
-import adafruit_tca9548a  # I2C Multiplexer
 import rv3028
-import adafruit_ov5640
+import sdcardio
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 
 # CAN Bus Import
 from adafruit_mcp2515 import MCP2515 as CAN
 
+# Hardware Specific Libs
+from adafruit_rfm import (
+    rfm9x,  # Radio
+    rfm9xfsk,  # Radio
+)
+from bitflags import bitFlag, multiBitFlag
+from debugcolor import co
+from micropython import const
+from storage import VfsFat, mount, umount
 
 # NVM register numbers
 _BOOTCNT = const(0)

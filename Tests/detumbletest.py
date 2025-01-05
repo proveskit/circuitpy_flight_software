@@ -1,7 +1,8 @@
-from pysquared import cubesat as c
 import time
+
 import functions
 from debugcolor import co
+from pysquared import cubesat as c
 
 
 def debug_print(statement):

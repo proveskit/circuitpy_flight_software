@@ -6,13 +6,13 @@ This is where the processes get scheduled, and satellite operations are handeled
 """
 
 import gc  # Garbage collection
-import microcontroller
 import time
 import traceback
 
+import functions
+import microcontroller
 from debugcolor import co
 from pysquared import cubesat as c
-import functions
 
 c.watchdog_pet()
 
