@@ -114,6 +114,7 @@ class functions:
             self.debug_print("Failed to send packet")
         del self.field
         del Field
+        gc.collect()
 
     def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
@@ -152,6 +153,7 @@ class functions:
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
+        gc.collect()
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
@@ -224,6 +226,7 @@ class functions:
             self.state_bool: bool = False
         del self.field
         del Field
+        gc.collect()
 
     def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
@@ -236,6 +239,7 @@ class functions:
         )
         del self.field
         del Field
+        gc.collect()
 
     def listen(self) -> bool:
         import lib.pysquared.cdh as cdh
@@ -308,6 +312,7 @@ class functions:
 
             del a
             del Big_Data
+            gc.collect()
 
         except Exception as e:
             self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
