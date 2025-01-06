@@ -5,7 +5,6 @@
 
 import pytest
 
-# from Batt_Board import detumble
 import detumble
 
 

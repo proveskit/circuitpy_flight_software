@@ -6,6 +6,6 @@ venv
 **/*.mpy
 
 # libs
-FC_Board/lib/adafruit*
-FC_Board/lib/asyncio*
-FC_Board/lib/neopixel.py
+lib/adafruit*
+lib/asyncio*
+lib/neopixel.py

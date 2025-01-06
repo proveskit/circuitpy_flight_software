@@ -1,6 +1,6 @@
 {
     "python.testing.pytestArgs": [
-        "FC_Board/tests"
+        "tests/unit"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

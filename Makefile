@@ -13,7 +13,7 @@ fmt: ## Lint and format files
 
 .PHONY: test
 test: ## Run tests
-	python3 -m pytest FC_Board/tests
+	python3 -m pytest tests/unit
 
 ##@ Build
 
