@@ -1,6 +1,6 @@
 import time
 import random
-import commandsConfig
+import lib.commandsConfig as commandsConfig
 import json
 
 commands = commandsConfig.commands

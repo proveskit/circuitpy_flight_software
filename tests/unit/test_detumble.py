@@ -5,7 +5,7 @@
 
 import pytest
 
-import detumble
+import lib.detumble as detumble
 
 
 def test_dot_product():
