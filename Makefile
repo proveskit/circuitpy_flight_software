@@ -19,16 +19,16 @@ test: ## Run tests
 
 .PHONY: build
 build: download-libraries ## Build the project, store the result in the artifacts directory
-	mkdir -p artifacts
-	rm -rf artifacts/FC_Board/
-	cp -r FC_Board artifacts/FC_Board
-	find artifacts/FC_Board -type d -name '__pycache__' -exec rm -rf {} +
-	rm -rf artifacts/FC_Board/tests
-	zip -r artifacts/proves.zip artifacts/FC_Board
+	rm -rf artifacts/proves/
+	mkdir -p artifacts/proves
+	cp config.json artifacts/proves/
+	cp ./*.py artifacts/proves/
+	find ./lib -type d -name '__pycache__' -prune -o -type f -print | cpio -pdm artifacts/proves/
+	zip -r artifacts/proves.zip artifacts/proves
 
 ##@ Library Management
 
 download-libraries: ## Download the required libraries
 	@echo "Downloading libraries..."
-	@pip3 install --requirement FC_Board/lib/requirements.txt --target FC_Board/lib --no-deps --upgrade --quiet
-	@rm -rf FC_Board/lib/*.dist-info
+	@pip3 install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
+	@rm -rf lib/*.dist-info
