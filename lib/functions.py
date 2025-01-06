@@ -238,7 +238,7 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import lib.cdh as cdh
+        import cdh
 
         # This just passes the message through. Maybe add more functionality later.
         try:
@@ -413,7 +413,7 @@ class functions:
 
         def do_detumble() -> None:
             try:
-                import lib.detumble as detumble
+                import detumble
 
                 for _ in range(3):
                     data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]
