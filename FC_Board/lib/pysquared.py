@@ -27,7 +27,7 @@ from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import adafruit_lis2mdl  # Magnetometer
 import adafruit_tca9548a  # I2C Multiplexer
 import rv3028
-import adafruit_ov5640
+import adafruit_veml7700
 import json
 
 # CAN Bus Import
@@ -138,11 +138,7 @@ class Satellite:
         self.data_cache: dict = {}
         # TODO(blakejameson): is this line in use? Remove if not?
         self.filenumbers: dict = {}
-        # TODO(blakejameson): is this line in use? Remove if not?
-        self.image_packets: int = 0
         self.urate: int = 9600
-        self.buffer: bytearray = None
-        self.buffer_size: int = 1
         # TODO(blakejameson): is this line in use? Remove if not?
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
@@ -458,57 +454,28 @@ class Satellite:
         self.scan_tca_channels()
 
         """
-        Camera Initialization
+        Hardware Status
         """
-        if self.hardware["TCA"] is True:
-            try:
-                self.cam: adafruit_ov5640.OV5640 = adafruit_ov5640.OV5640(
-                    self.tca[5],
-                    data_pins=(
-                        board.D2,
-                        board.D3,
-                        board.D4,
-                        board.D5,
-                        board.D6,
-                        board.D7,
-                        board.D8,
-                        board.D9,
-                    ),
-                    clock=board.PC,
-                    vsync=board.VS,
-                    href=board.HS,
-                    mclk=None,
-                    shutdown=None,
-                    reset=None,
-                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
-                )
-
-                self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
-                self.cam.flip_y = False
-                self.cam.flip_x = False
-                self.cam.test_pattern = False
-
-                self.cam.effect = 0
-                self.cam.exposure_value = -2
-                self.cam.white_balance = 2
-                self.cam.night_mode = False
-                self.cam.quality = 20
-
-                self.hardware["CAM"] = True
-
-            except Exception as e:
-                self.error_print(
-                    "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
-                )
-                self.hardware["CAM"] = False
-
-        else:
-            self.error_print("[ERROR][CAMERA]TCA Not Initialized")
-            self.hardware["CAM"] = False
-
-        if self.f_fsk:
-            self.debug_print("Next restart will be in LoRa mode.")
-            self.f_fsk = False
+        self.hardware = {
+            "I2C0": False,
+            "SPI0": False,
+            "I2C1": False,
+            "UART": False,
+            "Radio1": False,
+            "IMU": False,
+            "Mag": False,
+            "SDcard": False,
+            "NEOPIX": False,
+            "WDT": False,
+            "TCA": False,
+            "CAN": False,
+            "Face0": False,
+            "Face1": False,
+            "Face2": False,
+            "Face3": False,
+            "Face4": False,
+            "RTC": False,
+        }
 
         """
         Prints init State of PySquared Hardware
@@ -545,8 +512,7 @@ class Satellite:
             1: "Face1",
             2: "Face2",
             3: "Face3",
-            4: "Face4",
-            5: "CAM",
+            4: "Face4"
         }
 
         for channel in range(len(channel_to_face)):
@@ -727,31 +693,6 @@ class Satellite:
             self.error_print("[WARNING] RTC not initialized")
 
     """
-    Camera Functions
-    """
-
-    def take_image(self) -> None:
-        try:
-            gc.collect()
-            self.buffer_size: int = self.cam.height * self.cam.width // self.cam.quality
-            self.buffer: bytearray = bytearray(self.buffer_size)
-            self.cam.capture(self.buffer)
-
-            eoi: int = self.buffer.find(b"\xff\xd9")
-            if eoi != -1:
-                # terminate the JPEG data just after the EOI marker
-                print(memoryview(self.buffer)[: eoi + 2].hex())
-            else:
-                print("image corrupted!")
-                print(memoryview(self.buffer).hex())
-
-        except Exception as e:
-            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
-
-        finally:
-            self.buffer: bytearray = None
-
-    """
     Maintenence Functions
     """
 
@@ -768,34 +709,16 @@ class Satellite:
 
     def powermode(self, mode: str) -> None:
         """
-        Configure the hardware for minimum or normal power consumption
-        Add custom modes for mission-specific control
+        Changes power mode of the satellite
         """
-        try:
-            if "crit" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-                self.power_mode: str = "critical"
-
-            elif "min" in mode:
-                self.neopixel.brightness = 0
-                self.enable_rf.value = False
-
-                self.power_mode: str = "minimum"
-
-            elif "norm" in mode:
-                self.enable_rf.value = True
-                self.power_mode: str = "normal"
-                # don't forget to reconfigure radios, gps, etc...
-
-            elif "max" in mode:
-                self.enable_rf.value = True
-                self.power_mode: str = "maximum"
-        except Exception as e:
-            self.error_print(
-                "Error in changing operations of powermode: "
-                + "".join(traceback.format_exception(e))
-            )
+        if mode == "normal":
+            self.debug_print("[INFO] Entering Normal Power Mode")
+            if self.hardware["TCA"] is True:
+                self.tca[0].duty_cycle = 0xFFFF  # Face 0
+                self.tca[1].duty_cycle = 0xFFFF  # Face 1
+                self.tca[2].duty_cycle = 0xFFFF  # Face 2
+                self.tca[3].duty_cycle = 0xFFFF  # Face 3
+                self.tca[4].duty_cycle = 0xFFFF  # Face 4
 
     """
     SD Card Functions

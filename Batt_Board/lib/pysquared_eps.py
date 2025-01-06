@@ -74,7 +74,6 @@ class Satellite:
             self.hardware["Face3"] = True
             self.Face4.duty_cycle = 0xFFFF
             self.hardware["Face4"] = True
-            self.cam.duty_cycle = 0xFFFF
 
     def all_faces_off(self):
         # De-Power Faces
@@ -94,8 +93,6 @@ class Satellite:
             self.Face4.duty_cycle = 0x0000
             time.sleep(0.1)
             self.hardware["Face4"] = False
-            time.sleep(0.1)
-            self.cam.duty_cycle = 0x0000
 
     def debug_print(self, statement):
         if self.debug:
@@ -209,7 +206,6 @@ class Satellite:
             self.Face2 = self.faces.channels[2]
             self.Face3 = self.faces.channels[3]
             self.Face4 = self.faces.channels[4]
-            self.cam = self.faces.channels[5]
             self.all_faces_on()
         except Exception as e:
             self.debug_print(
@@ -706,7 +702,6 @@ class Satellite:
             except Exception as e:
                 self.debug_print(
                     "LiDAR error: " + "".join(traceback.format_exception(e))
-                )
                 return 0
         else:
             self.debug_print("[WARNING] LiDAR not initialized")
@@ -760,7 +755,6 @@ class Satellite:
         except Exception as e:
             self.debug_print(
                 "Error with Burn Wire: " + "".join(traceback.format_exception(e))
-            )
             return False
         finally:
             self._relayA.value = 0
