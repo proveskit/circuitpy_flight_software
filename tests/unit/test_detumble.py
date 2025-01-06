@@ -1,5 +1,5 @@
-# After following the necessary steps in README.md, you can use "make test" to run all tests in the unit_tests folder
-# To run this file specifically: cd Tests > cd unit_tests > pytest test_detumble.py
+# After following the necessary steps in README.md, you can use "make test" to run all tests in the "tests" folder
+# To run this file specifically: cd FC_Board > cd tests > pytest test_detumble.py
 # pytest test_detumble.py -v displays which tests ran and their respective results (fail or pass)
 # Note: If you encounter a ModuleNotFoundError, try: export PYTHONPATH=<path to this repo>
 

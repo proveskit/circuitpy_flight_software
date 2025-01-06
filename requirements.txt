@@ -26,6 +26,7 @@ pyusb==1.2.1
 PyYAML==6.0.1
 pluggy==1.5.0
 pytest==8.3.2
+pytest-mock==3.14.0
 tomli==2.0.1
 typing_extensions==4.12.2
 virtualenv==20.26.3
