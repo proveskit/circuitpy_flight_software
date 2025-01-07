@@ -470,7 +470,6 @@ class Satellite:
             2: "Face2",
             3: "Face3",
             4: "Face4",
-            5: "CAM",
         }
 
         for channel in range(len(channel_to_face)):
