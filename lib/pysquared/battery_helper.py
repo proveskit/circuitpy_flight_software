@@ -14,7 +14,7 @@ class BatteryHelper:
     CMD_GET_ERRORS = "3"  # Returns error_count, trust_memory
     CMD_TOGGLE_FACES = "4"  # Toggle face LEDs, returns face status
     CMD_RESET_BUS = "5"  # Reset power bus
-    CMD_TOGGLE_CAMERA = "6"  # Toggle camera power, returns camera status
+    # CMD_TOGGLE_CAMERA = "6"  # Toggle camera power, returns camera status; commented out should be added back if reimplemented
     CMD_USE_AUX_RADIO = "7"  # Switch to auxiliary radio
     CMD_RESET_FC = "8"  # Reset flight controller
     CMD_BURN_COMPLETE = "9"  # Set burn complete flag
