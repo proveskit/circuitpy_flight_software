@@ -7,8 +7,9 @@ class Logger:
         self.internal_logger = logging.getLogger("logger")
         self.internal_logger.setLevel(logging.DEBUG)
 
-    def log(self, message, *args):
-        self.internal_logger.debug(message, *args)
+    def log(self, filename, message, *args):
+        full_message = "[" + filename + "]" + message
+        self.internal_logger.debug(full_message, *args)
 
     def info(self, message, *args):
         self.internal_logger.info(message, *args)
