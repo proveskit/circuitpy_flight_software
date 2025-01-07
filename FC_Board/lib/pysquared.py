@@ -190,7 +190,6 @@ class Satellite:
                 ("NEOPIX", False),
                 ("WDT", False),
                 ("TCA", False),
-                ("CAN", False),
                 ("Face0", False),
                 ("Face1", False),
                 ("Face2", False),
@@ -369,24 +368,6 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][Magnetometer]")
             traceback.print_exception(None, e, e.__traceback__)
-
-        """
-        CAN Transceiver Initialization
-        """
-        try:
-            self.spi0cs2: digitalio.DigitalInOut = digitalio.DigitalInOut(
-                board.SPI0_CS2
-            )
-            self.spi0cs2.switch_to_output()
-            self.can_bus: CAN = CAN(self.spi0, self.spi0cs2, loopback=True, silent=True)
-            self.hardware["CAN"] = True
-            # TODO(nateinaction): Accessing private method. Ability to sleep the canbus should be made in upstream. Search for this comment to find other usages.
-            self.can_bus._set_mode(0x20)
-
-        except Exception as e:
-            self.debug_print(
-                "[ERROR][CAN TRANSCEIVER]" + "".join(traceback.format_exception(e))
-            )
 
         """
         RTC Initialization
