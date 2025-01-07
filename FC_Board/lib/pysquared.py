@@ -30,8 +30,6 @@ import rv3028
 import adafruit_ov5640
 import json
 
-# CAN Bus Import
-from adafruit_mcp2515 import MCP2515 as CAN
 
 # Importing typing libraries
 try:
