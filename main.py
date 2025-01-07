@@ -24,17 +24,15 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    from pysquared import cubesat as c
+    from lib.pysquared.pysquared import cubesat as c
 
     c.watchdog_pet()
 
     import asyncio
-    import time
     import traceback
     import gc  # Garbage collection
-    import microcontroller
-    import functions
-    from debugcolor import co
+    import lib.pysquared.functions as functions
+    from lib.pysquared.debugcolor import co
 
     def debug_print(statement):
         if c.debug:

@@ -1,6 +1,6 @@
 import time
 import random
-import commandsConfig
+import lib.pysquared.commandsConfig as commandsConfig
 import json
 
 commands = commandsConfig.commands

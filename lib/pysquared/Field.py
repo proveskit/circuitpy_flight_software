@@ -5,7 +5,7 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 import traceback
 
 
