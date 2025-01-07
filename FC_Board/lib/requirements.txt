@@ -3,7 +3,6 @@ adafruit-circuitpython-drv2605==1.3.4
 adafruit-circuitpython-lis2mdl==2.1.23
 adafruit-circuitpython-lsm303-accel==1.1.22
 adafruit-circuitpython-lsm6ds==4.5.13
-adafruit-circuitpython-mcp2515==1.1.6
 adafruit-circuitpython-mcp9808==3.3.24
 adafruit-circuitpython-neopixel==6.3.12
 adafruit-circuitpython-ov5640==1.2.1
