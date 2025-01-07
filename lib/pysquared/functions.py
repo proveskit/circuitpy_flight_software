@@ -30,7 +30,8 @@ class functions:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat: Satellite) -> None:
+    def __init__(self, cubesat: Satellite, logger: Logger) -> None:
+        self.logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat)
         self.debug: bool = cubesat.debug
