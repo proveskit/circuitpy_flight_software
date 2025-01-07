@@ -44,7 +44,7 @@ class multiBitFlag:
 
     def __set__(self, obj, value):
         if value >= self.maxval:
-            value = self.maxval
+            value = 0
         value <<= self.lowest_bit
         reg = obj.micro.nvm[self.byte]
         reg &= ~self.bit_mask
