@@ -20,6 +20,7 @@ from lib.pysquared.debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
+<<<<<<< HEAD:lib/pysquared/pysquared.py
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 import lib.neopixel as neopixel  # RGB LED
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
@@ -27,6 +28,17 @@ import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 import lib.adafruit_ov5640 as adafruit_ov5640  # Camera
+=======
+from adafruit_rfm import rfm9x  # Radio
+from adafruit_rfm import rfm9xfsk  # Radio
+import neopixel  # RGB LED
+from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
+import adafruit_lis2mdl  # Magnetometer
+import adafruit_tca9548a  # I2C Multiplexer
+import rv3028
+
+# import adafruit_ov5640
+>>>>>>> 4063254 (first iteration, removing ov5640):FC_Board/lib/pysquared.py
 import json
 
 
@@ -440,9 +452,10 @@ class Satellite:
         """
         if self.hardware["TCA"] is True:
             try:
-                self.cam: adafruit_ov5640.OV5640 = adafruit_ov5640.OV5640(
-                    self.tca[5],
-                    data_pins=(
+                # self.cam: adafruit_ov5640.OV5640 = adafruit_ov5640.OV5640(
+                self.tca[5],
+                data_pins = (
+                    (
                         board.D2,
                         board.D3,
                         board.D4,
@@ -452,27 +465,28 @@ class Satellite:
                         board.D8,
                         board.D9,
                     ),
-                    clock=board.PC,
-                    vsync=board.VS,
-                    href=board.HS,
-                    mclk=None,
-                    shutdown=None,
-                    reset=None,
-                    size=adafruit_ov5640.OV5640_SIZE_QVGA,
                 )
+                clock = (board.PC,)
+                vsync = (board.VS,)
+                href = (board.HS,)
+                mclk = (None,)
+                shutdown = (None,)
+                reset = (None,)
+                # size=adafruit_ov5640.OV5640_SIZE_QVGA,
+                # )
 
-                self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
-                self.cam.flip_y = False
-                self.cam.flip_x = False
-                self.cam.test_pattern = False
+                # self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
+                # self.cam.flip_y = False
+                # self.cam.flip_x = False
+                # self.cam.test_pattern = False
 
-                self.cam.effect = 0
-                self.cam.exposure_value = -2
-                self.cam.white_balance = 2
-                self.cam.night_mode = False
-                self.cam.quality = 20
+                # self.cam.effect = 0
+                # self.cam.exposure_value = -2
+                # self.cam.white_balance = 2
+                # self.cam.night_mode = False
+                # self.cam.quality = 20
 
-                self.hardware["CAM"] = True
+                # self.hardware["CAM"] = True
 
             except Exception as e:
                 self.error_print(
@@ -707,7 +721,8 @@ class Satellite:
     """
     Camera Functions
     """
-
+    ### could scrap
+    """
     def take_image(self) -> None:
         try:
             gc.collect()
@@ -728,7 +743,8 @@ class Satellite:
 
         finally:
             self.buffer: bytearray = None
-
+    """
+    ###
     """
     Maintenence Functions
     """
