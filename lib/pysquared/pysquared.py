@@ -26,9 +26,7 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
-import lib.adafruit_ov5640 as adafruit_ov5640  # Camera
 
-# import adafruit_ov5640
 import json
 
 
@@ -194,7 +192,6 @@ class Satellite:
                 ("Face2", False),
                 ("Face3", False),
                 ("Face4", False),
-                ("CAM", False),
                 ("RTC", False),
             ]
         )
@@ -438,63 +435,6 @@ class Satellite:
         self.scan_tca_channels()
 
         """
-        Camera Initialization
-        """
-        """
-        if self.hardware["TCA"] is True:
-            try:
-                # self.cam: adafruit_ov5640.OV5640 = adafruit_ov5640.OV5640(
-                self.tca[5],
-                data_pins = (
-                    (
-                        board.D2,
-                        board.D3,
-                        board.D4,
-                        board.D5,
-                        board.D6,
-                        board.D7,
-                        board.D8,
-                        board.D9,
-                    ),
-                )
-                clock = (board.PC,)
-                vsync = (board.VS,)
-                href = (board.HS,)
-                mclk = (None,)
-                shutdown = (None,)
-                reset = (None,)
-                # size=adafruit_ov5640.OV5640_SIZE_QVGA,
-                # )
-
-                # self.cam.colorspace = adafruit_ov5640.OV5640_COLOR_JPEG
-                # self.cam.flip_y = False
-                # self.cam.flip_x = False
-                # self.cam.test_pattern = False
-
-                # self.cam.effect = 0
-                # self.cam.exposure_value = -2
-                # self.cam.white_balance = 2
-                # self.cam.night_mode = False
-                # self.cam.quality = 20
-
-                # self.hardware["CAM"] = True
-
-            except Exception as e:
-                self.error_print(
-                    "[ERROR][CAMERA]" + "".join(traceback.format_exception(e))
-                )
-                self.hardware["CAM"] = False
-
-        else:
-            self.error_print("[ERROR][CAMERA]TCA Not Initialized")
-            self.hardware["CAM"] = False
-
-        if self.f_fsk:
-            self.debug_print("Next restart will be in LoRa mode.")
-            self.f_fsk = False
-        """
-
-        """
         Prints init State of PySquared Hardware
         """
         self.debug_print("PySquared Hardware Initialization Complete!")
@@ -710,33 +650,6 @@ class Satellite:
         else:
             self.error_print("[WARNING] RTC not initialized")
 
-    """
-    Camera Functions
-    """
-    ### could scrap
-    """
-    def take_image(self) -> None:
-        try:
-            gc.collect()
-            self.buffer_size: int = self.cam.height * self.cam.width // self.cam.quality
-            self.buffer: bytearray = bytearray(self.buffer_size)
-            self.cam.capture(self.buffer)
-
-            eoi: int = self.buffer.find(b"\xff\xd9")
-            if eoi != -1:
-                # terminate the JPEG data just after the EOI marker
-                print(memoryview(self.buffer)[: eoi + 2].hex())
-            else:
-                print("image corrupted!")
-                print(memoryview(self.buffer).hex())
-
-        except Exception as e:
-            self.error_print("[ERROR][CAMERA]" + "".join(traceback.format_exception(e)))
-
-        finally:
-            self.buffer: bytearray = None
-    """
-    ###
     """
     Maintenence Functions
     """
