@@ -14,20 +14,19 @@ import busio, time, sys, traceback
 from storage import mount, umount, VfsFat
 import digitalio, sdcardio, pwmio
 from os import listdir, stat, statvfs, mkdir, chdir
-from bitflags import bitFlag, multiBitFlag, multiByte
+from lib.pysquared.bitflags import bitFlag, multiBitFlag, multiByte
 from micropython import const
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 from collections import OrderedDict
 
 # Hardware Specific Libs
-from adafruit_rfm import rfm9x  # Radio
-from adafruit_rfm import rfm9xfsk  # Radio
-import neopixel  # RGB LED
-from adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-import adafruit_lis2mdl  # Magnetometer
-import adafruit_tca9548a  # I2C Multiplexer
-import rv3028
-import adafruit_ov5640
+from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
+import lib.neopixel as neopixel  # RGB LED
+from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
+import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
+import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
+import lib.pysquared.rv3028 as rv3028  # Real Time Clock
+import lib.adafruit_ov5640 as adafruit_ov5640  # Camera
 import json
 
 

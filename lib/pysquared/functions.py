@@ -11,17 +11,17 @@ import gc
 import traceback
 import random
 import json
-from debugcolor import co
-from battery_helper import BatteryHelper
-from packet_manager import PacketManager
-from packet_sender import PacketSender
+from lib.pysquared.debugcolor import co
+from lib.pysquared.battery_helper import BatteryHelper
+from lib.pysquared.packet_manager import PacketManager
+from lib.pysquared.packet_sender import PacketSender
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any
     import circuitpython_typing
 except:
     pass
-from pysquared import Satellite
+from lib.pysquared.pysquared import Satellite
 
 
 class functions:
@@ -103,7 +103,7 @@ class functions:
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
-        import Field
+        import lib.pysquared.Field as Field
 
         self.field: Field.Field = Field.Field(self.cubesat, self.debug)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
@@ -126,7 +126,7 @@ class functions:
 
     def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
-        import Field
+        import lib.pysquared.Field as Field
 
         try:
             lora_beacon: str = (
@@ -180,7 +180,7 @@ class functions:
         return to_return
 
     def state_of_health(self) -> None:
-        import Field
+        import lib.pysquared.Field as Field
 
         self.state_list: list = []
         # list of state information
@@ -227,7 +227,7 @@ class functions:
 
     def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
-        import Field
+        import lib.pysquared.Field as Field
 
         self.field: Field.Field = Field.Field(self.cubesat, self.debug)
         self.debug_print("Sending Face Data")
@@ -238,7 +238,7 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import cdh
+        import lib.pysquared.cdh as cdh
 
         # This just passes the message through. Maybe add more functionality later.
         try:
@@ -296,7 +296,7 @@ class functions:
         gc.collect()
 
         try:
-            import Big_Data
+            import lib.pysquared.Big_Data as Big_Data
 
             self.debug_print(gc.mem_free())
 
@@ -383,7 +383,7 @@ class functions:
         self.cubesat.RGB = (255, 255, 255)
 
         try:
-            import Big_Data
+            import lib.pysquared.Big_Data as Big_Data
 
             a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
         except Exception as e:
@@ -413,7 +413,7 @@ class functions:
 
         def do_detumble() -> None:
             try:
-                import detumble
+                import lib.pysquared.detumble as detumble
 
                 for _ in range(3):
                     data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]

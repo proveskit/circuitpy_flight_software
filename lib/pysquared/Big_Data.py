@@ -1,4 +1,4 @@
-from debugcolor import co
+from lib.pysquared.debugcolor import co
 import time
 import traceback
 import gc
@@ -40,7 +40,7 @@ class Face:
 
         if "MCP" in senlist:
             try:
-                import adafruit_mcp9808
+                import lib.adafruit_mcp9808 as adafruit_mcp9808
 
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
@@ -49,7 +49,7 @@ class Face:
 
         if "VEML" in senlist:
             try:
-                import adafruit_veml7700
+                import lib.adafruit_veml7700 as adafruit_veml7700
 
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
@@ -58,7 +58,7 @@ class Face:
 
         if "DRV" in senlist:
             try:
-                import adafruit_drv2605
+                import lib.adafruit_drv2605 as adafruit_drv2605
 
                 self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True

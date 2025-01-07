@@ -5,7 +5,7 @@
 
 import pytest
 
-import lib.detumble as detumble
+import lib.pysquared.detumble as detumble
 
 
 def test_dot_product():
