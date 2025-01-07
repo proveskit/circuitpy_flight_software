@@ -67,9 +67,6 @@ class functions:
     def safe_sleep(self, duration: int = 15) -> None:
         self.debug_print("Setting Safe Sleep Mode")
 
-        # TODO(nateinaction): Accessing private method. Ability to sleep the canbus should be made in upstream. Search for this comment to find other usages.
-        self.cubesat.can_bus._set_mode(0x20)
-
         iterations: int = 0
 
         while duration > 15 and iterations < 12:
