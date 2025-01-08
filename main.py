@@ -11,6 +11,9 @@ Published: Nov 19, 2024
 import time
 
 import microcontroller
+from lib.pysquared.logger import Logger
+
+logger = Logger()
 
 from lib.pysquared.config import Config
 from lib.pysquared.pysquared import Satellite
@@ -44,7 +47,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c, config)
+    f = functions.functions(c, logger=logger, config)
 
     def initial_boot():
         c.watchdog_pet()
