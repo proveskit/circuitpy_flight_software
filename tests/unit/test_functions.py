@@ -1,6 +1,11 @@
 import pytest
-from FC_Board.lib.pysquared import Satellite
-from FC_Board.lib.functions import functions, BatteryHelper, PacketManager, PacketSender
+from lib.pysquared.pysquared import Satellite
+from lib.pysquared.functions import (
+    functions,
+    BatteryHelper,
+    PacketManager,
+    PacketSender,
+)
 
 # Remove FC_Board from import w/ new organization of repo
 
