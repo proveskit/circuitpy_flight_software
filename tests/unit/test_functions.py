@@ -10,8 +10,7 @@ def mock_cubesat(mocker):
     mock_cubesat = mocker.Mock(spec=Satellite)
     # Creating mock object of Satellite class
     mock_cubesat.debug = True
-    mock_cubesat.radio1 = mocker.Mock()
-    # Creating mock object for radio1 attribute
+    mock_cubesat.radio1 = mocker.Mock()  # Creating mock of radio1 attribute
     mock_cubesat.can_bus = mocker.Mock()  # Creating mock of can_bus
     mock_cubesat.watchdog_pet = mocker.Mock()  # Creating mock of watchdog_pet()
     return mock_cubesat  # Returns mock Satellite object
@@ -137,3 +136,20 @@ def test_safe_sleep_long(funct, mock_cubesat, mocker):
     assert mock_light_sleep_until_alarms.call_count == 3
     # Check if watchdog_pet() was called 3 times
     assert mock_cubesat.watchdog_pet.call_count == 3
+
+
+def test_listen_loiter(funct, mock_cubesat):
+    # Call listen_loiter()
+    funct.listen_loiter()
+    # Check for debug message
+    funct.debug_print.assert_called_with("Listening for 10 seconds")
+    # Check if mock_cubesat.radio1 was set to 10
+    assert mock_cubesat.radio1.receive_timeout == 10
+    # Check if listen() was called
+    assert funct.listen.assert_called_once_with(None)
+    # Check if safe_sleep() was called with sleep_duration value
+    assert funct.safe_sleep.assert_called_once_with(mock_cubesat.sleep_duration)
+    # Note: the sleep_duration value that is set to 30, not 20, is passed into safe_sleep
+    funct.debug_print.assert_called_with("Sleeping for 20 seconds")
+    # Check if watchdog_pet() was called 4 times
+    assert mock_cubesat.watchdog_pet.call_count == 4
