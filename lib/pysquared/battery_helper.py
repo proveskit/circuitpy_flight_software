@@ -14,7 +14,7 @@ class BatteryHelper:
     CMD_GET_ERRORS = "3"  # Returns error_count, trust_memory
     CMD_TOGGLE_FACES = "4"  # Toggle face LEDs, returns face status
     CMD_RESET_BUS = "5"  # Reset power bus
-    CMD_TOGGLE_CAMERA = "6"  # Toggle camera power, returns camera status
+    CMD_UNUSED = "6"  # prevously used for TOGGLE_CAMERA, no camera now so unused cmd
     CMD_USE_AUX_RADIO = "7"  # Switch to auxiliary radio
     CMD_RESET_FC = "8"  # Reset flight controller
     CMD_BURN_COMPLETE = "9"  # Set burn complete flag
@@ -181,10 +181,6 @@ class BatteryHelper:
     def reset_power_bus(self):
         """Reset the power bus"""
         return self._send_command(self.CMD_RESET_BUS)
-
-    def toggle_camera(self):
-        """Toggle camera power"""
-        return self._send_command(self.CMD_TOGGLE_CAMERA)
 
     def use_auxiliary_radio(self):
         """Switch to auxiliary radio"""
