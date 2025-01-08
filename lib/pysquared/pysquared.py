@@ -131,8 +131,9 @@ class Satellite:
         """
         Setting up data buffers
         """
+        # TODO(cosmiccodon/blakejameson):
         # Data_cache, filenumbers, image_packets, and send_buff are variables that are not used in the codebase. They were put here for Orpheus last minute.
-        # We are unsure if these will be used in the future, so we are keeping them here for now. EvanOrtiz BlackJameson 01/07/2025
+        # We are unsure if these will be used in the future, so we are keeping them here for now.
         self.data_cache: dict = {}
         self.filenumbers: dict = {}
         self.image_packets: int = 0
