@@ -131,16 +131,14 @@ class Satellite:
         """
         Setting up data buffers
         """
-        # TODO(blakejameson): is this line in use? Remove if not?
+        # Data_cache, filenumbers, image_packets, and send_buff are variables that are not used in the codebase. They were put here for Orpheus last minute.
+        # We are unsure if these will be used in the future, so we are keeping them here for now. EvanOrtiz BlackJameson 01/07/2025
         self.data_cache: dict = {}
-        # TODO(blakejameson): is this line in use? Remove if not?
         self.filenumbers: dict = {}
-        # TODO(blakejameson): is this line in use? Remove if not?
         self.image_packets: int = 0
         self.urate: int = 9600
         self.buffer: bytearray = None
         self.buffer_size: int = 1
-        # TODO(blakejameson): is this line in use? Remove if not?
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
 
@@ -894,6 +892,3 @@ class Satellite:
         else:
             self.debug_print("[WARNING] SD Card not initialized")
 
-
-print("Initializing CubeSat")
-cubesat = Satellite()

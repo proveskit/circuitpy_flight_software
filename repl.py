@@ -1,3 +1,3 @@
 print("Initializing a cubesat object as `c` in the REPL...")
-
-from lib.pysquared.pysquared import cubesat as c
+import lib.pysquared.pysquared as pysquared
+c = pysquared.Satellite()
