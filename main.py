@@ -69,7 +69,7 @@ try:
     except Exception as e:
         debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
     finally:
-        debug_print("Something went wrong!")
+        logger.debug("MAIN", "Something went wrong!", foo="bar")
 
     def send_imu():
         debug_print("Looking to get imu data...")
