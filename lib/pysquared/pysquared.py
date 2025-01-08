@@ -434,9 +434,6 @@ class Satellite:
         """
         self.scan_tca_channels()
 
-        """
-        Camera Initializations
-        """
         if self.f_fsk:
             self.debug_print("Next restart will be in LoRa mode.")
             self.f_fsk = False
