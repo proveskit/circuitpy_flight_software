@@ -435,6 +435,13 @@ class Satellite:
         self.scan_tca_channels()
 
         """
+        Camera Initializations
+        """
+        if self.f_fsk:
+            self.debug_print("Next restart will be in LoRa mode.")
+            self.f_fsk = False
+
+        """
         Prints init State of PySquared Hardware
         """
         self.debug_print("PySquared Hardware Initialization Complete!")
