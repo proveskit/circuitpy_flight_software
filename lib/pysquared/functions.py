@@ -15,6 +15,7 @@ from lib.pysquared.debugcolor import co
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
+from lib.pysquared.logger import Logger
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any

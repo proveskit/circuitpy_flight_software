@@ -10,6 +10,9 @@ Published: Nov 19, 2024
 
 import time
 import microcontroller
+from lib.pysquared.logger import Logger
+
+logger = Logger()
 
 print("=" * 70)
 print("Hello World!")
@@ -38,7 +41,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c)
+    f = functions.functions(c, logger=logger)
 
     def initial_boot():
         c.watchdog_pet()
