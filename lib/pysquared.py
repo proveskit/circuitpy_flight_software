@@ -83,9 +83,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count: multiBitFlag = (
-            self.c_error_count + 1
-        ) & 0xFF  # Limited to 255 errors
+        self.c_error_count: multiBitFlag = +1  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -201,8 +199,6 @@ class Satellite:
         """
         NVM Parameter Resets
         """
-        if self.c_boot > 200:
-            self.c_boot = 0
 
         if self.f_softboot:
             self.f_softboot = False
