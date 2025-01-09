@@ -28,7 +28,7 @@ try:
     print("Initializing CubeSat")
     c = pysquared.Satellite()
     c.watchdog_pet()
-    
+
     import asyncio
     import traceback
     import gc  # Garbage collection
@@ -49,7 +49,7 @@ try:
         c.watchdog_pet()
         # f.state_of_health()
         # f.listen()
-        #c.watchdog_pet()
+        # c.watchdog_pet()
 
     try:
         c.c_boot += 1  # Increment boot number

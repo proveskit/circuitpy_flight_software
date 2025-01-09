@@ -892,4 +892,3 @@ class Satellite:
                 return None
         else:
             self.debug_print("[WARNING] SD Card not initialized")
-
