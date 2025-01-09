@@ -26,6 +26,7 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
+import lib.pysquared.Config as Config  # Config file
 
 import json
 
@@ -89,44 +90,29 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
     def __init__(self) -> None:
-        # parses json & assigns data to variables
-        with open("config.json", "r") as f:
-            json_data = f.read()
-        config = json.loads(json_data)
-
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config["debug"]  # Define verbose output here. True or False
-        self.legacy: bool = config[
-            "legacy"
-        ]  # Define if the board is used with legacy or not
-        self.heating: bool = config["heating"]  # Currently not used
-        self.orpheus: bool = config[
-            "orpheus"
-        ]  # Define if the board is used with Orpheus or not
-        self.is_licensed: bool = config["is_licensed"]
+        self.debug: bool = Config.getDebug()
+        self.legacy: bool = Config.getLegacy()
+        self.heating: bool = Config.getHeating()
+        self.orpheus: bool = Config.getOrpheus()
+        self.is_licensed: bool = Config.getIsLiscensed()
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = config["NORMAL_TEMP"]
-        self.NORMAL_BATT_TEMP: int = config[
-            "NORMAL_BATT_TEMP"
-        ]  # Set to 0 BEFORE FLIGHT!!!!!
-        self.NORMAL_MICRO_TEMP: int = config["NORMAL_MICRO_TEMP"]
-        self.NORMAL_CHARGE_CURRENT: float = config["NORMAL_CHARGE_CURRENT"]
-        self.NORMAL_BATTERY_VOLTAGE: float = config["NORMAL_BATTERY_VOLTAGE"]  # 6.9
-        self.CRITICAL_BATTERY_VOLTAGE: float = config["CRITICAL_BATTERY_VOLTAGE"]  # 6.6
-        self.vlowbatt: float = config["vlowbatt"]
-        self.battery_voltage: float = config[
-            "battery_voltage"
-        ]  # default value for testing REPLACE WITH REAL VALUE
-        self.current_draw: float = config[
-            "current_draw"
-        ]  # default value for testing REPLACE WITH REAL VALUE
-        self.REBOOT_TIME: int = config["REBOOT_TIME"]  # 1 hour
-        self.turbo_clock: bool = config["turbo_clock"]
+        self.NORMAL_TEMP: int = Config.getNormalTemp()
+        self.NORMAL_BATT_TEMP: int = Config.getNormalBattTemp()
+        self.NORMAL_MICRO_TEMP: int = Config.getNormalMicroTemp()
+        self.NORMAL_CHARGE_CURRENT: float = Config.getNormalChargeCurrent()
+        self.NORMAL_BATTERY_VOLTAGE: float = Config.getNormalBatteryVoltage()
+        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getCriticalBatteryVoltage()
+        self.vlowbatt: float = Config.getVlowbatt()
+        self.battery_voltage: float = Config.getBatteryVoltage()
+        self.current_draw: float = Config.getCurrentDraw()
+        self.REBOOT_TIME: int = Config.getRebootTime()
+        self.turbo_clock: bool = Config.getTurboClock()
 
         """
         Setting up data buffers

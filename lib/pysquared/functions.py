@@ -15,6 +15,7 @@ from lib.pysquared.debugcolor import co
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
+from lib.pysquared.Config import Config
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any
@@ -39,23 +40,18 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        # parses json & assigns data to variables
-        with open("config.json", "r") as f:
-            json_data = f.read()
-        config = json.loads(json_data)
-
-        self.cubesatName: str = config["cubesatName"]
+        self.cubesatName: str = Config.getCubesatName()
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = config["jokes"]
-        self.last_battery_temp: float = config["last_battery_temp"]
-        self.sleep_duration: int = config["sleep_duration"]
-        self.callsign: str = config["callsign"]
+        self.jokes: list[str] = Config.getJokes()
+        self.last_battery_temp: float = Config.LastBatteryTemp()
+        self.sleep_duration: int = Config.getSleepDuration()
+        self.callsign: str = Config.getCallsign()
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = config["detumble_enable_z"]
-        self.detumble_enable_x: bool = config["detumble_enable_x"]
-        self.detumble_enable_y: bool = config["detumble_enable_y"]
+        self.detumble_enable_z: bool = Config.getDetumbleZ()
+        self.detumble_enable_x: bool = Config.getDetumbleX()
+        self.detumble_enable_y: bool = Config.getDetumbleY()
 
     """
     Satellite Management Functions

@@ -1,16 +1,13 @@
 import time
 import random
 import lib.pysquared.commandsConfig as commandsConfig
+import lib.pysquared.Config as Config
 import json
 
-commands = commandsConfig.commands
-# parses json & assigns data to variables
-with open("config.json", "r") as f:
-    json_data = f.read()
-config = json.loads(json_data)
-jokereply = config["jokereply"]
-super_secret_code = config["super_secret_code"].encode("utf-8")
-repeat_code = config["repeat_code"].encode("utf-8")
+commands = Config.getCommands()
+jokereply = Config.getJokeReply()
+super_secret_code = Config.getSecretCode()
+repeat_code = Config.getRepeatCode()
 print(f"Super secret code is: {super_secret_code}")
 
 

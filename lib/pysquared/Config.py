@@ -12,20 +12,31 @@ import commandsConfig
 
 
 class Config:
+    _config: dict
+
+    """
+    function.py declarations
+    """
+    _functions_cubesatName: str
+    _functions_jokes: list[str]
+    _functions_last_battery_temp: float
+    _functions_sleep_duration: int
+    _functions_callsign: str
+
     def __init__(self) -> None:
         # parses json & assigns data to variables
         with open("config.json", "r") as f:
             json_data = f.read()
-        config = json.loads(json_data)
+        self._config = json.loads(json_data)
 
         """
         function.py initializations
         """
-        self.functions_cubesatName: str = config["cubesatName"]
-        self.functions_jokes: list[str] = config["jokes"]
-        self.functions_last_battery_temp: float = config["last_battery_temp"]
-        self.functions_sleep_duration: int = config["sleep_duration"]
-        self.functions_callsign: str = config["callsign"]
+        self._functions_cubesatName = self.config["cubesatName"]
+        self._functions_jokes: list[str] = config["jokes"]
+        self._functions_last_battery_temp: float = config["last_battery_temp"]
+        self._functions_sleep_duration: int = config["sleep_duration"]
+        self._functions_callsign: str = config["callsign"]
 
         """
         pysquared.py initializations
@@ -69,3 +80,6 @@ class Config:
         self.cdh_jokereply = config["jokereply"]
         self.cdh_super_secret_code = config["super_secret_code"].encode("utf-8")
         self.cdh_repeat_code = config["repeat_code"].encode("utf-8")
+
+    def getCubesatName(self) -> str:
+        return self._config["cubesatName"]
