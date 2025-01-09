@@ -198,7 +198,7 @@ class PacketReceiver:
         # Wait for retransmitted packets
         start_time = time.monotonic()
         original_missing = set(missing_packets)
-        last_receive_time = start_time
+        # last_receive_time = start_time
 
         print("Waiting for retransmitted packets...")
         while time.monotonic() - start_time < retransmit_timeout:
@@ -207,7 +207,7 @@ class PacketReceiver:
             time.sleep(0.5)
 
             if packet:
-                last_receive_time = time.monotonic()
+                # last_receive_time = time.monotonic()
                 try:
                     seq_num = int.from_bytes(packet[:2], "big")
                     if seq_num in original_missing:
@@ -293,7 +293,7 @@ class PacketReceiver:
             if packet:
                 try:
                     seq_num = int.from_bytes(packet[:2], "big")
-                    packet_total = int.from_bytes(packet[2:4], "big")
+                    # packet_total = int.from_bytes(packet[2:4], "big")
 
                     if seq_num not in self.received_packets:
                         self.received_packets[seq_num] = packet

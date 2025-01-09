@@ -1,7 +1,13 @@
+import time
+
+import adafruit_drv2605
+import adafruit_mcp9808
+import adafruit_pca9685
+import adafruit_tca9548a
+import adafruit_veml7700
 import board
 import busio
-import time
-import adafruit_pca9685, adafruit_tca9548a, adafruit_veml7700, adafruit_mcp9808, adafruit_drv2605, ina219
+import ina219
 
 i2c = busio.I2C(board.SCL0, board.SDA0)
 pca = adafruit_pca9685.PCA9685(i2c, address=86)
@@ -16,7 +22,7 @@ veml1 = adafruit_veml7700.VEML7700(tca[1])
 mcp1 = adafruit_mcp9808.MCP9808(tca[1], address=27)
 try:
     drv1 = adafruit_drv2605.DRV2605(tca[1])
-except:
+except Exception:
     drv1 = adafruit_drv2605.DRV2605(tca[1], address=95)
 ina = ina219.INA219(tca[5], addr=64)
 drv0.sequence[0] = adafruit_drv2605.Effect(47)

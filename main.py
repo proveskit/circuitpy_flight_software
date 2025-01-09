@@ -9,7 +9,9 @@ Published: Nov 19, 2024
 """
 
 import time
+
 import microcontroller
+
 import lib.pysquared.pysquared as pysquared
 
 print("=" * 70)
@@ -29,9 +31,9 @@ try:
     c = pysquared.Satellite()
     c.watchdog_pet()
 
-    import asyncio
-    import traceback
     import gc  # Garbage collection
+    import traceback
+
     import lib.pysquared.functions as functions
     from lib.pysquared.debugcolor import co
 
@@ -96,14 +98,12 @@ try:
         f.listen_loiter()
 
     def critical_power_operations():
-
         initial_boot()
         c.watchdog_pet()
 
         f.Long_Hybernate()
 
     def minimum_power_operations():
-
         initial_boot()
         c.watchdog_pet()
 
@@ -111,7 +111,6 @@ try:
 
     ######################### MAIN LOOP ##############################
     try:
-
         while True:
             # L0 automatic tasks no matter the battery level
             c.check_reboot()

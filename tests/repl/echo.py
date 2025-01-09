@@ -1,5 +1,6 @@
-from pycubed import cubesat
 import time
+
+from pycubed import cubesat
 
 yagiMode = True
 # testMsg = "According to all known laws of aviation, there is no way a bee should be able to fly."
@@ -90,7 +91,6 @@ def banger():
 
 
 while True:
-
     # banger()
 
     if yagiMode:
