@@ -10,6 +10,7 @@ Published: Nov 19, 2024
 
 import time
 import microcontroller
+import lib.pysquared.pysquared as pysquared
 
 print("=" * 70)
 print("Hello World!")
@@ -24,8 +25,8 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    from lib.pysquared.pysquared import cubesat as c
-
+    print("Initializing CubeSat")
+    c = pysquared.Satellite()
     c.watchdog_pet()
 
     import asyncio
@@ -48,7 +49,7 @@ try:
         c.watchdog_pet()
         # f.state_of_health()
         # f.listen()
-        c.watchdog_pet()
+        # c.watchdog_pet()
 
     try:
         c.c_boot += 1  # Increment boot number
