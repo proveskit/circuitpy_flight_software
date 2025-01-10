@@ -10,12 +10,11 @@ import alarm
 import gc
 import traceback
 import random
-import json
 from lib.pysquared.debugcolor import co
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
-from lib.pysquared.Config import Config
+from lib.pysquared.Config import Config  # Config file; might change
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any

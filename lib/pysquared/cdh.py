@@ -1,12 +1,10 @@
 import time
 import random
-import lib.pysquared.commandsConfig as commandsConfig
-import lib.pysquared.Config as Config
-import json
+import lib.pysquared.Config as Config  # Config file; might change
 
 commands = Config.getCommands()
 jokereply = Config.getJokeReply()
-super_secret_code = Config.getSecretCode()
+super_secret_code = Config.getSuperSecretCode()
 repeat_code = Config.getRepeatCode()
 print(f"Super secret code is: {super_secret_code}")
 
