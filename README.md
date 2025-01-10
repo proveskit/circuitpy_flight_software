@@ -1,20 +1,26 @@
-# flight_controller_software
-Software for the flight controller board in the PROVES Kit. We recent updated this to reflect the impending PROVES Kit V2. In that version of the kit we have both software in Circuit Python and C++ using the PicoSDK. The file tree has been updated to reflect this. Please access either the **CircuitPy (for Circuit Python software)** or **PicoSDK (For C++ Software)** as needed! 
+# circuitpy_flight_software
 
-Also check out the [development software repo](https://github.com/proveskit/development_software) for our latest experimental software! 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![CI](https://github.com/texas-state-space-lab/pikvm-tailscale-certificate-renewer/actions/workflows/ci.yaml/badge.svg)
+
+Software for CircuitPython flight software in the PROVES Kit.
+
+If this is your first time using CircuitPython, it is highly recommended that you check out Adafruit's [Welcome to CircuitPython](https://learn.adafruit.com/welcome-to-circuitpython/overview?gad_source=1&gbraid=0AAAAADx9JvTRorSR2psQubn32WqebKusM&gclid=CjwKCAiA-Oi7BhA1EiwA2rIu28YArt-jNTE3W3uwE055Tp7hyH9c9pE_NsqIOOh1aopnW00qXGBedRoChysQAvD_BwE) to help you get started!
 
 # Usage
-Depending on whether you are trying to use the CircuitPython or PicoSDK software, there are some different steps you need to follow. 
+If you have just received a clean PROVES Board, ensure you have loaded the latest firmware from that board's GitHub Repo. Currently the [latest FC Board firmware](https://github.com/proveskit/flight_controller_board/tree/main/Firmware) is `FC_FIRM_V2.uf2`.
 
-For CircuitPython load new software by doing the following: 
+## Updating CircuitPython Code on a PROVES Board
+You can cleanly load new software by doing the following:
 1. Clone the branch you wish to put on your board to your local machine.
 2. Connect to the target board so it mounts as an external drive.
-3. Access the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
+3. If many files have changed, the target board using a serial terminal and run the following code in the REPL to erase all of the existing code:
   ```py
   import storage
   storage.erase_filesystem()
   ```
-4. The target board will now disappear and remount. Once remounted, copy and paste the contents of the flight software folder for the target board from your GitHub repo.
+  > NOTE: If you have only changed one or two files, it is fine to just drag and drop them onto the external drive to overwrite the existing files.
+4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
 5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
 
 __For Flight Controller Board__
@@ -22,21 +28,57 @@ __For Flight Controller Board__
 from pysquared import cubesat as c
 ```
 __For Battery Board__
+> NOTE: Battery Board Support will be deprecated in PROVES Kit V2.
 ```py
 from pysquared_eps import cubesat as c
 ```
+# Development Getting Started
+We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
-# General Structure: 
+We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to run
+```sh
+make
+```
+
+## Manually testing code on the board
+We are working on improving our automated testing but right now the best way to test your code is to run it on the board. We have provided the following command to make it easy to install code on the board:
+```sh
+make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+```
+
+You can find the path to your board by looking for the volume named `PYSQUARED`
+
+### Mac
+```sh
+ls -lah /Volumes
+...
+drwx------@  1 nate  staff    16K Jan  9 08:09 PYSQUARED/
+```
+
+### Linux or Windows via WSL
+```sh
+df -h
+```
+
+## Build failures
+
+### Lint failure
+Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
+```sh
+make fmt
+```
+
+### Test failure
+To ensure our code works we use automated testing. If you're seeing a testing failure in your build, you can see what's wrong by running those tests yourself with:
+```
+make test
+```
+
+## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
-- **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
-- **code.py** This code runs the main operating system of the satellite and handles errors on a high level allowing the system to be fault tolerant
-- **detumble.py** This code implements the B-dot algorithm and returns outputs that allow the system to do a controlled detumble with the satellite's embedded magnetourquer coils
 - **main.py** This code tasks all the functions the satellite should do in a semi-asynchronous manner utilizing the asyncio library
 - **payload.py** This code implements any desired payload. On the Pleiades missions, the payload has been the BNO055 IMU. Since the use of a stemmaQT connector allows multiple devices on the same bus, a BNO IMU could be used in conjunction with several other sensors if desired.
 - **safemode.py** This code is unimplemented pending new firmware releases that allow the microconrtoller to perform a routine when in safemode
-## experimental
-This software is completely experimental and is in development for helpful software related tasks.
-- **sf_hop.py** This code is yet to be implemented in official flight software as it is desired to implement the ability to utilize several spreading factors to send different sized messages at different data rates
 ## lib
 This software contains all of the libraries required to operate the sensors, pysquared board, and radio module.
 - **asyncio** This is the library responsible for scheduling tasks in the main code
@@ -55,12 +97,13 @@ This software contains all of the libraries required to operate the sensors, pys
 - **functions.py** This is a library of functions utilized by the satellite to obtain data, detumble, run the battery heater
 - **pysquared.py** This is a library that initializes and maintains all the main functions for the pysquared architecture
 - **pysquared_rfm9x.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
+- **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
+- **detumble.py** This code implements the B-dot algorithm and returns outputs that allow the system to do a controlled detumble with the satellite's embedded magnetourquer coils
+
 ## tests
 This software is used for performing tests on the satellite
 
-## Linting setup
+## Testing setup
 
-1. Create your venv `python3 -m venv venv`
-2. Activate your venv `source ./venv/bin/activate`
-3. Install required packages `pip install -r requirements.txt`
-4. Run the automatic formatter with `make fmt`
+1. Follow the steps to set up your venv and install packages in the linting setup
+2. Run tests with `make test`

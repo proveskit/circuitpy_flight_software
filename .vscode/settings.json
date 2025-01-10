@@ -1,5 +1,7 @@
 {
-  "githubPullRequests.ignoredPullRequestBranches": [
-    "main"
-  ]
+    "python.testing.pytestArgs": [
+        "tests/unit"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
