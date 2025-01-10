@@ -43,9 +43,11 @@ class Logger:
         kwargs["message"] = message
         kwargs["level"] = "DEBUG"
         alternate_output = "[%s] >>> %s" % (filename, json.dumps(kwargs))
+        ideal_output = json.dumps(kwargs)
         print(kwargs)
         print(output)
         print(alternate_output)
+        print(ideal_output)
         self.internal_logger.debug(output)
         self.internal_logger.debug(alternate_output)
 

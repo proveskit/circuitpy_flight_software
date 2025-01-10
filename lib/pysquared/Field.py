@@ -5,6 +5,7 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import traceback
+from lib.pysquared.logger import Logger
 
 from lib.pysquared.debugcolor import co
 
@@ -14,9 +15,10 @@ class Field:
         if self.debug:
             print(co("[Field]" + statement, "pink", "bold"))
 
-    def __init__(self, cubesat, debug):
+    def __init__(self, cubesat, debug, logger: Logger):
         self.debug = debug
         self.cubesat = cubesat
+        self.logger = logger
 
     def Beacon(self, msg):
         try:

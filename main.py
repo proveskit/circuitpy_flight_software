@@ -62,6 +62,7 @@ try:
     try:
         c.c_boot += 1  # Increment boot number
         debug_print("Boot number: " + str(c.c_boot))
+        logger.debug("MAIN", "Boot number: %s" % str(c.c_boot), foo="baz", num=484)
         debug_print(str(gc.mem_free()) + " Bytes remaining")
 
         initial_boot()
