@@ -1,29 +1,9 @@
 import pytest
-from lib.pysquared.pysquared import Satellite
 from lib.pysquared.functions import (
-    functions,
     BatteryHelper,
     PacketManager,
     PacketSender,
 )
-
-# Remove FC_Board from import w/ new organization of repo
-
-
-@pytest.fixture  # Setting up mock of cubesat
-def mock_cubesat(mocker):
-    mock_cubesat = mocker.Mock(spec=Satellite)
-    # Creating mock object of Satellite class
-    mock_cubesat.debug = True
-    mock_cubesat.radio1 = mocker.Mock()  # Creating mock of radio1 attribute
-    mock_cubesat.can_bus = mocker.Mock()  # Creating mock of can_bus
-    mock_cubesat.watchdog_pet = mocker.Mock()  # Creating mock of watchdog_pet()
-    return mock_cubesat  # Returns mock Satellite object
-
-
-@pytest.fixture  # Initializing functions class with mock cubesat
-def funct(mock_cubesat):
-    return functions(mock_cubesat)
 
 
 def test_debug_print_true(funct, mocker):
@@ -33,10 +13,9 @@ def test_debug_print_true(funct, mocker):
     mock_print.assert_called_once_with("[Functions]Test message")
 
 
-def test_debug_print_false(mock_cubesat, mocker):
+def test_debug_print_false(funct, mock_cubesat, mocker):
     # Test debug print when cubesat.debug = False
     mock_cubesat.debug = False
-    funct = functions(mock_cubesat)
     # funct object debug state is determined by cubesat debug state
     mock_print = mocker.patch("builtins.print")
     funct.debug_print("Test message")
@@ -154,7 +133,7 @@ def test_listen_loiter(funct, mock_cubesat):
     assert funct.listen.assert_called_once_with(None)
     # Check if safe_sleep() was called with sleep_duration value
     assert funct.safe_sleep.assert_called_once_with(mock_cubesat.sleep_duration)
-    # Note: the sleep_duration value that is set to 30, not 20, is passed into safe_sleep
+    # Note: the sleep_duration value that is set to 30, not 20, is passed into safe_sleep()
     funct.debug_print.assert_called_with("Sleeping for 20 seconds")
     # Check if watchdog_pet() was called 4 times
     assert mock_cubesat.watchdog_pet.call_count == 4

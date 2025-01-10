@@ -6,7 +6,8 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import time
-import alarm
+
+# import alarm
 import gc
 import traceback
 import random
