@@ -8,33 +8,39 @@ Library Repo:
 """
 
 # Common CircuitPython Libs
-import gc
-import board, machine, microcontroller
-import busio, time, sys, traceback
-from storage import mount, umount, VfsFat
-import digitalio, sdcardio, pwmio
-from os import listdir, stat, statvfs, mkdir, chdir
-from lib.pysquared.bitflags import bitFlag, multiBitFlag, multiByte
-from micropython import const
-from lib.pysquared.debugcolor import co
+import json
+import sys
+import time
+import traceback
 from collections import OrderedDict
+from os import chdir, mkdir, stat
+
+import board
+import busio
+import digitalio
+import machine
+import microcontroller
+import sdcardio
+from micropython import const
+from storage import VfsFat, mount, umount
+
+import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
+import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
+import lib.neopixel as neopixel  # RGB LED
+import lib.pysquared.rv3028 as rv3028  # Real Time Clock
+from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 
 # Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
-import lib.neopixel as neopixel  # RGB LED
-from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
-import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
-import lib.pysquared.rv3028 as rv3028  # Real Time Clock
-
-import json
-
+from lib.pysquared.bitflags import bitFlag, multiBitFlag
+from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
 try:
-    from typing import List, Dict, OrderedDict, Literal, Union, Any, TextIO
+    from typing import Any, OrderedDict, TextIO, Union
+
     import circuitpython_typing
-except:
+except Exception:
     pass
 
 
@@ -718,7 +724,7 @@ class Satellite:
 
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
-            if filedir == None:
+            if filedir is None:
                 raise Exception("file directory is empty")
             self.debug_print(f"--- Printing File: {filedir} ---")
             if binary:
@@ -738,7 +744,7 @@ class Satellite:
         self, filedir: str = None, binary: bool = False
     ) -> Union[bytes, TextIO, None]:
         try:
-            if filedir == None:
+            if filedir is None:
                 raise Exception("file directory is empty")
             self.debug_print(f"--- reading File: {filedir} ---")
             if binary:

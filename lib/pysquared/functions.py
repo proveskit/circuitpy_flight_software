@@ -5,27 +5,29 @@ our will.
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-import time
-import alarm
 import gc
-import traceback
-import random
 import json
-from lib.pysquared.debugcolor import co
+import random
+import time
+import traceback
+
+import alarm
+
 from lib.pysquared.battery_helper import BatteryHelper
+from lib.pysquared.debugcolor import co
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
 
 try:
-    from typing import List, Dict, OrderedDict, Literal, Union, Any
+    from typing import Any, List, Literal, OrderedDict, Union
+
     import circuitpython_typing
-except:
+except Exception:
     pass
 from lib.pysquared.pysquared import Satellite
 
 
 class functions:
-
     def debug_print(self, statement: Any) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
@@ -70,7 +72,6 @@ class functions:
         iterations: int = 0
 
         while duration > 15 and iterations < 12:
-
             time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
                 monotonic_time=time.monotonic() + 15
             )
@@ -109,7 +110,7 @@ class functions:
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
-            self.debug_print(f"Sent Packet: " + message)
+            self.debug_print("Sent Packet: " + message)
         else:
             self.debug_print("Failed to send packet")
         del self.field
@@ -290,7 +291,6 @@ class functions:
     """
 
     def all_face_data(self) -> list:
-
         # self.cubesat.all_faces_on()
         self.debug_print(gc.mem_free())
         gc.collect()
@@ -317,7 +317,6 @@ class functions:
     def get_battery_data(
         self,
     ) -> Union[tuple[float, float, float, float, bool, float], None]:
-
         try:
             return self.battery.get_power_metrics()
 
@@ -334,7 +333,6 @@ class functions:
         tuple[float, float, float],
         tuple[float, float, float],
     ]:
-
         try:
             data: list = []
             data.append(self.cubesat.accel)
@@ -357,7 +355,6 @@ class functions:
     """
 
     def log_face_data(self, data) -> None:
-
         self.debug_print("Logging Face Data")
         try:
             self.cubesat.log("/faces.txt", data)
@@ -365,7 +362,6 @@ class functions:
             self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     def log_error_data(self, data) -> None:
-
         self.debug_print("Logging Error Data")
         try:
             self.cubesat.log("/error.txt", data)

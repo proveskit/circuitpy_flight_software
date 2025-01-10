@@ -1,9 +1,7 @@
-import time
 from pysquared import cubesat
 
 
 class Field:
-
     def __init__(self):
         self.testMsg = []
         self.testMsg.append("Hello There!")

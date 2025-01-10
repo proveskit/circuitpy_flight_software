@@ -7,9 +7,13 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
 
--   repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-    -   id: black
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.8.6
+  hooks:
+    - id: ruff
+      args: [ --fix ]
+    - id: ruff
+      args: [ --fix, --select, I ] # import sorting
+    - id: ruff-format
 
 exclude: 'lib/adafruit_.*|lib/asyncio/.*|lib/neopixel\.py'

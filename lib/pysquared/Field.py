@@ -4,13 +4,12 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-import time
-from lib.pysquared.debugcolor import co
 import traceback
+
+from lib.pysquared.debugcolor import co
 
 
 class Field:
-
     def debug_print(self, statement):
         if self.debug:
             print(co("[Field]" + statement, "pink", "bold"))

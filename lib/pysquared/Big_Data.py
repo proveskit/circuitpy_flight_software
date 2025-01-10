@@ -1,7 +1,6 @@
-from lib.pysquared.debugcolor import co
-import time
-import traceback
 import gc
+
+from lib.pysquared.debugcolor import co
 
 
 class Face:
@@ -90,6 +89,6 @@ class AllFaces:
                     temp = face.mcp.temperature if face.sensors.get("MCP") else None
                     light = face.veml.lux if face.sensors.get("VEML") else None
                     results.append([temp, light])
-                except Exception as e:
+                except Exception:
                     results.append([None, None])
         return results
