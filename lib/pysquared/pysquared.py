@@ -32,7 +32,12 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 
 # Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
-from lib.pysquared.bitflags import bitFlag, multiBitFlag
+from lib.pysquared.bitflags.bitflags import bitFlag
+from lib.pysquared.bitflags.multi_bit_flag import (
+    multiBitFlag,
+    rp2040_register_reader,
+    rp2040_register_writer,
+)
 from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
@@ -62,13 +67,62 @@ class Satellite:
     """
 
     # General NVM counters
-    c_boot: multiBitFlag = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst: multiBitFlag = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT, lowest_bit=0, num_bits=8
+    c_boot: multiBitFlag = multiBitFlag(
+        register=_BOOTCNT,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
     )
-    c_distance: multiBitFlag = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg: multiBitFlag = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
+    c_vbusrst: multiBitFlag = multiBitFlag(
+        register=_VBUSRST,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_error_count: multiBitFlag = multiBitFlag(
+        register=_ERRORCNT,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_distance: multiBitFlag = multiBitFlag(
+        register=_DIST,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_ichrg: multiBitFlag = multiBitFlag(
+        register=_ICHRG,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_error_count: multiBitFlag = multiBitFlag(
+        register=_ERRORCNT,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_distance: multiBitFlag = multiBitFlag(
+        register=_DIST,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
+    c_ichrg: multiBitFlag = multiBitFlag(
+        register=_ICHRG,
+        lowest_bit=0,
+        num_bits=8,
+        register_reader=rp2040_register_reader,
+        register_writer=rp2040_register_writer,
+    )
 
     # Define NVM flags
     f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
