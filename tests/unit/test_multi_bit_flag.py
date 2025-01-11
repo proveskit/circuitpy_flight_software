@@ -25,3 +25,14 @@ def test_set_get():
     assert mbf.__get__(None) == 255
     mbf.__set__(None, 256)
     assert mbf.__get__(None) == 255
+
+
+def test_set_get_2():
+    c = MultiBitFlagTester()
+    assert c.mbf == 0
+
+
+class MultiBitFlagTester:
+    mbf = multi_bit_flag.multiBitFlag(
+        8, 1, 0, mock_register_reader, mock_register_writer
+    )
