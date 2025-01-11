@@ -29,18 +29,12 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-
-# Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.bitflags.bitflags import bitFlag
-from lib.pysquared.bitflags.multi_bit_flag import (
-    multiBitFlag,
-    rp2040_register_reader,
-    rp2040_register_writer,
-)
+from lib.pysquared.bitflags.multi_bit_flag import multiBitFlag
 from lib.pysquared.debugcolor import co
+from lib.pysquared.hardware import nvm
 
-# Importing typing libraries
 try:
     from typing import Any, OrderedDict, TextIO, Union
 
@@ -68,60 +62,60 @@ class Satellite:
 
     # General NVM counters
     c_boot: multiBitFlag = multiBitFlag(
-        register=_BOOTCNT,
+        index=_BOOTCNT,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_vbusrst: multiBitFlag = multiBitFlag(
-        register=_VBUSRST,
+        index=_VBUSRST,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT,
+        index=_ERRORCNT,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_distance: multiBitFlag = multiBitFlag(
-        register=_DIST,
+        index=_DIST,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_ichrg: multiBitFlag = multiBitFlag(
-        register=_ICHRG,
+        index=_ICHRG,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT,
+        index=_ERRORCNT,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_distance: multiBitFlag = multiBitFlag(
-        register=_DIST,
+        index=_DIST,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
     c_ichrg: multiBitFlag = multiBitFlag(
-        register=_ICHRG,
+        index=_ICHRG,
         lowest_bit=0,
-        num_bits=8,
-        register_reader=rp2040_register_reader,
-        register_writer=rp2040_register_writer,
+        bit_length=8,
+        nvm_reader=nvm.reader,
+        nvm_writer=nvm.writer,
     )
 
     # Define NVM flags
