@@ -63,56 +63,48 @@ class Satellite:
     # General NVM counters
     c_boot: multiBitFlag = multiBitFlag(
         index=_BOOTCNT,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_vbusrst: multiBitFlag = multiBitFlag(
         index=_VBUSRST,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_error_count: multiBitFlag = multiBitFlag(
         index=_ERRORCNT,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_distance: multiBitFlag = multiBitFlag(
         index=_DIST,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_ichrg: multiBitFlag = multiBitFlag(
         index=_ICHRG,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_error_count: multiBitFlag = multiBitFlag(
         index=_ERRORCNT,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_distance: multiBitFlag = multiBitFlag(
         index=_DIST,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,
     )
     c_ichrg: multiBitFlag = multiBitFlag(
         index=_ICHRG,
-        lowest_bit=0,
         bit_length=8,
         nvm_reader=nvm.reader,
         nvm_writer=nvm.writer,

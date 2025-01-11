@@ -41,8 +41,8 @@ def test_multi_bit_flag_bounds(bit_length, initial_value, expected_value):
         mock_nvm_reader, mock_nvm_writer = mock_nvm()
 
         mbf = multi_bit_flag.multiBitFlag(
-            bit_length,
             index,
+            bit_length,
             mock_nvm_reader,
             mock_nvm_writer,
         )
@@ -53,14 +53,14 @@ def test_multi_bit_flag_bounds(bit_length, initial_value, expected_value):
 
 
 def test_arithmetic():
-    bit_length, index = 8, 0
+    index, bit_length = 0, 8
 
     class MultiBitFlagTester:
         mock_nvm_reader, mock_nvm_writer = mock_nvm()
 
         mbf = multi_bit_flag.multiBitFlag(
-            bit_length,
             index,
+            bit_length,
             mock_nvm_reader,
             mock_nvm_writer,
         )
@@ -78,15 +78,15 @@ def test_writing_to_multiple_nvms():
         mock_nvm_reader, mock_nvm_writer = mock_nvm()
 
         mbf1 = multi_bit_flag.multiBitFlag(
-            bit_length,
             index1,
+            bit_length,
             mock_nvm_reader,
             mock_nvm_writer,
         )
 
         mbf2 = multi_bit_flag.multiBitFlag(
-            bit_length,
             index2,
+            bit_length,
             mock_nvm_reader,
             mock_nvm_writer,
         )

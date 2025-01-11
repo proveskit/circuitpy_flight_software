@@ -16,8 +16,8 @@ class multiBitFlag:
 
     def __init__(
         self,
-        bit_length: int,
         index: int,
+        bit_length: int,
         nvm_reader: Callable[[Any, int], int],
         nvm_writer: Callable[[Any, int, int], None],
     ):
