@@ -21,19 +21,18 @@ class multiBitFlag:
         nvm_reader: Callable[[Any, int], int],
         nvm_writer: Callable[[Any, int, int], None],
     ):
+        self._index = index
         self._nvm_reader = nvm_reader
         self._nvm_writer = nvm_writer
 
-        self.maxval = (1 << bit_length) - 1
-        self.bit_mask = self.maxval
-        self.byte = index
+        self._maxval = (1 << bit_length) - 1
+        self._bit_mask = self._maxval
 
     def __get__(self, obj, objtype=None):
-        return self._nvm_reader(self.byte) & self.bit_mask
+        return self._nvm_reader(self._index) & self._bit_mask
 
     def __set__(self, obj, value):
-        if value >= self.maxval:
-            value = self.maxval
-        reg = self._nvm_reader(self.byte)
-        reg &= ~self.bit_mask
-        self._nvm_writer(self.byte, reg | value)
+        reg = self._nvm_reader(self._index)
+        reg &= ~self._bit_mask
+        value = min(reg | value, self._maxval)
+        self._nvm_writer(self._index, reg | value)
