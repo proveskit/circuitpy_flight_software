@@ -3,9 +3,9 @@ import random
 import lib.pysquared.Config as Config  # Config file; might change
 
 commands = Config.getCommands()
-jokereply = Config.getJokeReply()
-super_secret_code = Config.getSuperSecretCode()
-repeat_code = Config.getRepeatCode()
+jokereply = Config.getListValue("jokereply")
+super_secret_code = Config.getStrValue("super_secret_code").encode("utf-8")
+repeat_code = Config.getStrValue("repeat_code").encode("utf-8")
 print(f"Super secret code is: {super_secret_code}")
 
 

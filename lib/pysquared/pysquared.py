@@ -88,29 +88,36 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
     def __init__(self) -> None:
+        self.cubesatName: str = Config.getStrValue("cubesatName")  # used once
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = Config.getDebug()
-        self.legacy: bool = Config.getLegacy()
-        self.heating: bool = Config.getHeating()
-        self.orpheus: bool = Config.getOrpheus()
-        self.is_licensed: bool = Config.getIsLiscensed()
+        self.debug: bool = Config.getBoolValue("debug")
+        self.legacy: bool = Config.getBoolValue("legacy")
+        self.heating: bool = Config.getBoolValue("heating")
+        self.orpheus: bool = Config.getBoolValue("orpheus")  # maybe change var name
+        self.is_licensed: bool = Config.getBoolValue("bool")
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = Config.getNormalTemp()
-        self.NORMAL_BATT_TEMP: int = Config.getNormalBattTemp()
-        self.NORMAL_MICRO_TEMP: int = Config.getNormalMicroTemp()
-        self.NORMAL_CHARGE_CURRENT: float = Config.getNormalChargeCurrent()
-        self.NORMAL_BATTERY_VOLTAGE: float = Config.getNormalBatteryVoltage()
-        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getCriticalBatteryVoltage()
-        self.vlowbatt: float = Config.getVlowbatt()
-        self.battery_voltage: float = Config.getBatteryVoltage()
-        self.current_draw: float = Config.getCurrentDraw()
-        self.REBOOT_TIME: int = Config.getRebootTime()
-        self.turbo_clock: bool = Config.getTurboClock()
+        self.NORMAL_TEMP: int = Config.getIntValue("NORMAL_TEMP")
+        self.NORMAL_BATT_TEMP: int = Config.getIntValue("NORMAL_BATT_TEMP")
+        self.NORMAL_MICRO_TEMP: int = Config.getIntValue("NORMAL_MICRO_TEMP")
+        self.NORMAL_CHARGE_CURRENT: float = Config.getFloatValue(
+            "NORMAL_CHARGE_CURRENT"
+        )
+        self.NORMAL_BATTERY_VOLTAGE: float = Config.getFloatValue(
+            "NORMAL_BATTERY_VOLTAGE"
+        )
+        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getFloatValue(
+            "CRITICAL_BATTERY_VOLTAGE"
+        )
+        self.vlowbatt: float = Config.getFloatValue("vlowbatt")
+        self.battery_voltage: float = Config.getFloatValue("battery_voltage")
+        self.current_draw: float = Config.getFloatValue("current_draw")
+        self.REBOOT_TIME: int = Config.getIntValue("REBOOT_TIME")
+        self.turbo_clock: bool = Config.getBoolValue("turbo_clock")
 
         """
         Setting up data buffers
@@ -212,7 +219,7 @@ class Satellite:
                 self.i2c0: busio.I2C = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
                 self.hardware["I2C0"] = True
             else:
-                self.debug_print("[Orpheus] I2C0 not initialized")
+                self.debug_print(f"{self.cubesatName} I2C0 not initialized")
 
         except Exception as e:
             self.error_print(

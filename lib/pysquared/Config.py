@@ -21,166 +21,42 @@ class Config:
         self._config = json.loads(json_data)
 
     """
-    function.py getter functions
+    Categorized getter functions
     """
 
-    def getCubesatName(self) -> str:
-        return self._config["cubesatName"]
+    def getStrValue(self, strVariable: str) -> str:
+        return self._config[strVariable]
 
-    def getJokes(self) -> list[str]:
-        return self._config["jokes"]
+    def getIntValue(self, intVariable: int) -> int:
+        return self._config[intVariable]
 
-    def getLastBatteryTemp(self) -> float:
-        return self._config["last_battery_temp"]
+    def getFloatValue(self, floatVariable: float) -> float:
+        return self._config[floatVariable]
 
-    def getSleepDuration(self) -> int:
-        return self._config["sleep_duration"]
+    def getBoolValue(self, boolVariable: bool) -> bool:
+        return self._config[boolVariable]
 
-    def getCallsign(self) -> str:
-        return self._config["callsign"]
-
-    def getDetumbleZ(self) -> bool:
-        return self._config["detumble_enable_z"]
-
-    def getDetumbleX(self) -> bool:
-        return self._config["detumble_enable_x"]
-
-    def getDetumbleY(self) -> bool:
-        return self._config["detumble_enable_y"]
-
-    """
-    pysquared.py getter functions
-    """
-
-    def getDebug(self) -> bool:
-        return self._config["debug"]
-
-    def getLegacy(self) -> bool:
-        return self._config["legacy"]
-
-    def getHeating(self) -> bool:
-        return self._config["heating"]
-
-    def getOrpheus(self) -> bool:
-        return self._config["orpheus"]
-
-    def getIsLicensed(self) -> bool:
-        return self._config["is_licensed"]
-
-    def getNormalTemp(self) -> int:
-        return self._config["NORMAL_TEMP"]
-
-    def getNormalBattTemp(self) -> int:
-        return self._config["NORMAL_BATT_TEMP"]
-
-    def getNormalMicroTemp(self) -> int:
-        return self._config["NORMAL_MICRO_TEMP"]
-
-    def getNormalChargeCurrent(self) -> float:
-        return self._config["NORMAL_CHARGE_CURRENT"]
-
-    def getNormalBatteryVoltage(self) -> float:
-        return self._config["NORMAL_BATTERY_VOLTAGE"]
-
-    def getCriticalBatteryVoltage(self) -> float:
-        return self._config["CRITICAL_BATTERY_VOLTAGE"]
-
-    def getVlowbatt(self) -> float:
-        return self._config["vlowbatt"]
-
-    def getBatteryVoltage(self) -> float:
-        return self._config["battery_voltage"]
-
-    def getCurrentDraw(self) -> float:
-        return self._config["current_draw"]
-
-    def getRebootTime(self) -> int:
-        return self._config["REBOOT_TIME"]
-
-    def getTurboClock(self) -> bool:
-        return self._config["turbo_clock"]
-
-    """
-    cdh.py getter functions
-    """
+    def getListValue(self, listVariable: list[str]) -> list[str]:
+        return self._config[listVariable]
 
     def getCommands(self) -> dict:
         return commandsConfig.commands
 
-    def getJokeReply(self) -> list[str]:
-        return self._config["jokereply"]
-
-    def getSuperSecretCode(self) -> str:
-        return self._config["super_secret_code"].encode("utf-8")
-
-    def getRepeatCode(self) -> str:
-        return self._config["repeat_code"].encode("utf-8")
-
     """
+    Categorized setter functions
     """
-    # function.py setter functions
-    """
-    def setCubesatName(self) -> None:
 
-    def setJokes(self) -> None:
+    def setStrValue(self, key: str, strValue: str) -> None:
+        self._config[key] = strValue
 
-    def setLastBatteryTemp(self) -> None:
+    def setIntValue(self, key: str, intValue: int) -> None:
+        self._config[key] = intValue
 
-    def setSleepDuration(self) -> None:
+    def setFloatValue(self, key: str, floatValue: float) -> None:
+        self._config[key] = floatValue
 
-    def setCallsign(self) -> None:
+    def setBoolValue(self, key: str, boolValue: bool) -> None:
+        self._config[key] = boolValue
 
-    def setDetumbleZ(self) -> None:
-
-    def setDetumbleX(self) -> None:
-
-    def setDetumbleY(self) -> None:
-
-
-    """
-    # pysquared.py setter functions
-    """
-    def setDebug(self) -> None:
-
-    def setLegacy(self) -> None:
-
-    def setHeating(self) -> None:
-
-    def setOrpheus(self) -> None:
-
-    def setIsLicensed(self) -> None:
-
-    def setNormalTemp(self) -> None:
-
-    def setNormalBattTemp(self) -> None:
-
-    def setNormalMicroTemp(self) -> None:
-
-    def setNormalChargeCurrent(self) -> None:
-
-    def setNormalBatteryVoltage(self) -> None:
-
-    def setCriticalBatteryVoltage(self) -> None:
-
-    def setVlowbatt(self) -> None:
-
-    def setBatteryVoltage(self) -> None:
-
-    def setCurrentDraw(self) -> None:
-
-    def setRebootTime(self) -> None:
-
-    def setTurboClock(self) -> None:
-
-
-    """
-    # cdh.py setter functions
-    """
-    def setCommands(self) -> None:
-
-    def setJokeReply(self) -> None:
-
-    def setSuperSecretCode(self) -> None:
-
-    def setRepeatCode(self) -> None:
-    """
+    def setListValue(self, key: str, listValue: str) -> None:  # check this one
+        self._config[key] = listValue
