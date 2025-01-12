@@ -29,13 +29,11 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-
-# Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
-from lib.pysquared.bitflags import bitFlag, multiBitFlag
 from lib.pysquared.debugcolor import co
+from lib.pysquared.nvm.bitflags import bitFlag
+from lib.pysquared.nvm.counter import Counter
 
-# Importing typing libraries
 try:
     from typing import Any, OrderedDict, TextIO, Union
 
@@ -46,11 +44,7 @@ except Exception:
 
 # NVM register numbers
 _BOOTCNT = const(0)
-_VBUSRST = const(6)
 _ERRORCNT = const(7)
-_TOUTS = const(9)
-_ICHRG = const(11)
-_DIST = const(13)
 _FLAG = const(16)
 
 SEND_BUFF: bytearray = bytearray(252)
@@ -62,13 +56,8 @@ class Satellite:
     """
 
     # General NVM counters
-    c_boot: multiBitFlag = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst: multiBitFlag = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT, lowest_bit=0, num_bits=8
-    )
-    c_distance: multiBitFlag = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg: multiBitFlag = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
+    boot_count: Counter = Counter(index=_BOOTCNT, datastore=microcontroller.nvm)
+    error_count: Counter = Counter(index=_ERRORCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
     f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
@@ -88,9 +77,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count: multiBitFlag = (
-            self.c_error_count + 1
-        ) & 0xFF  # Limited to 255 errors
+        self.error_count.increment()
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
@@ -163,7 +150,6 @@ class Satellite:
         """
         Define the boot time and current time
         """
-        self.c_boot += 1
         self.BOOTTIME: int = 1577836800
         self.debug_print(f"Boot time: {self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
@@ -200,12 +186,6 @@ class Satellite:
                 ("RTC", False),
             ]
         )
-
-        """
-        NVM Parameter Resets
-        """
-        if self.c_boot > 200:
-            self.c_boot = 0
 
         if self.f_softboot:
             self.f_softboot = False
