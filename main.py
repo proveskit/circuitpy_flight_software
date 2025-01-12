@@ -11,8 +11,12 @@ Published: Nov 19, 2024
 import time
 
 import microcontroller
+from micropython import const
 
 import lib.pysquared.pysquared as pysquared
+
+_BOOTCNT = const(0)
+_ERRORCNT = const(7)
 
 print("=" * 70)
 print("Hello World!")
@@ -54,8 +58,8 @@ try:
         # c.watchdog_pet()
 
     try:
-        c.c_boot += 1  # Increment boot number
-        debug_print("Boot number: " + str(c.c_boot))
+        c.boot_count.increment()
+        debug_print("Boot number: " + str(c.boot_count.get()))
         debug_print(str(gc.mem_free()) + " Bytes remaining")
 
         initial_boot()
