@@ -3,7 +3,7 @@ Stub for Circuit Python ByteArray class
 https://docs.circuitpython.org/en/stable/shared-bindings/nvm/index.html#nvm.ByteArray
 
 This stub has been contributed to the Adafruit CircuitPython Typing repo and can be removed after it has been approved and merged:
-https://github.com/adafruit/Adafruit_CircuitPython_Typing/pull/46/files
+https://github.com/adafruit/Adafruit_CircuitPython_Typing/pull/46
 """
 
 from typing import Union, overload
