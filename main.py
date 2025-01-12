@@ -11,12 +11,8 @@ Published: Nov 19, 2024
 import time
 
 import microcontroller
-from micropython import const
 
 import lib.pysquared.pysquared as pysquared
-
-_BOOTCNT = const(0)
-_ERRORCNT = const(7)
 
 print("=" * 70)
 print("Hello World!")
