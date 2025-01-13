@@ -58,5 +58,7 @@ class Config:
     def setBoolValue(self, key: str, boolValue: bool) -> None:
         self._config[key] = boolValue
 
-    def setListValue(self, key: str, listValue: str) -> None:  # check this one
+    def setListValue(
+        self, key: str, listValue: str
+    ) -> None:  # check this one might not even be a good idea to set anyway
         self._config[key] = listValue
