@@ -11,6 +11,8 @@ Published: Nov 19, 2024
 import time
 
 import microcontroller
+
+import lib.pysquared.pysquared as pysquared
 from lib.pysquared.logger import Logger
 
 logger = Logger()

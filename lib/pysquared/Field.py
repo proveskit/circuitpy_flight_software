@@ -5,9 +5,9 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import traceback
-from lib.pysquared.logger import Logger
 
 from lib.pysquared.debugcolor import co
+from lib.pysquared.logger import Logger
 
 
 class Field:

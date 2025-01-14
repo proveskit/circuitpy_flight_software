@@ -1,11 +1,18 @@
-import adafruit_logging as logging
 import json
 import time
+from enum import Enum
+
+import adafruit_logging as logging
+
+
+class DebugMode(Enum):
+    PRINTMODE = False
+    DEBUGMODE = True
 
 
 class Logger:
-
     def __init__(self):
+        self.debugmode = DebugMode.DEBUGMODE
         self.internal_logger = logging.getLogger("logger")
         self.internal_logger.setLevel(logging.DEBUG)
         print_handler = logging.StreamHandler()
@@ -33,9 +40,15 @@ class Logger:
         print_handler.setFormatter(bracket_timestamp_formatter)
         self.internal_logger.info("Timestamp formatter bracket style example")
 
+    def setPrintMode(self):
+        self.debugmode = DebugMode.PRINTMODE
+
+    def setDebugMode(self):
+        self.debugmode = DebugMode.DEBUGMODE
+
     def debug(self, filename, message, **kwargs):
         # logging.basicConfig(level=logging.INFO, format='%(message)s')
-        full_message = "[" + filename + "]" + message
+        # full_message = "[" + filename + "]" + message
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
