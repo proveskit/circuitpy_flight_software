@@ -25,12 +25,13 @@ from lib.pysquared.pysquared import Satellite
 
 
 class functions:
+    _config: dict
 
     def debug_print(self, statement: Any) -> None:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat: Satellite) -> None:
+    def __init__(self, cubesat: Satellite, Config: Config) -> None:  # Config Object
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat)
         self.debug: bool = cubesat.debug
@@ -39,6 +40,7 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
+        self._config = Config
         self.cubesatName: str = Config.getStrValue("cubesatName")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
@@ -233,8 +235,9 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import lib.pysquared.cdh as cdh
+        import lib.pysquared.cdh as cdh  # pass config object inside here
 
+        cdh = cdh(Config)
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.debug_print("Listening")

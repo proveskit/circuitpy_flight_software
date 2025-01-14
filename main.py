@@ -10,6 +10,8 @@ Published: Nov 19, 2024
 
 import time
 import microcontroller
+from lib.pysquared.Config import config as config
+from lib.pysquared.pysquared import Satellite
 
 print("=" * 70)
 print("Hello World!")
@@ -24,8 +26,9 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    from lib.pysquared.pysquared import cubesat as c
-
+    # from lib.pysquared.pysquared import cubesat as c # pass config object inside here maybe
+    # config = Config()
+    c = Satellite(config)
     c.watchdog_pet()
 
     import asyncio
@@ -38,7 +41,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c)
+    f = functions.functions(c, config)  # pass config object inside here
 
     def initial_boot():
         c.watchdog_pet()

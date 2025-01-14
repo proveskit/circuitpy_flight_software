@@ -27,16 +27,16 @@ class Config:
     def getStrValue(self, strVariable: str) -> str:
         return self._config[strVariable]
 
-    def getIntValue(self, intVariable: int) -> int:
+    def getIntValue(self, intVariable: str) -> int:
         return self._config[intVariable]
 
-    def getFloatValue(self, floatVariable: float) -> float:
+    def getFloatValue(self, floatVariable: str) -> float:
         return self._config[floatVariable]
 
-    def getBoolValue(self, boolVariable: bool) -> bool:
+    def getBoolValue(self, boolVariable: str) -> bool:
         return self._config[boolVariable]
 
-    def getListValue(self, listVariable: list[str]) -> list[str]:
+    def getListValue(self, listVariable: str) -> list[str]:
         return self._config[listVariable]
 
     def getCommands(self) -> dict:
@@ -62,3 +62,7 @@ class Config:
         self, key: str, listValue: str
     ) -> None:  # check this one might not even be a good idea to set anyway
         self._config[key] = listValue
+
+
+print("Initializing Config")
+config = Config()
