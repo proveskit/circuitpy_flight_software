@@ -16,21 +16,24 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.logger import Logger
 
 logger = Logger()
+filename = "main.py"
+
+logger.info(
+    filename=filename, software_version="2.0.0", published_date="November 19, 2024"
+)
 
 from lib.pysquared.config import Config
 from lib.pysquared.pysquared import Satellite
 
-print("=" * 70)
-print("Hello World!")
-print("PySquared FC Board Circuit Python Software Version: 2.0.0")
-print("Published: November 19, 2024")
-print("=" * 70)
 
 loiter_time = 5
 
 try:
     for i in range(loiter_time):
-        print(f"Code Starting in {loiter_time-i} seconds")
+        # print(f"Code Starting in {loiter_time-i} seconds")
+        logger.info(
+            filename=filename, message=f"Code Starting in {loiter_time-i} seconds"
+        )
         time.sleep(1)
 
     print("Initializing Config")
@@ -63,16 +66,21 @@ try:
 
     try:
         c.c_boot += 1  # Increment boot number
-        debug_print("Boot number: " + str(c.c_boot))
-        logger.debug("MAIN", "Boot number: %s" % str(c.c_boot), foo="baz", num=484)
-        debug_print(str(gc.mem_free()) + " Bytes remaining")
+        logger.info(filename=filename, message="Boot number: %s" % str(c.c_boot))
+        logger.info(filename=filename, message=str(gc.mem_free()) + " Bytes remaining")
 
         initial_boot()
 
     except Exception as e:
-        debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
+        logger.error(
+            filename=filename,
+            message="Error in Boot Sequence: " + "".join(traceback.format_exception(e)),
+        )
+        # debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
     finally:
-        logger.debug("MAIN", "Something went wrong!", foo="bar")
+        # logger.debug("MAIN", "Something went wrong!", foo="bar")
+        # NOTE: @blakejameson: the comment above shouldnt be in the finally block
+        pass
 
     def send_imu():
         debug_print("Looking to get imu data...")

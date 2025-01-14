@@ -148,7 +148,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
