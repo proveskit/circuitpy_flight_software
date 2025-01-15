@@ -23,13 +23,12 @@ class Logger:
         # self.debugmode = DebugMode.DEBUGMODE
         pass
 
-    def debug(self, filename, message, **kwargs):
+    def debug(self, filename, **kwargs):
         # logging.basicConfig(level=logging.INFO, format='%(message)s')
         # full_message = "[" + filename + "]" + message
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
-        kwargs["message"] = message
         kwargs["level"] = "DEBUG"
         json_output = json.dumps(kwargs)
         print(json_output)
