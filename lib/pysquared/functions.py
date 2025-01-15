@@ -292,7 +292,7 @@ class functions:
                 self.logger.info(
                     filename=filename, message="Recieved Packet: " + str(received)
                 )
-                cdh.message_handler(self.cubesat, received)
+                cdh.message_handler(self.cubesat, received, self.logger)
                 return True
         except Exception as e:
             # self.debug_print(
