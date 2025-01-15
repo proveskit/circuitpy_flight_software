@@ -8,7 +8,7 @@ made permanent on restart. Following the FPrime model
 """
 
 import json
-import commandsConfig
+import lib.pysquared.commandsConfig as commandsConfig
 
 
 class Config:
@@ -62,7 +62,3 @@ class Config:
         self, key: str, listValue: str
     ) -> None:  # check this one might not even be a good idea to set anyway
         self._config[key] = listValue
-
-
-print("Initializing Config")
-config = Config()

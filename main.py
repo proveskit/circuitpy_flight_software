@@ -10,7 +10,7 @@ Published: Nov 19, 2024
 
 import time
 import microcontroller
-from lib.pysquared.Config import config as config
+from lib.pysquared.Config import Config
 from lib.pysquared.pysquared import Satellite
 
 print("=" * 70)
@@ -28,6 +28,9 @@ try:
 
     # from lib.pysquared.pysquared import cubesat as c # pass config object inside here maybe
     # config = Config()
+    print("Initializing Config")
+    config = Config()
+    print("Initializing Cubesat")
     c = Satellite(config)
     c.watchdog_pet()
 

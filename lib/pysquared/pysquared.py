@@ -26,7 +26,7 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
-import lib.pysquared.Config as Config  # Config file; might change
+from lib.pysquared.Config import Config  # Config file; might change
 
 
 # Importing typing libraries
@@ -96,7 +96,7 @@ class Satellite:
         self.legacy: bool = Config.getBoolValue("legacy")
         self.heating: bool = Config.getBoolValue("heating")
         self.orpheus: bool = Config.getBoolValue("orpheus")  # maybe change var name
-        self.is_licensed: bool = Config.getBoolValue("bool")
+        self.is_licensed: bool = Config.getBoolValue("is_licensed")
 
         """
         Define the normal power modes
@@ -806,5 +806,5 @@ class Satellite:
             self.debug_print("[WARNING] SD Card not initialized")
 
 
-print("Initializing CubeSat")
-cubesat = Satellite()
+# print("Initializing CubeSat")
+# cubesat = Satellite()

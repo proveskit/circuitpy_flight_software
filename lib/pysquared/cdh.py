@@ -1,6 +1,6 @@
 import time
 import random
-import lib.pysquared.Config as Config  # Config file; might change
+from lib.pysquared.Config import Config  # Config file; might change
 
 
 class cdh:
