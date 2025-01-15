@@ -42,8 +42,13 @@ class Logger:
         json_output = json.dumps(kwargs)
         print(json_output)
 
-    def warning(self, message, *args):
-        self.internal_logger.warning(message, *args)
+    def warning(self, filename, **kwargs):
+        now = time.localtime()
+        asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        kwargs["time"] = asctime
+        kwargs["level"] = "WARNING"
+        json_output = json.dumps(kwargs)
+        print(json_output)
 
     def error(self, filename, **kwargs):
         now = time.localtime()
