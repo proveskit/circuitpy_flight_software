@@ -82,7 +82,7 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count: multiBitFlag = +1  # Limited to 255 errors
+        self.c_error_count: multiBitFlag += 1  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
