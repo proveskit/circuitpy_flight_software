@@ -27,6 +27,8 @@ except Exception:
     pass
 from lib.pysquared.pysquared import Satellite
 
+filename = "functions.py"
+
 
 class functions:
     def debug_print(self, statement: Any) -> None:
@@ -38,7 +40,8 @@ class functions:
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat)
         self.debug: bool = cubesat.debug
-        self.debug_print("Initializing Functionalities")
+        self.logger.info(filename=filename, message="Initializing Functionalities")
+        # self.debug_print("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
@@ -65,7 +68,8 @@ class functions:
         return self.cubesat.current_draw
 
     def safe_sleep(self, duration: int = 15) -> None:
-        self.debug_print("Setting Safe Sleep Mode")
+        # self.debug_print("Setting Safe Sleep Mode")
+        self.logger.info(filename=filename, message="Setting Safe Sleep Mode")
 
         iterations: int = 0
 
@@ -81,13 +85,15 @@ class functions:
             self.cubesat.watchdog_pet()
 
     def listen_loiter(self) -> None:
-        self.debug_print("Listening for 10 seconds")
+        # self.debug_print("Listening for 10 seconds")
+        self.logger.info("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
-        self.debug_print("Sleeping for 20 seconds")
+        # self.debug_print("Sleeping for 20 seconds")
+        self.logger.info("Sleeping for 20 seconds")
         self.cubesat.watchdog_pet()
         self.safe_sleep(self.sleep_duration)
         self.cubesat.watchdog_pet()
@@ -108,7 +114,8 @@ class functions:
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
-            self.debug_print("Sent Packet: " + message)
+            # self.debug_print("Sent Packet: " + message)
+            self.logger.info(message="Sent Packet: " + message)
         else:
             self.debug_print("Failed to send packet")
         del self.field

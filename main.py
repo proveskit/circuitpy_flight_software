@@ -36,9 +36,10 @@ try:
         )
         time.sleep(1)
 
-    print("Initializing Config")
+    logger.debug(filename=filename, message="Initializing Config")
     config = Config()
-    print("Initializing Cubesat")
+    # print("Initializing Cubesat")
+    logger.info(filename=filename, message="Initializing CubeSat")
     c = Satellite(config)
     c.watchdog_pet()
 
@@ -83,10 +84,12 @@ try:
         pass
 
     def send_imu():
-        debug_print("Looking to get imu data...")
+        # debug_print("Looking to get imu data...")
+        logger.info(filename=filename, message="Looking to get imu data...")
         IMUData = []
-        c.watchdog_pet()
-        debug_print("IMU has baton")
+        c.watchdog_pet(filename=filename, message="IMU has baton")
+        logger.info()
+        # debug_print("IMU has baton")
         IMUData = f.get_imu_data()
         c.watchdog_pet()
         f.send(IMUData)
@@ -152,15 +155,21 @@ try:
                 f.listen()
 
     except Exception as e:
-        debug_print("Critical in Main Loop: " + "".join(traceback.format_exception(e)))
+        # debug_print("Critical in Main Loop: " + "".join(traceback.format_exception(e)))
+        logger.error(
+            filename=filename,
+            message="Critical in Main Loop: " + "".join(traceback.format_exception(e)),
+        )
         time.sleep(10)
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
     finally:
-        debug_print("Going Neutral!")
+        # debug_print("Going Neutral!")
+        logger.info("Going Neutral!")
 
         c.RGB = (0, 0, 0)
         c.hardware["WDT"] = False
 
 except Exception as e:
-    print(e)
+    # print(e)
+    logger.error(filename=filename, message=e)
