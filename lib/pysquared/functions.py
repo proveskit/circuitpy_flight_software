@@ -43,7 +43,7 @@ class functions:
         self.logger.info(filename=filename, message="Initializing Functionalities")
         # self.debug_print("Initializing Functionalities")
 
-        self.pm: PacketManager = PacketManager(max_packet_size=128)
+        self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
         self.config: Config = config
