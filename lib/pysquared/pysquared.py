@@ -37,7 +37,7 @@ from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
 try:
-    from typing import Any, OrderedDict, TextIO, Union
+    from typing import Any, Callable, OrderedDict, TextIO, Union
 
     import circuitpython_typing
 except Exception:
@@ -93,6 +93,28 @@ class Satellite:
         ) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
+
+    def init_hardware(
+        self,
+        init_func: Callable[..., Any],
+        *args: Any,
+        hardware_key,
+        orpheus_func: Callable[..., Any] = None,
+        **kwargs: Any,
+    ) -> Any:
+        try:
+            if self.orpheus and orpheus_func:
+                return orpheus_func(hardware_key)
+
+            hardware_instance = init_func(*args, **kwargs)
+            self.hardware[hardware_key] = True
+
+            return hardware_instance
+        except Exception as e:
+            self.error_print(
+                f"ERROR INITIALIZIiNG {hardware_key}: {traceback.format_exception(e)}"
+            )
+            return None
 
     def __init__(self) -> None:
         # parses json & assigns data to variables
@@ -179,6 +201,7 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
+
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
                 ("I2C0", False),
@@ -228,57 +251,47 @@ class Satellite:
         """
         Intializing Communication Buses
         """
-        try:
-            if not self.orpheus:
-                self.i2c0: busio.I2C = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-                self.hardware["I2C0"] = True
-            else:
-                self.debug_print("[Orpheus] I2C0 not initialized")
 
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
+        # Alternative Implementations of hardware initialization specific for orpheus
+        def orpheus_skip_I2C(hardware_key: str) -> None:
+            self.debug_print(f"[Orpheus] {hardware_key} not initialized")
+            return None
+
+        def orpheus_init_UART(hardware_key: str):
+            uart: circuitpython_typing.ByteStream = busio.UART(
+                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
             )
+            self.hardware[hardware_key] = True
+            return uart
 
-        try:
-            self.spi0: busio.SPI = busio.SPI(
-                board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO
-            )
-            self.hardware["SPI0"] = True
-
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
-            )
-
-        try:
-            self.i2c1: busio.I2C = busio.I2C(
-                board.I2C1_SCL, board.I2C1_SDA, frequency=100000
-            )
-            self.hardware["I2C1"] = True
-
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
-            )
-
-        try:
-            if not self.orpheus:
-                self.uart: circuitpython_typing.ByteStream = busio.UART(
-                    board.TX, board.RX, baudrate=self.urate
-                )
-                self.hardware["UART"] = True
-            else:
-                # Orpheus uses the I2C0 Connection for UART
-                self.uart: circuitpython_typing.ByteStream = busio.UART(
-                    board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
-                )
-                self.hardware["UART"] = True
-
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
-            )
+        self.i2c0: busio.I2C = self.init_hardware(
+            busio.I2C,
+            board.I2C0_SCL,
+            board.I2C0_SDA,
+            hardware_key="I2C0",
+            orpheus_func=orpheus_skip_I2C,
+        )
+        self.spi0: busio.SPI = self.init_hardware(
+            busio.SPI,
+            board.SPI0_SCK,
+            board.SPI0_MOSI,
+            board.SPI0_MISO,
+            hardware_key="SPI0",
+        )
+        self.i2c1: busio.I2C = self.init_hardware(
+            busio.I2C,
+            board.I2C1_SCL,
+            board.I2C1_SDA,
+            frequency=100000,
+            hardware_key="I2C1",
+        )
+        self.uart: circuitpython_typing.ByteStream = self.init_hardware(
+            board.TX,
+            board.RX,
+            baud_rate=self.urate,
+            hardware_key="UART",
+            orpheus_func=orpheus_init_UART,
+        )
 
         ######## Temporary Fix for RF_ENAB ########
         #                                         #
