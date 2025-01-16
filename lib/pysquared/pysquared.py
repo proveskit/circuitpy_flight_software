@@ -60,14 +60,14 @@ class Satellite:
     error_count: Counter = Counter(index=_ERRORCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
-    f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
-    f_solar: bitFlag = bitFlag(register=_FLAG, bit=1)
-    f_burnarm: bitFlag = bitFlag(register=_FLAG, bit=2)
-    f_brownout: bitFlag = bitFlag(register=_FLAG, bit=3)
-    f_triedburn: bitFlag = bitFlag(register=_FLAG, bit=4)
-    f_shtdwn: bitFlag = bitFlag(register=_FLAG, bit=5)
-    f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
-    f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
+    f_softboot: bitFlag = bitFlag(index=_FLAG, bit=0, datastore=microcontroller.nvm)
+    f_solar: bitFlag = bitFlag(index=_FLAG, bit=1, datastore=microcontroller.nvm)
+    f_burnarm: bitFlag = bitFlag(index=_FLAG, bit=2, datastore=microcontroller.nvm)
+    f_brownout: bitFlag = bitFlag(index=_FLAG, bit=3, datastore=microcontroller.nvm)
+    f_triedburn: bitFlag = bitFlag(index=_FLAG, bit=4, datastore=microcontroller.nvm)
+    f_shtdwn: bitFlag = bitFlag(index=_FLAG, bit=5, datastore=microcontroller.nvm)
+    f_burned: bitFlag = bitFlag(index=_FLAG, bit=6, datastore=microcontroller.nvm)
+    f_fsk: bitFlag = bitFlag(index=_FLAG, bit=7, datastore=microcontroller.nvm)
 
     def debug_print(self, statement: Any) -> None:
         """
