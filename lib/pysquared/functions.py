@@ -14,7 +14,7 @@ from lib.pysquared.debugcolor import co
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
-from lib.pysquared.Config import Config  # Config file; might change
+from lib.pysquared.Config import Config
 
 try:
     from typing import List, Dict, OrderedDict, Literal, Union, Any
@@ -30,7 +30,7 @@ class functions:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat: Satellite, Config: Config) -> None:  # Config Object
+    def __init__(self, cubesat: Satellite, Config: Config) -> None:
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat)
         self.debug: bool = cubesat.debug
@@ -39,7 +39,7 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        self.config = Config
+        self.config: dict = Config
         self.cubesatName: str = Config.getStrValue("cubesatName")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
@@ -234,9 +234,12 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import lib.pysquared.cdh as cdh
+        # need to instanciate cdh to feed it the config var
+        # assigned from the Config object
+        from lib.pysquared.cdh import cdh
 
-        cdh = cdh.cdh(self.config)
+        cdh = cdh(self.config)
+
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.debug_print("Listening")

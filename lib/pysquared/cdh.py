@@ -1,25 +1,24 @@
 import time
 import random
-from lib.pysquared.Config import Config  # Config file; might change
+from lib.pysquared.Config import Config
 
 
 class cdh:
-    _commands: dict
-    _jokereply: list[str]
-    _super_secret_code: str
-    _repeat_code: str
+    """
+    Constructor
+    """
 
     def __init__(self, Config: Config) -> None:
-        self._commands = Config.getCommands()
-        self._jokereply = Config.getListValue("jokereply")
-        self._super_secret_code = Config.getStrValue("super_secret_code").encode(
+        self._commands: dict = Config.getCommands()
+        self._jokereply: list[str] = Config.getListValue("jokereply")
+        self._super_secret_code: str = Config.getStrValue("super_secret_code").encode(
             "utf-8"
         )
-        self._repeat_code = Config.getStrValue("repeat_code").encode("utf-8")
+        self._repeat_code: str = Config.getStrValue("repeat_code").encode("utf-8")
         print(f"Super secret code is: {self._super_secret_code}")
 
     ############### hot start helper ###############
-    def hotstart_handler(cubesat, msg):
+    def hotstart_handler(cubesat, msg) -> None:
         # try
         try:
             cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
@@ -41,8 +40,8 @@ class cdh:
             )
 
     ############### message handler ###############
-    def message_handler(self, cubesat, msg):
-        multi_msg = False
+    def message_handler(self, cubesat, msg) -> None:
+        multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
                 # check if multi-message flag is set
@@ -102,11 +101,11 @@ class cdh:
                 print("bad code?")
 
     ########### commands without arguments ###########
-    def noop(cubesat):
+    def noop(cubesat) -> None:
         print("no-op")
         pass
 
-    def hreset(cubesat):
+    def hreset(cubesat) -> None:
         print("Resetting")
         try:
             cubesat.radio1.send(data=b"resetting")
@@ -115,17 +114,17 @@ class cdh:
         except Exception:
             pass
 
-    def FSK(cubesat):
-        cubesat.f_fsk = True
+    def FSK(cubesat) -> None:
+        cubesat.f_fsk: bool = True
 
-    def joke_reply(self, cubesat):
-        joke = random.choice(self._jokereply)
+    def joke_reply(self, cubesat) -> None:
+        joke: str = random.choice(self._jokereply)
         print(joke)
         cubesat.radio1.send(joke)
 
     ########### commands with arguments ###########
 
-    def shutdown(cubesat, args):
+    def shutdown(cubesat, args) -> None:
         # make shutdown require yet another pass-code
         if args == b"\x0b\xfdI\xec":
             print("valid shutdown command received")
@@ -155,10 +154,10 @@ class cdh:
             cubesat.f_hotstrt = True
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(cubesat, args):
+    def query(cubesat, args) -> None:
         print(f"query: {args}")
         print(cubesat.radio1.send(data=str(eval(args))))
 
-    def exec_cmd(cubesat, args):
+    def exec_cmd(cubesat, args) -> None:
         print(f"exec: {args}")
         exec(args)
