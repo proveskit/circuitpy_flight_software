@@ -86,14 +86,14 @@ class functions:
 
     def listen_loiter(self) -> None:
         # self.debug_print("Listening for 10 seconds")
-        self.logger.info("Listening for 10 seconds")
+        self.logger.info(filename=filename, message="Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
         # self.debug_print("Sleeping for 20 seconds")
-        self.logger.info("Sleeping for 20 seconds")
+        self.logger.info(filename=filename, message="Sleeping for 20 seconds")
         self.cubesat.watchdog_pet()
         self.safe_sleep(self.sleep_duration)
         self.cubesat.watchdog_pet()
@@ -115,7 +115,7 @@ class functions:
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
             # self.debug_print("Sent Packet: " + message)
-            self.logger.info(message="Sent Packet: " + message)
+            self.logger.info(filename=filename, message="Sent Packet: " + message)
         else:
             self.logger.warning(filename=filename, message="Failed to send packet")
             # self.debug_print("Failed to send packet")
