@@ -271,7 +271,6 @@ class functions:
         try:
             # self.debug_print("Listening")
             self.logger.info(filename=filename, message="Listening")
-            self.logger.info("FUNCTIONS", "Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
