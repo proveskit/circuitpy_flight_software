@@ -5,8 +5,8 @@
 # The is a test script to facilitate a simple ping pong style communications test between two radios.
 
 import time
+
 from pysquared import cubesat
-from time import sleep
 
 test_message = "Hello There!"
 debug_mode = True
@@ -72,7 +72,6 @@ def debug_print(message):
 
 
 def device_under_test(attempts):
-
     debug_print("Device Under Test Selected")
     debug_print("Setting up Radio...")
 
@@ -101,7 +100,6 @@ def device_under_test(attempts):
 
 
 def receiver():
-
     debug_print("Receiver Selected")
     debug_print("Setting up Radio...")
 
@@ -273,7 +271,6 @@ if device_selection == "C":
     )
 
 while True:
-
     if device_selection == "A":
         time.sleep(1)
         device_under_test(number_of_attempts)

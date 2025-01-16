@@ -35,23 +35,44 @@ from pysquared_eps import cubesat as c
 # Development Getting Started
 We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
-We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to set up your python virtual environment (venv).
+We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to run
+```sh
+make
+```
 
-1. Create your venv `python3 -m venv venv`
-2. Activate your venv `source ./venv/bin/activate`
-3. Install required packages `pip install -r requirements.txt`
-4. Download necessary libraries `make download-libraries`
+## Manually testing code on the board
+We are working on improving our automated testing but right now the best way to test your code is to run it on the board. We have provided the following command to make it easy to install code on the board:
+```sh
+make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
+```
 
-## Precommit hooks
-Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly.
+You can find the path to your board by looking for the volume named `PYSQUARED`
 
-To install the precommit hook:
+### Mac
+```sh
+ls -lah /Volumes
+...
+drwx------@  1 nate  staff    16K Jan  9 08:09 PYSQUARED/
+```
 
-1. Install the precommit hook with `pre-commit install`
+### Linux or Windows via WSL
+```sh
+df -h
+```
 
-To run the precommit hook:
+## Build failures
 
-1. Run the precommit hook against all files with `make fmt`
+### Lint failure
+Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
+```sh
+make fmt
+```
+
+### Test failure
+To ensure our code works we use automated testing. If you're seeing a testing failure in your build, you can see what's wrong by running those tests yourself with:
+```
+make test
+```
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit

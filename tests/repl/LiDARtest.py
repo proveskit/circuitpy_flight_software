@@ -1,7 +1,8 @@
+import time
+
+import adafruit_vl6180x  # LiDAR Distance Sensor for Antenna
 import board
 import busio
-import time
-import adafruit_vl6180x  # LiDAR Distance Sensor for Antenna
 import neopixel  # RGB LED
 
 i2c = busio.I2C(board.SCL1, board.SDA1)

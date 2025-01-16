@@ -1,5 +1,6 @@
-import time
 import random
+import time
+
 from lib.pysquared.Config import Config
 
 
@@ -18,7 +19,7 @@ class cdh:
         print(f"Super secret code is: {self._super_secret_code}")
 
     ############### hot start helper ###############
-    def hotstart_handler(cubesat, msg) -> None:
+    def hotstart_handler(self, cubesat, msg) -> None:
         # try
         try:
             cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
@@ -33,7 +34,7 @@ class cdh:
             cubesat.radio1.send("!", identifier=msg[2], flags=0x80)
             # TODO remove this delay. for testing only!
             time.sleep(0.5)
-            message_handler(cubesat, msg)
+            self.message_handler(cubesat, msg)
         else:
             print(
                 f"not for me? target id: {hex(msg[0])}, my id: {hex(cubesat.radio1.node)}"
@@ -90,7 +91,7 @@ class cdh:
                     )
                     if response is not None:
                         cubesat.c_gs_resp += 1
-                        message_handler(cubesat, response)
+                        self.message_handler(cubesat, response)
             elif bytes(msg[4:6]) == self._repeat_code:
                 print("Repeating last message!")
                 try:

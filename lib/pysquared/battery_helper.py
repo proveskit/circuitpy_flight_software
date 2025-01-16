@@ -102,7 +102,6 @@ class BatteryHelper:
             str: Response message or empty string on failure
         """
         try:
-
             # Send command
             self.uart.write(bytes(cmd.encode()))
 
