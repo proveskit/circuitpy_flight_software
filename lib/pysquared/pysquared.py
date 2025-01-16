@@ -94,7 +94,20 @@ class Satellite:
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def init_hardware(
+    def safe_init(func: Callable[..., Any]):
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                self.error_print(
+                    f"ERROR INITIALIZING {kwargs.get('hardware_key', 'UNKNOWN')}: {traceback.format_exception(e)}"
+                )
+            return None
+
+        return wrapper
+
+    @safe_init
+    def init_comms_bus(
         self,
         init_func: Callable[..., Any],
         *args: Any,
@@ -102,19 +115,13 @@ class Satellite:
         orpheus_func: Callable[..., Any] = None,
         **kwargs: Any,
     ) -> Any:
-        try:
-            if self.orpheus and orpheus_func:
-                return orpheus_func(hardware_key)
+        if self.orpheus and orpheus_func:
+            return orpheus_func(hardware_key)
 
-            hardware_instance = init_func(*args, **kwargs)
-            self.hardware[hardware_key] = True
+        hardware_instance = init_func(*args, **kwargs)
+        self.hardware[hardware_key] = True
 
-            return hardware_instance
-        except Exception as e:
-            self.error_print(
-                f"ERROR INITIALIZIiNG {hardware_key}: {traceback.format_exception(e)}"
-            )
-            return None
+        return hardware_instance
 
     def __init__(self) -> None:
         # parses json & assigns data to variables
@@ -264,28 +271,28 @@ class Satellite:
             self.hardware[hardware_key] = True
             return uart
 
-        self.i2c0: busio.I2C = self.init_hardware(
+        self.i2c0: busio.I2C = self.init_comms_bus(
             busio.I2C,
             board.I2C0_SCL,
             board.I2C0_SDA,
             hardware_key="I2C0",
             orpheus_func=orpheus_skip_I2C,
         )
-        self.spi0: busio.SPI = self.init_hardware(
+        self.spi0: busio.SPI = self.init_comms_bus(
             busio.SPI,
             board.SPI0_SCK,
             board.SPI0_MOSI,
             board.SPI0_MISO,
             hardware_key="SPI0",
         )
-        self.i2c1: busio.I2C = self.init_hardware(
+        self.i2c1: busio.I2C = self.init_comms_bus(
             busio.I2C,
             board.I2C1_SCL,
             board.I2C1_SDA,
             frequency=100000,
             hardware_key="I2C1",
         )
-        self.uart: circuitpython_typing.ByteStream = self.init_hardware(
+        self.uart: circuitpython_typing.ByteStream = self.init_comms_bus(
             board.TX,
             board.RX,
             baud_rate=self.urate,
