@@ -431,41 +431,16 @@ class Satellite:
         #                                         #
         ######## Temporary Fix for RF_ENAB ########
 
-        """
-        Radio 1 Initialization
-        """
         self.init_radio(hardware_key="Radio1")
-
-        """
-        IMU Initialization
-        """
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
-
-        # Initialize Magnetometer
         self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
-
-        """
-        RTC Initialization
-        """
         self.init_RTC(hardware_key="RTC")
-
-        """
-        SD Card Initialization
-        """
         self.init_SDCard(hardware_key="SD Card")
-
-        """
-        Neopixel Initialization
-        """
         self.init_neopixel(hardware_key="NEOPIX")
-
-        """
-        TCA Multiplexer Initialization
-        """
         self.init_TCA_multiplexer(hardware_key="TCA")
 
         """
