@@ -354,7 +354,9 @@ class functions:
             )
 
             gc.collect()
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            a: Big_Data.AllFaces = Big_Data.AllFaces(
+                self.debug, self.cubesat.tca, self.logger
+            )
             # self.debug_print(gc.mem_free())
             self.logger.debug(
                 filename=filename, message="Bytes free: " + str(gc.mem_free())
@@ -464,7 +466,9 @@ class functions:
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            a: Big_Data.AllFaces = Big_Data.AllFaces(
+                self.debug, self.cubesat.tca, self.logger
+            )
         except Exception as e:
             # self.debug_print(
             # "Error Importing Big Data: " + "".join(traceback.format_exception(e))
