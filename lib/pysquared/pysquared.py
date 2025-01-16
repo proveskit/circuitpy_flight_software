@@ -459,17 +459,23 @@ class Satellite:
 
         if self.debug:
             # Find the length of the longest key
-            max_key_length: int = max(len(key) for key in self.hardware.keys())
+            # max_key_length: int = max(len(key) for key in self.hardware.keys())
 
-            print("=" * 16)
+            # print("=" * 16)
             print("Device  | Status")
             for key, value in self.hardware.items():
-                padded_key: str = key + " " * (max_key_length - len(key))
+                # padded_key: str = key + " " * (max_key_length - len(key))
+                # if value:
+                #    print(co(f"|{padded_key} | {value} |", "green"))
+                # else:
+                #    print(co(f"|{padded_key} | {value}|", "red"))
+
                 if value:
-                    print(co(f"|{padded_key} | {value} |", "green"))
+                    self.logger.info(filename=filename, device=key, status=True)
+
                 else:
-                    print(co(f"|{padded_key} | {value}|", "red"))
-            print("=" * 16)
+                    self.logger.warning(filename=filename, device=key, status=False)
+            # print("=" * 16)
         # set power mode
         self.power_mode: str = "normal"
 
