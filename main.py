@@ -40,7 +40,7 @@ try:
     config = Config()
     # print("Initializing Cubesat")
     logger.info(filename=filename, message="Initializing CubeSat")
-    c = Satellite(config)
+    c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
     import gc  # Garbage collection

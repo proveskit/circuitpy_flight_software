@@ -43,6 +43,9 @@ try:
 except Exception:
     pass
 
+from lib.pysquared.logger import Logger
+
+filename = "pysquared.py"
 
 # NVM register numbers
 _BOOTCNT = const(0)
@@ -90,7 +93,8 @@ class Satellite:
     def error_print(self, statement: Any) -> None:
         self.c_error_count += 1  # Limited to 255 errors
         if self.debug:
-            print(co("[pysquared]" + str(statement), "red", "bold"))
+            # print(co("[pysquared]" + str(statement), "red", "bold"))
+            self.logger.error(filename=filename, message=str(statement))
 
     def safe_init(error_severity="ERROR"):
         def decorator(func: Callable[..., Any]):
@@ -239,7 +243,7 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, logger: Logger) -> None:
         self.cubesatName: str = config.getStr("cubesatName")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
@@ -249,6 +253,7 @@ class Satellite:
         self.heating: bool = config.getBool("heating")
         self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
         self.is_licensed: bool = config.getBool("is_licensed")
+        self.logger = logger
 
         """
         Define the normal power modes
@@ -298,7 +303,8 @@ class Satellite:
         """
         self.c_boot += 1
         self.BOOTTIME: int = 1577836800
-        self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        # self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        self.logger.info(filename=filename, message=f"Boot time: {self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
@@ -437,13 +443,19 @@ class Satellite:
         self.scan_tca_channels()
 
         if self.f_fsk:
-            self.debug_print("Next restart will be in LoRa mode.")
+            # self.debug_print("Next restart will be in LoRa mode.")
+            self.logger.info(
+                filename=filename, message="Next restart will be in LoRa mode."
+            )
             self.f_fsk = False
 
         """
         Prints init State of PySquared Hardware
         """
-        self.debug_print("PySquared Hardware Initialization Complete!")
+        # self.debug_print("PySquared Hardware Initialization Complete!")
+        self.logger.info(
+            filename=filename, message="PySquared Hardware Initialization Complete!"
+        )
 
         if self.debug:
             # Find the length of the longest key
@@ -467,7 +479,8 @@ class Satellite:
 
     def scan_tca_channels(self) -> None:
         if not self.hardware["TCA"]:
-            self.debug_print("[WARNING] TCA not initialized")
+            # self.debug_print("[WARNING] TCA not initialized")
+            self.logger.warning(filename=filename, message="TCA not initialized")
             return
 
         channel_to_face: dict[int, str] = {
@@ -583,7 +596,11 @@ class Satellite:
                     "error unmounting SD card" + "".join(traceback.format_exception(e))
                 )
         try:
-            self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
+            # self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
+            self.logger.info(
+                filename=filename,
+                message="Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
+            )
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -674,7 +691,10 @@ class Satellite:
 
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
-        self.debug_print(str("Current up time: " + str(self.UPTIME)))
+        # self.debug_print(str("Current up time: " + str(self.UPTIME)))
+        self.logger.info(
+            filename=filename, message="Current up time: " + str(self.UPTIME)
+        )
         if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
 
@@ -716,7 +736,8 @@ class Satellite:
     def log(self, filedir: str, msg: str) -> None:
         if self.hardware["SDcard"]:
             try:
-                self.debug_print(f"writing {msg} to {filedir}")
+                # self.debug_print(f"writing {msg} to {filedir}")
+                self.info(filename=filename, message=f"writing {msg} to {filedir}")
                 with open(filedir, "a+") as f:
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
@@ -731,15 +752,20 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- Printing File: {filedir} ---")
+            # self.debug_print(f"--- Printing File: {filedir} ---")
+            self.logger.info(
+                filename=filename, message=f"--- Printing File: {filedir} ---"
+            )
             if binary:
                 with open(filedir, "rb") as file:
-                    self.debug_print(file.read())
-                    self.debug_print("")
+                    # self.debug_print(file.read())
+                    self.logger.info(filename=filename, message=str(file.read()))
+                    # self.debug_print("")
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.debug_print(line.strip())
+                        # self.debug_print(line.strip())
+                        self.logger.info(filename=filename, message=str(line.strip()))
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
@@ -751,16 +777,21 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- reading File: {filedir} ---")
+            # self.debug_print(f"--- reading File: {filedir} ---")
+            self.logger.info(
+                filename=filename, message=f"--- reading File: {filedir} ---"
+            )
             if binary:
                 with open(filedir, "rb") as file:
-                    self.debug_print(file.read())
-                    self.debug_print("")
+                    # self.debug_print(file.read())
+                    self.logger.info(filename=filename, message=str(file.read()))
+                    # self.debug_print("")
                     return file.read()
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.debug_print(line.strip())
+                        # self.debug_print(line.strip())
+                        self.logger.info(filename=filename, message=str(line.strip()))
                     return file
         except Exception as e:
             self.error_print(
@@ -779,10 +810,16 @@ class Satellite:
                 n: int = 0
                 _folder: str = substring[: substring.rfind("/") + 1]
                 _file: str = substring[substring.rfind("/") + 1 :]
-                self.debug_print(
-                    "Creating new file in directory: /sd{} with file prefix: {}".format(
+                # self.debug_print(
+                # "Creating new file in directory: /sd{} with file prefix: {}".format(
+                # _folder, _file
+                # )
+                # )
+                self.info(
+                    filename=filename,
+                    message="Creating new file in directory: /sd{} with file prefix: {}".format(
                         _folder, _file
-                    )
+                    ),
                 )
                 try:
                     chdir("/sd" + _folder)
@@ -811,7 +848,10 @@ class Satellite:
                         n: int = (n + i) % 0xFFFF
                         # print('file number is',n)
                         break
-                self.debug_print("creating file..." + str(ff))
+                # self.debug_print("creating file..." + str(ff))
+                self.logger.info(
+                    filename=filename, message="creating file..." + str(ff)
+                )
                 if binary:
                     b: str = "ab"
                 else:
@@ -826,4 +866,5 @@ class Satellite:
                 )
                 return None
         else:
-            self.debug_print("[WARNING] SD Card not initialized")
+            # self.debug_print("[WARNING] SD Card not initialized")
+            self.logger.warning(filename=filename, message="SD Card not initialized")

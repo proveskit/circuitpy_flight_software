@@ -30,6 +30,7 @@ class Logger:
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
         kwargs["level"] = "DEBUG"
+        kwargs["file"] = filename
         json_output = json.dumps(kwargs)
         print(json_output)
 
@@ -39,6 +40,7 @@ class Logger:
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
         kwargs["level"] = "INFO"
+        kwargs["file"] = filename
         json_output = json.dumps(kwargs)
         print(json_output)
 
@@ -47,6 +49,7 @@ class Logger:
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
         kwargs["level"] = "WARNING"
+        kwargs["file"] = filename
         json_output = json.dumps(kwargs)
         print(json_output)
 
@@ -55,6 +58,7 @@ class Logger:
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
         kwargs["level"] = "ERROR"
+        kwargs["file"] = filename
         json_output = json.dumps(kwargs)
         print(json_output)
 
