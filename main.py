@@ -165,7 +165,7 @@ try:
         microcontroller.reset()
     finally:
         # debug_print("Going Neutral!")
-        logger.info("Going Neutral!")
+        logger.info(filename=filename, message="Going Neutral!")
 
         c.RGB = (0, 0, 0)
         c.hardware["WDT"] = False
