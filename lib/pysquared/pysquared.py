@@ -97,17 +97,18 @@ class Satellite:
     def safe_init(error_severity="ERROR", debug=True):
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
+                hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
                 if debug:
-                    self.debug_print(
-                        f"Initializing {kwargs.get('hardware_key', 'UNKNOWN')}"
-                    )
+                    self.debug_print(f"Initializing {hardware_key}")
 
                 try:
-                    return func(self, *args, **kwargs)
+                    device: Any = func(self, *args, **kwargs)
+                    self.hardware[hardware_key] = True
+                    return device
 
                 except Exception as e:
                     self.error_print(
-                        f"[{error_severity}][{kwargs.get('hardware_key', 'UNKNOWN')}]: {traceback.format_exception(e)}"
+                        f"[{error_severity}][{hardware_key}]: {traceback.format_exception(e)}"
                     )
                 return None
 
@@ -145,7 +146,6 @@ class Satellite:
             return orpheus_func(hardware_key)
 
         hardware_instance = init_func(*args, **kwargs)
-        self.hardware[hardware_key] = True
 
         return hardware_instance
 
@@ -195,7 +195,6 @@ class Satellite:
                 self.radio1.preamble_length = self.radio1.spreading_factor
         self.radio1.node = self.radio_cfg["id"]
         self.radio1.destination = self.radio_cfg["gs"]
-        self.hardware[hardware_key] = True
 
         # if self.legacy:
         #    self.enable_rf.value = False
@@ -206,7 +205,6 @@ class Satellite:
 
         # Still need to test these configs
         self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-        self.hardware[hardware_key] = True
 
     @safe_init()
     def init_SDCard(self, hardware_key: str) -> None:
@@ -216,7 +214,6 @@ class Satellite:
         mount(_vfs, "/sd")
         self.fs = _vfs
         sys.path.append("/sd")
-        self.hardware[hardware_key] = True
 
     @safe_init(error_severity="WARNING")
     def init_neopixel(self, hardware_key: str) -> None:
@@ -226,7 +223,6 @@ class Satellite:
             board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
         )
         self.neopixel[0] = (0, 0, 255)
-        self.hardware[hardware_key] = True
 
     @safe_init()
     def init_TCA_multiplexer(self, hardware_key: str) -> None:
@@ -234,7 +230,6 @@ class Satellite:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
                 self.i2c1, address=int(0x77)
             )
-            self.hardware["TCA"] = True
         except OSError:
             self.error_print(
                 "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
