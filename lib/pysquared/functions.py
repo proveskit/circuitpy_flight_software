@@ -38,7 +38,7 @@ class functions:
     def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
         self.logger = logger
         self.cubesat: Satellite = cubesat
-        self.battery: BatteryHelper = BatteryHelper(cubesat)
+        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.debug: bool = cubesat.debug
         self.logger.info(filename=filename, message="Initializing Functionalities")
         # self.debug_print("Initializing Functionalities")
