@@ -28,8 +28,6 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    # from lib.pysquared.pysquared import cubesat as c # pass config object inside here maybe
-    # config = Config()
     print("Initializing Config")
     config = Config()
     print("Initializing Cubesat")
