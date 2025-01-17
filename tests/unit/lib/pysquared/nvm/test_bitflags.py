@@ -19,10 +19,10 @@ def test_init(setup_datastore):
 def test_get(setup_datastore):
     flag = bitflags.bitFlag(16, 1, setup_datastore)  # Example flag for solar
     assert setup_datastore[16] == 0b00000000
-    assert flag.get().equals(False)  # Bit should be 0 by default
+    assert not flag.get()  # Bit should be 0 by default
 
     setup_datastore[16] = 0b00000010  # Manually set bit to test
-    assert flag.get().equals(True)  # Should return true since bit position 1 = 1
+    assert flag.get()  # Should return true since bit position 1 = 1
 
 
 def test_toggle(setup_datastore):
@@ -30,28 +30,28 @@ def test_toggle(setup_datastore):
     assert setup_datastore[16] == 0b00000000
     flag.toggle(False)  # Set flag to off (bit to 0)
     assert setup_datastore[16] == 0b00000000
-    assert flag.get().equals(False)  # Bit should remain 0 due to 0 by default
+    assert not flag.get()  # Bit should remain 0 due to 0 by default
 
     flag.toggle(True)  # Set flag to on (bit to 1)
     assert setup_datastore[16] == 0b00000100  # Check if bit position 2 = 1
-    assert flag.get().equals(True)  # Bit should be flipped to 1
+    assert flag.get()  # Bit should be flipped to 1
 
     flag.toggle(True)  # Set flag to on (bit to 1)
     assert setup_datastore[16] == 0b00000100  # Check if bit position 2 = 1
-    assert flag.get().equals(True)  # Bit should remain 1 due to already being set to on
+    assert flag.get()  # Bit should remain 1 due to already being set to on
 
     flag.toggle(False)  # Set flag back to off (bit to 0)
     assert setup_datastore[16] == 0b00000000  # Check if bit position 2 = 0
-    assert flag.get().equals(False)  # Bit should be 0
+    assert not flag.get()  # Bit should be 0
 
 
 def test_edge_cases(setup_datastore):
     first_bit = bitflags.bitFlag(0, 0, setup_datastore)
     first_bit.toggle(True)
     assert setup_datastore[0] == 0b00000001
-    assert first_bit.get().equals(True)
+    assert first_bit.get()
 
     last_bit = bitflags.bitFlag(0, 7, setup_datastore)
     last_bit.toggle(True)
     assert setup_datastore[0] == 0b10000001
-    assert last_bit.get().equals(True)
+    assert last_bit.get()
