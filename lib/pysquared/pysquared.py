@@ -94,11 +94,11 @@ class Satellite:
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def safe_init(error_severity="ERROR", debug=True):
+    def safe_init(error_severity="ERROR"):
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
-                if debug:
+                if self.debug:
                     self.debug_print(f"Initializing {hardware_key}")
 
                 try:
