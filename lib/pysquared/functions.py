@@ -110,7 +110,7 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
@@ -227,7 +227,7 @@ class functions:
                 + "".join(traceback.format_exception(e)),
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -250,7 +250,7 @@ class functions:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
         # self.debug_print("Sending Face Data")
         self.logger.info(filename=filename, message="Sending Face Data")
         self.field.Beacon(

@@ -462,7 +462,7 @@ class Satellite:
             # max_key_length: int = max(len(key) for key in self.hardware.keys())
 
             # print("=" * 16)
-            print("Device  | Status")
+            # print("Device  | Status")
             for key, value in self.hardware.items():
                 # padded_key: str = key + " " * (max_key_length - len(key))
                 # if value:
