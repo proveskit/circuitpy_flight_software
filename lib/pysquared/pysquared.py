@@ -4,7 +4,7 @@ PySquared Hardware Version: Flight Controller V4c
 CircuitPython Version: 9.0.0
 Library Repo:
 
-* Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmientoc
+* Author(s): Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 # Common CircuitPython Libs
