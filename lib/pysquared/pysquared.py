@@ -688,7 +688,6 @@ class Satellite:
         else:
             self.error_print("[WARNING] RTC not initialized")
 
-    @property
     def set_alarm(self, hmw: tuple[int, int, int]) -> None:
         """
         hmw: A 3-tuple of ints containing the hour, minute, and weekday.
@@ -703,6 +702,13 @@ class Satellite:
                 )
         else:
             self.error_print("[WARNING] RTC not initialized")
+
+    def alarm_triggered(self) -> bool:
+        try:
+            return self.rtc.is_alarm_flag_set()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            return False
 
     """
     Maintenence Functions

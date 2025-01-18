@@ -102,7 +102,7 @@ class RV3028:
         )
         self._write_register(self.MINUTES, data)
 
-    def is_alarm_triggered(self):
+    def is_alarm_flag_set(self):
         """
         Check if the Alarm Flag (AF) is set in the Status Register.
 
