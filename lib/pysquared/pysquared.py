@@ -652,7 +652,7 @@ class Satellite:
     @time.setter
     def time(self, hms: tuple[int, int, int]) -> None:
         """
-        Arg: hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
+        hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
         """
         hours, minutes, seconds = hms
         if self.hardware["RTC"]:
@@ -675,12 +675,28 @@ class Satellite:
     @date.setter
     def date(self, ymdw: tuple[int, int, int, int]) -> None:
         """
-        Arg: ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
+        ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
         """
         year, month, date, weekday = ymdw
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_date(year, month, date, weekday)
+            except Exception as e:
+                self.error_print(
+                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                )
+        else:
+            self.error_print("[WARNING] RTC not initialized")
+
+    @property
+    def set_alarm(self, hmw: tuple[int, int, int]) -> None:
+        """
+        hmw: A 3-tuple of ints containing the hour, minute, and weekday.
+        """
+        hour, minute, weekday = hmw
+        if self.hardware["RTC"]:
+            try:
+                self.rtc.set_alarm(minute, hour, weekday)
             except Exception as e:
                 self.error_print(
                     "[ERROR][RTC]" + "".join(traceback.format_exception(e))
