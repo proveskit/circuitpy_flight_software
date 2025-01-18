@@ -37,7 +37,7 @@ from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
 try:
-    from typing import Any, OrderedDict, TextIO, Union
+    from typing import Any, Callable, OrderedDict, TextIO, Union
 
     import circuitpython_typing
 except Exception:
@@ -88,9 +88,154 @@ class Satellite:
             print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count += 1  # Limited to 255 errors
+        self.c_error_count: multiBitFlag = (
+            self.c_error_count + 1
+        ) & 0xFF  # Limited to 255 errors
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
+
+    def safe_init(error_severity="ERROR"):
+        def decorator(func: Callable[..., Any]):
+            def wrapper(self, *args, **kwargs):
+                hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
+                if self.debug:
+                    self.debug_print(f"Initializing {hardware_key}")
+
+                try:
+                    device: Any = func(self, *args, **kwargs)
+                    self.hardware[hardware_key] = True
+                    return device
+
+                except Exception as e:
+                    self.error_print(
+                        f"[{error_severity}][{hardware_key}]: {traceback.format_exception(e)}"
+                    )
+                return None
+
+            return wrapper
+
+        return decorator
+
+    @safe_init()
+    def init_general_hardware(
+        self,
+        init_func: Callable[..., Any],
+        *args: Any,
+        hardware_key,
+        orpheus_func: Callable[..., Any] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """
+            Args:
+            init_func (Callable[..., Any]): The function used to initialize the hardware.
+            *args (Any): Positional arguments to pass to the `init_func`.
+            hardware_key (str): A unique identifier for the hardware being initialized.
+            orpheus_func (Callable[..., Any], optional): An alternative function to initialize
+                the hardware if the `orpheus` flag is set. Defaults to `None`.
+            **kwargs (Any): Additional keyword arguments to pass to the `init_func`.
+                Must be placed before `hardware_key`.
+
+            Returns:
+                Any: The initialized hardware instance if successful, or `None` if an error occurs.
+
+        Raises:
+                Exception: Any exception raised by the `init_func` or `orpheus_func`
+                will be caught and handled by the `@safe_init` decorator.
+        """
+        if self.orpheus and orpheus_func:
+            return orpheus_func(hardware_key)
+
+        hardware_instance = init_func(*args, **kwargs)
+
+        return hardware_instance
+
+    @safe_init()
+    def init_radio(self, hardware_key: str) -> None:
+        # Define Radio Ditial IO Pins
+        _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
+        _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
+        self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
+        self.radio1_DIO4: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO4)
+
+        # Configure Radio Pins
+
+        _rf_cs1.switch_to_output(value=True)  # cs1 and rst1 are only used locally
+        _rf_rst1.switch_to_output(value=True)
+        self.radio1_DIO0.switch_to_input()
+        self.radio1_DIO4.switch_to_input()
+
+        if self.f_fsk:
+            self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
+                self.spi0,
+                _rf_cs1,
+                _rf_rst1,
+                self.radio_cfg["freq"],
+                # code_rate=8, code rate does not exist for RFM9xFSK
+            )
+            self.radio1.fsk_node_address = 1
+            self.radio1.fsk_broadcast_address = 0xFF
+            self.radio1.modulation_type = 0
+        else:
+            # Default LoRa Modulation Settings
+            # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
+            self.radio1: rfm9x.RFM9x = rfm9x.RFM9x(
+                self.spi0,
+                _rf_cs1,
+                _rf_rst1,
+                self.radio_cfg["freq"],
+                # code_rate=8, code rate does not exist for RFM9xFSK
+            )
+            self.radio1.max_output = True
+            self.radio1.tx_power = self.radio_cfg["pwr"]
+            self.radio1.spreading_factor = self.radio_cfg["sf"]
+
+            self.radio1.enable_crc = True
+            self.radio1.ack_delay = 0.2
+            if self.radio1.spreading_factor > 9:
+                self.radio1.preamble_length = self.radio1.spreading_factor
+        self.radio1.node = self.radio_cfg["id"]
+        self.radio1.destination = self.radio_cfg["gs"]
+
+        # if self.legacy:
+        #    self.enable_rf.value = False
+
+    @safe_init()
+    def init_RTC(self, hardware_key: str) -> None:
+        self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
+
+        # Still need to test these configs
+        self.rtc.configure_backup_switchover(mode="level", interrupt=True)
+
+    @safe_init()
+    def init_SDCard(self, hardware_key: str) -> None:
+        # Baud rate depends on the card, 4MHz should be safe
+        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
+        _vfs = VfsFat(_sd)
+        mount(_vfs, "/sd")
+        self.fs = _vfs
+        sys.path.append("/sd")
+
+    @safe_init(error_severity="WARNING")
+    def init_neopixel(self, hardware_key: str) -> None:
+        self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
+        self.neopwr.switch_to_output(value=True)
+        self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
+            board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
+        )
+        self.neopixel[0] = (0, 0, 255)
+
+    @safe_init()
+    def init_TCA_multiplexer(self, hardware_key: str) -> None:
+        try:
+            self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
+                self.i2c1, address=int(0x77)
+            )
+        except OSError:
+            self.error_print(
+                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
+            )
+            self.hardware[hardware_key] = False
+            return
 
     def __init__(self) -> None:
         # parses json & assigns data to variables
@@ -177,6 +322,7 @@ class Satellite:
             "pwr": 23,
             "st": 80000,
         }
+
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
                 ("I2C0", False),
@@ -202,6 +348,8 @@ class Satellite:
         """
         NVM Parameter Resets
         """
+        if self.c_boot > 200:
+            self.c_boot = 0
 
         if self.f_softboot:
             self.f_softboot = False
@@ -224,57 +372,51 @@ class Satellite:
         """
         Intializing Communication Buses
         """
-        try:
-            if not self.orpheus:
-                self.i2c0: busio.I2C = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
-                self.hardware["I2C0"] = True
-            else:
-                self.debug_print("[Orpheus] I2C0 not initialized")
 
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING I2C0: " + "".join(traceback.format_exception(e))
+        # Alternative Implementations of hardware initialization specific for orpheus
+        def orpheus_skip_I2C(hardware_key: str) -> None:
+            self.debug_print(f"[Orpheus] {hardware_key} not initialized")
+            return None
+
+        def orpheus_init_UART(hardware_key: str):
+            uart: circuitpython_typing.ByteStream = busio.UART(
+                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
             )
+            self.hardware[hardware_key] = True
+            return uart
 
-        try:
-            self.spi0: busio.SPI = busio.SPI(
-                board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO
-            )
-            self.hardware["SPI0"] = True
+        self.i2c0: busio.I2C = self.init_general_hardware(
+            busio.I2C,
+            board.I2C0_SCL,
+            board.I2C0_SDA,
+            hardware_key="I2C0",
+            orpheus_func=orpheus_skip_I2C,
+        )
 
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING SPI0: " + "".join(traceback.format_exception(e))
-            )
+        self.spi0: busio.SPI = self.init_general_hardware(
+            busio.SPI,
+            board.SPI0_SCK,
+            board.SPI0_MOSI,
+            board.SPI0_MISO,
+            hardware_key="SPI0",
+        )
 
-        try:
-            self.i2c1: busio.I2C = busio.I2C(
-                board.I2C1_SCL, board.I2C1_SDA, frequency=100000
-            )
-            self.hardware["I2C1"] = True
+        self.i2c1: busio.I2C = self.init_general_hardware(
+            busio.I2C,
+            board.I2C1_SCL,
+            board.I2C1_SDA,
+            frequency=100000,
+            hardware_key="I2C1",
+        )
 
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING I2C1: " + "".join(traceback.format_exception(e))
-            )
-
-        try:
-            if not self.orpheus:
-                self.uart: circuitpython_typing.ByteStream = busio.UART(
-                    board.TX, board.RX, baudrate=self.urate
-                )
-                self.hardware["UART"] = True
-            else:
-                # Orpheus uses the I2C0 Connection for UART
-                self.uart: circuitpython_typing.ByteStream = busio.UART(
-                    board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
-                )
-                self.hardware["UART"] = True
-
-        except Exception as e:
-            self.error_print(
-                "ERROR INITIALIZING UART: " + "".join(traceback.format_exception(e))
-            )
+        self.uart: circuitpython_typing.ByteStream = self.init_general_hardware(
+            busio.UART,
+            board.TX,
+            board.RX,
+            baud_rate=self.urate,
+            hardware_key="UART",
+            orpheus_func=orpheus_init_UART,
+        )
 
         ######## Temporary Fix for RF_ENAB ########
         #                                         #
@@ -289,146 +431,17 @@ class Satellite:
         #                                         #
         ######## Temporary Fix for RF_ENAB ########
 
-        """
-        Radio 1 Initialization
-        """
-        # Define Radio Ditial IO Pins
-        _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
-        _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
-        self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
-        self.radio1_DIO4: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO4)
-
-        # Configure Radio Pins
-
-        _rf_cs1.switch_to_output(value=True)  # cs1 and rst1 are only used locally
-        _rf_rst1.switch_to_output(value=True)
-        self.radio1_DIO0.switch_to_input()
-        self.radio1_DIO4.switch_to_input()
-
-        try:
-            if self.f_fsk:
-                self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
-                    self.spi0,
-                    _rf_cs1,
-                    _rf_rst1,
-                    self.radio_cfg["freq"],
-                    # code_rate=8, code rate does not exist for RFM9xFSK
-                )
-                self.radio1.fsk_node_address = 1
-                self.radio1.fsk_broadcast_address = 0xFF
-                self.radio1.modulation_type = 0
-            else:
-                # Default LoRa Modulation Settings
-                # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-                self.radio1: rfm9x.RFM9x = rfm9x.RFM9x(
-                    self.spi0,
-                    _rf_cs1,
-                    _rf_rst1,
-                    self.radio_cfg["freq"],
-                    # code_rate=8, code rate does not exist for RFM9xFSK
-                )
-                self.radio1.max_output = True
-                self.radio1.tx_power = self.radio_cfg["pwr"]
-                self.radio1.spreading_factor = self.radio_cfg["sf"]
-
-                self.radio1.enable_crc = True
-                self.radio1.ack_delay = 0.2
-                if self.radio1.spreading_factor > 9:
-                    self.radio1.preamble_length = self.radio1.spreading_factor
-            self.radio1.node = self.radio_cfg["id"]
-            self.radio1.destination = self.radio_cfg["gs"]
-            self.hardware["Radio1"] = True
-
-            # if self.legacy:
-            #    self.enable_rf.value = False
-
-        except Exception as e:
-            self.error_print(
-                "[ERROR][RADIO 1]" + "".join(traceback.format_exception(e))
-            )
-
-        """
-        IMU Initialization
-        """
-        try:
-            self.imu: LSM6DSOX = LSM6DSOX(i2c_bus=self.i2c1, address=0x6B)
-            self.hardware["IMU"] = True
-        except Exception as e:
-            self.error_print("[ERROR][IMU]" + "".join(traceback.format_exception(e)))
-
-        # Initialize Magnetometer
-        try:
-            self.mangetometer: adafruit_lis2mdl.LIS2MDL = adafruit_lis2mdl.LIS2MDL(
-                self.i2c1
-            )
-            self.hardware["Mag"] = True
-        except Exception as e:
-            self.error_print("[ERROR][Magnetometer]")
-            traceback.print_exception(None, e, e.__traceback__)
-
-        """
-        RTC Initialization
-        """
-        try:
-            self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
-
-            # Still need to test these configs
-            self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-            self.hardware["RTC"] = True
-
-        except Exception as e:
-            self.debug_print(
-                "[ERROR][Real Time Clock]" + "".join(traceback.format_exception(e))
-            )
-
-        """
-        SD Card Initialization
-        """
-        try:
-            # Baud rate depends on the card, 4MHz should be safe
-            _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
-            _vfs = VfsFat(_sd)
-            mount(_vfs, "/sd")
-            self.fs = _vfs
-            sys.path.append("/sd")
-            self.hardware["SDcard"] = True
-        except Exception as e:
-            self.error_print(
-                "[ERROR][SD Card]" + "".join(traceback.format_exception(e))
-            )
-
-        """
-        Neopixel Initialization
-        """
-        try:
-            self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
-            self.neopwr.switch_to_output(value=True)
-            self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
-                board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
-            )
-            self.neopixel[0] = (0, 0, 255)
-            self.hardware["NEOPIX"] = True
-        except Exception as e:
-            self.error_print(
-                "[WARNING][NEOPIX]" + "".join(traceback.format_exception(e))
-            )
-
-        """
-        TCA Multiplexer Initialization
-        """
-        try:
-            self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
-                self.i2c1, address=int(0x77)
-            )
-            self.hardware["TCA"] = True
-        except OSError:
-            self.error_print(
-                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
-            )
-            self.hardware["TCA"] = False
-            return
-        except Exception as e:
-            self.error_print("[ERROR][TCA]" + "".join(traceback.format_exception(e)))
+        self.init_radio(hardware_key="Radio1")
+        self.imu: LSM6DSOX = self.init_general_hardware(
+            LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
+        )
+        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
+            adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
+        )
+        self.init_RTC(hardware_key="RTC")
+        self.init_SDCard(hardware_key="SD Card")
+        self.init_neopixel(hardware_key="NEOPIX")
+        self.init_TCA_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
