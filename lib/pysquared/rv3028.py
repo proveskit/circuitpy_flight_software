@@ -102,6 +102,15 @@ class RV3028:
         )
         self._write_register(self.MINUTES, data)
 
+    def is_alarm_triggered(self):
+        """
+        Check if the Alarm Flag (AF) is set in the Status Register.
+
+        :return: True if AF is set, False otherwise
+        """
+        status = self._read_register(self.STATUS)[0]
+        return bool(status & 0x08)  # Check AF (bit 3)
+
     def enable_trickle_charger(self, resistance=3000):
         control1 = self._read_register(self.CONTROL1)[0]
         control1 |= 0x20  # Set TCE (Trickle Charge Enable) bit
