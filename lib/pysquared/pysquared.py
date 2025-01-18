@@ -231,9 +231,13 @@ class Satellite:
         # segment below scans the I2C address where the TCA device SHOULD be, and if it doesn't find it, it won't try to initialize
         # it in the first place. This code is not needed when flying the satellite and can be removed.
         TCA_ADDR: int = 0x77
-        if self.debug and not self.i2c1.probe(TCA_ADDR):
-            self.error_print("[ERROR][TCA] No device at the TCA address found.")
-            return
+        if self.debug:
+            self.i2c1.try_lock()
+            if TCA_ADDR not in self.i2c1.scan():
+                self.error_print("[ERROR][TCA] No device at the TCA address found.")
+                self.i2c1.unlock()
+                return
+            self.i2c1.unlock()
 
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
@@ -450,7 +454,7 @@ class Satellite:
         self.init_RTC(hardware_key="RTC")
         self.init_SDCard(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
-        # self.init_TCA_multiplexer(hardware_key="TCA")
+        self.init_TCA_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
@@ -646,7 +650,11 @@ class Satellite:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @time.setter
-    def time(self, hours: int, minutes: int, seconds: int) -> None:
+    def time(self, hms: tuple[int, int, int]) -> None:
+        """
+        Arg: hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
+        """
+        hours, minutes, seconds = hms
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_time(hours, minutes, seconds)
@@ -665,7 +673,11 @@ class Satellite:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @date.setter
-    def date(self, year: int, month: int, date: int, weekday: int) -> None:
+    def date(self, ymdw: tuple[int, int, int, int]) -> None:
+        """
+        Arg: ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
+        """
+        year, month, date, weekday = ymdw
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_date(year, month, date, weekday)
