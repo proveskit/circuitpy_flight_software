@@ -1,6 +1,6 @@
 import pytest
 
-import lib.pysquared.nvm.bitflags as bitflags
+from lib.pysquared.nvm.flag import Flag
 from mocks.circuitpython.byte_array import ByteArray
 
 
@@ -10,14 +10,14 @@ def setup_datastore():
 
 
 def test_init(setup_datastore):
-    flag = bitflags.bitFlag(16, 0, setup_datastore)  # Example flag for softboot
+    flag = Flag(16, 0, setup_datastore)  # Example flag for softboot
     assert flag._index == 16  # Check if _index (index of byte array) is set to 16
     assert flag._bit == 0  # Check if _bit (bit position) is set to first index of byte
     assert flag._bit_mask == 0b00000001  # Check if _bit_mask is set correctly
 
 
 def test_get(setup_datastore):
-    flag = bitflags.bitFlag(16, 1, setup_datastore)  # Example flag for solar
+    flag = Flag(16, 1, setup_datastore)  # Example flag for solar
     assert setup_datastore[16] == 0b00000000
     assert not flag.get()  # Bit should be 0 by default
 
@@ -26,7 +26,7 @@ def test_get(setup_datastore):
 
 
 def test_toggle(setup_datastore):
-    flag = bitflags.bitFlag(16, 2, setup_datastore)  # Example flag for burnarm
+    flag = Flag(16, 2, setup_datastore)  # Example flag for burnarm
     assert setup_datastore[16] == 0b00000000
     flag.toggle(False)  # Set flag to off (bit to 0)
     assert setup_datastore[16] == 0b00000000
@@ -46,12 +46,12 @@ def test_toggle(setup_datastore):
 
 
 def test_edge_cases(setup_datastore):
-    first_bit = bitflags.bitFlag(0, 0, setup_datastore)
+    first_bit = Flag(0, 0, setup_datastore)
     first_bit.toggle(True)
     assert setup_datastore[0] == 0b00000001
     assert first_bit.get()
 
-    last_bit = bitflags.bitFlag(0, 7, setup_datastore)
+    last_bit = Flag(0, 7, setup_datastore)
     last_bit.toggle(True)
     assert setup_datastore[0] == 0b10000001
     assert last_bit.get()
