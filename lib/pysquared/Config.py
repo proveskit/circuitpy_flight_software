@@ -50,17 +50,29 @@ class Config:
     Categorized setter functions
     """
 
-    def setStrValue(self, key: str, strValue: str) -> None:
-        self._config[key] = strValue
+    def setStr(self, key: str, value: str) -> None:
+        """Sets the string value in the config dictionary
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[key] = value
 
-    def setIntValue(self, key: str, intValue: int) -> None:
-        self._config[key] = intValue
+    def setInt(self, key: str, value: int) -> None:
+        """Sets the string value in the config dictionary
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[key] = value
 
-    def setFloatValue(self, key: str, floatValue: float) -> None:
-        self._config[key] = floatValue
+    def setFloat(self, key: str, value: float) -> None:
+        """Sets the string value in the config dictionary
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[key] = value
 
-    def setBoolValue(self, key: str, boolValue: bool) -> None:
-        self._config[key] = boolValue
+    def setBool(self, key: str, value: bool) -> None:
+        """Sets the string value in the config dictionary
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[key] = value
 
     """
     Categorized saver functions
