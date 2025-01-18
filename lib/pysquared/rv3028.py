@@ -111,6 +111,14 @@ class RV3028:
         status = self._read_register(self.STATUS)[0]
         return bool(status & 0x08)  # Check AF (bit 3)
 
+    def clear_alarm_flag(self):
+        """
+        Clear the Alarm Flag (AF) in the Status Register.
+        """
+        status = self._read_register(self.STATUS)[0]
+        status &= ~0x08  # Clear AF (bit 3)
+        self._write_register(self.STATUS, bytes([status]))
+
     def enable_trickle_charger(self, resistance=3000):
         control1 = self._read_register(self.CONTROL1)[0]
         control1 |= 0x20  # Set TCE (Trickle Charge Enable) bit

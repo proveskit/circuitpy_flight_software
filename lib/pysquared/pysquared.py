@@ -710,6 +710,12 @@ class Satellite:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
             return False
 
+    def clear_alarm(self) -> None:
+        try:
+            self.rtc.clear_alarm_flag()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+
     """
     Maintenence Functions
     """
