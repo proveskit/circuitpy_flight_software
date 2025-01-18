@@ -226,9 +226,18 @@ class Satellite:
 
     @safe_init()
     def init_TCA_multiplexer(self, hardware_key: str) -> None:
+        # The TCA multiplexer is not present on the FC board, so when testing code with no batt board attached, the TCA instance is
+        # created, but when it is written to via I2C, it locks the I2C bus, and never unlocks it. For testing purposes, the code
+        # segment below scans the I2C address where the TCA device SHOULD be, and if it doesn't find it, it won't try to initialize
+        # it in the first place. This code is not needed when flying the satellite and can be removed.
+        TCA_ADDR: int = 0x77
+        if self.debug and not self.i2c1.probe(TCA_ADDR):
+            self.error_print("[ERROR][TCA] No device at the TCA address found.")
+            return
+
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
-                self.i2c1, address=int(0x77)
+                self.i2c1, address=int(TCA_ADDR)
             )
         except OSError:
             self.error_print(
@@ -441,7 +450,7 @@ class Satellite:
         self.init_RTC(hardware_key="RTC")
         self.init_SDCard(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
-        self.init_TCA_multiplexer(hardware_key="TCA")
+        # self.init_TCA_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
