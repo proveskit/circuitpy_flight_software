@@ -7,7 +7,7 @@ help: ## Display this help.
 
 ##@ Development
 
-ACTIVATE_VENV := . venv/bin/activate;
+ACTIVATE_VENV := . venv/Scripts/activate;
 BOARD_MOUNT_POINT ?= /Volumes/PYSQUARED
 
 venv:
@@ -36,8 +36,8 @@ test: venv ## Run tests
 	$(ACTIVATE_VENV) python3 -m pytest tests/unit
 
 .PHONY: install
-install: build ## Install the project onto a connected PROVES Kit use `BOARD_MOUNT_POINT` to specify the mount point
-	rsync -avh artifacts/proves/ $(BOARD_MOUNT_POINT) --delete
+install: ## Install the project onto a connected PROVES Kit use `BOARD_MOUNT_POINT` to specify the mount point
+	$(call rsync_to_dest, $(BOARD_MOUNT_POINT))
 
 .PHONY: clean
 clean: ## Remove all gitignored files such as downloaded libraries and artifacts
@@ -48,10 +48,11 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 .PHONY: build
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
-	@rm -rf artifacts/proves/
 	@mkdir -p artifacts/proves
-	@cp config.json artifacts/proves/
-	@cp ./*.py artifacts/proves/
-	@find ./lib -type d -name '__pycache__' -prune -o -type f -print | cpio -pdm artifacts/proves/
+	$(call rsync_to_dest, , artifacts/proves/)
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
+
+define rsync_to_dest
+	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(2) --delete
+endef
