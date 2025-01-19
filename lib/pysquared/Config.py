@@ -10,8 +10,6 @@ saver functions. Following the FPrime model.
 
 import json
 
-import lib.pysquared.commandsConfig as commandsConfig
-
 
 class Config:
     """
@@ -34,7 +32,7 @@ class Config:
 
     def getInt(self, key: str) -> int:
         """Gets an int value from the config dictionary"""
-         return self._config[key]
+        return self._config[key]
 
     def getFloat(self, key: str) -> float:
         """Gets a float value from the config dictionary"""
@@ -47,9 +45,6 @@ class Config:
     def getList(self, key: str) -> list[str]:
         """Gets a list value from the config dictionary"""
         return self._config[key]
-
-    def getCommands(self) -> dict:
-        return commandsConfig.commands
 
     """
     Categorized setter functions

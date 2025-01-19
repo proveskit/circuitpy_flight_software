@@ -10,7 +10,15 @@ class cdh:
     """
 
     def __init__(self, Config: Config) -> None:
-        self._commands: dict = Config.getCommands()
+        self._commands: dict = {
+            b"\x8eb": "noop",
+            b"\xd4\x9f": "hreset",
+            b"\x12\x06": "shutdown",
+            b"8\x93": "query",
+            b"\x96\xa2": "exec_cmd",
+            b"\xa5\xb4": "joke_reply",
+            b"\x56\xc4": "FSK",
+        }
         self._jokereply: list[str] = Config.getListValue("jokereply")
         self._super_secret_code: str = Config.getStrValue("super_secret_code").encode(
             "utf-8"
