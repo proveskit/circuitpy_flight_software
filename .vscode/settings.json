@@ -1,4 +1,5 @@
 {
+    "files.eol": "\n",
     "python.testing.pytestArgs": [
         "tests/unit"
     ],

@@ -7,8 +7,11 @@ help: ## Display this help.
 
 ##@ Development
 
+ifeq ($(OS),Windows_NT)
 ACTIVATE_VENV := . venv/Scripts/activate;
-BOARD_MOUNT_POINT ?= /Volumes/PYSQUARED
+else
+ACTIVATE_VENV := . venv/bin/activate;
+endif
 
 venv:
 	@echo "Creating virtual environment..."
@@ -35,6 +38,8 @@ fmt: pre-commit-install ## Lint and format files
 test: venv ## Run tests
 	$(ACTIVATE_VENV) python3 -m pytest tests/unit
 
+BOARD_MOUNT_POINT ?= ""
+
 .PHONY: install
 install: ## Install the project onto a connected PROVES Kit use `BOARD_MOUNT_POINT` to specify the mount point
 	$(call rsync_to_dest,$(BOARD_MOUNT_POINT))
@@ -54,5 +59,9 @@ build: download-libraries ## Build the project, store the result in the artifact
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
 
 define rsync_to_dest
+	@if [ -z "$(1)" ]; then \
+		echo "Issue with Make target, rsync destination is not specified. Stopping."; \
+		exit 1; \
+	fi
 	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete
 endef
