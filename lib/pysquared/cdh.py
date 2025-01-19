@@ -19,11 +19,11 @@ class cdh:
             b"\xa5\xb4": "joke_reply",
             b"\x56\xc4": "FSK",
         }
-        self._jokereply: list[str] = Config.getListValue("jokereply")
-        self._super_secret_code: str = Config.getStrValue("super_secret_code").encode(
+        self._jokereply: list[str] = Config.getList("jokereply")
+        self._super_secret_code: str = Config.getStr("super_secret_code").encode(
             "utf-8"
         )
-        self._repeat_code: str = Config.getStrValue("repeat_code").encode("utf-8")
+        self._repeat_code: str = Config.getStr("repeat_code").encode("utf-8")
         print(f"Super secret code is: {self._super_secret_code}")
 
     ############### hot start helper ###############

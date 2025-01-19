@@ -99,32 +99,28 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = Config.getBoolValue("debug")
-        self.legacy: bool = Config.getBoolValue("legacy")
-        self.heating: bool = Config.getBoolValue("heating")
-        self.orpheus: bool = Config.getBoolValue("orpheus")  # maybe change var name
-        self.is_licensed: bool = Config.getBoolValue("is_licensed")
+        self.debug: bool = Config.getBool("debug")
+        self.legacy: bool = Config.getBool("legacy")
+        self.heating: bool = Config.getBool("heating")
+        self.orpheus: bool = Config.getBool("orpheus")  # maybe change var name
+        self.is_licensed: bool = Config.getBool("is_licensed")
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = Config.getIntValue("NORMAL_TEMP")
-        self.NORMAL_BATT_TEMP: int = Config.getIntValue("NORMAL_BATT_TEMP")
-        self.NORMAL_MICRO_TEMP: int = Config.getIntValue("NORMAL_MICRO_TEMP")
-        self.NORMAL_CHARGE_CURRENT: float = Config.getFloatValue(
-            "NORMAL_CHARGE_CURRENT"
-        )
-        self.NORMAL_BATTERY_VOLTAGE: float = Config.getFloatValue(
-            "NORMAL_BATTERY_VOLTAGE"
-        )
-        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getFloatValue(
+        self.NORMAL_TEMP: int = Config.getInt("NORMAL_TEMP")
+        self.NORMAL_BATT_TEMP: int = Config.getInt("NORMAL_BATT_TEMP")
+        self.NORMAL_MICRO_TEMP: int = Config.getInt("NORMAL_MICRO_TEMP")
+        self.NORMAL_CHARGE_CURRENT: float = Config.getFloat("NORMAL_CHARGE_CURRENT")
+        self.NORMAL_BATTERY_VOLTAGE: float = Config.getFloat("NORMAL_BATTERY_VOLTAGE")
+        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getFloat(
             "CRITICAL_BATTERY_VOLTAGE"
         )
-        self.vlowbatt: float = Config.getFloatValue("vlowbatt")
-        self.battery_voltage: float = Config.getFloatValue("battery_voltage")
-        self.current_draw: float = Config.getFloatValue("current_draw")
-        self.REBOOT_TIME: int = Config.getIntValue("REBOOT_TIME")
-        self.turbo_clock: bool = Config.getBoolValue("turbo_clock")
+        self.vlowbatt: float = Config.getFloat("vlowbatt")
+        self.battery_voltage: float = Config.getFloat("battery_voltage")
+        self.current_draw: float = Config.getFloat("current_draw")
+        self.REBOOT_TIME: int = Config.getInt("REBOOT_TIME")
+        self.turbo_clock: bool = Config.getBool("turbo_clock")
 
         """
         Setting up data buffers

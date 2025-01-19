@@ -42,18 +42,18 @@ class functions:
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
         self.config: Config = Config
-        self.cubesatName: str = Config.getStrValue("cubesatName")
+        self.cubesatName: str = Config.getStr("cubesatName")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = Config.getListValue("jokes")
-        self.last_battery_temp: float = Config.getFloatValue("last_battery_temp")
-        self.sleep_duration: int = Config.getIntValue("sleep_duration")
-        self.callsign: str = Config.getStrValue("callsign")
+        self.jokes: list[str] = Config.getList("jokes")
+        self.last_battery_temp: float = Config.getFloat("last_battery_temp")
+        self.sleep_duration: int = Config.getInt("sleep_duration")
+        self.callsign: str = Config.getStr("callsign")
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = Config.getBoolValue("detumble_enable_z")
-        self.detumble_enable_x: bool = Config.getBoolValue("detumble_enable_x")
-        self.detumble_enable_y: bool = Config.getBoolValue("detumble_enable_y")
+        self.detumble_enable_z: bool = Config.getBool("detumble_enable_z")
+        self.detumble_enable_x: bool = Config.getBool("detumble_enable_x")
+        self.detumble_enable_y: bool = Config.getBool("detumble_enable_y")
 
     """
     Satellite Management Functions
