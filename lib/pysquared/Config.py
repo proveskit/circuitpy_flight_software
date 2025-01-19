@@ -28,20 +28,25 @@ class Config:
     Categorized getter functions
     """
 
-    def getStrValue(self, strVariable: str) -> str:
-        return self._config[strVariable]
+    def getStr(self, key: str) -> str:
+        """Gets a string value from the config dictionary"""
+        return self._config[key]
 
-    def getIntValue(self, intVariable: str) -> int:
-        return self._config[intVariable]
+    def getInt(self, key: str) -> int:
+        """Gets an int value from the config dictionary"""
+         return self._config[key]
 
-    def getFloatValue(self, floatVariable: str) -> float:
-        return self._config[floatVariable]
+    def getFloat(self, key: str) -> float:
+        """Gets a float value from the config dictionary"""
+        return self._config[key]
 
-    def getBoolValue(self, boolVariable: str) -> bool:
-        return self._config[boolVariable]
+    def getBool(self, key: str) -> bool:
+        """Gets a bool value from the config dictionary"""
+        return self._config[key]
 
-    def getListValue(self, listVariable: str) -> list[str]:
-        return self._config[listVariable]
+    def getList(self, key: str) -> list[str]:
+        """Gets a list value from the config dictionary"""
+        return self._config[key]
 
     def getCommands(self) -> dict:
         return commandsConfig.commands
