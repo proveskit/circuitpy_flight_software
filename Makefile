@@ -37,7 +37,7 @@ test: venv ## Run tests
 
 .PHONY: install
 install: ## Install the project onto a connected PROVES Kit use `BOARD_MOUNT_POINT` to specify the mount point
-	$(call rsync_to_dest, $(BOARD_MOUNT_POINT))
+	$(call rsync_to_dest,$(BOARD_MOUNT_POINT))
 
 .PHONY: clean
 clean: ## Remove all gitignored files such as downloaded libraries and artifacts
@@ -49,10 +49,10 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
 	@mkdir -p artifacts/proves
-	$(call rsync_to_dest, , artifacts/proves/)
+	$(call rsync_to_dest,artifacts/proves/)
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
 
 define rsync_to_dest
-	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(2) --delete
+	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete
 endef
