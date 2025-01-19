@@ -35,6 +35,13 @@ from pysquared_eps import cubesat as c
 # Development Getting Started
 We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
+## Windows setup
+
+- Install Git to install Git Bash
+- Install Chocolatey
+- `choco install make rsync zip`
+- `make install BOARD_MOUNT_POINT=/d/`
+
 We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to run
 ```sh
 make
