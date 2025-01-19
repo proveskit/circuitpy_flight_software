@@ -8,10 +8,14 @@ help: ## Display this help.
 ##@ Development
 
 ifeq ($(OS),Windows_NT)
-ACTIVATE_VENV := . venv/Scripts/activate;
+BIN_DIR := venv/Scripts
+PYTHON := $(BIN_DIR)/python.exe
 else
-ACTIVATE_VENV := . venv/bin/activate;
+BIN_DIR := venv/bin
+PYTHON := $(BIN_DIR)/python
 endif
+
+ACTIVATE_VENV := . $(BIN_DIR)/activate;
 
 venv:
 	@echo "Creating virtual environment..."
@@ -36,7 +40,7 @@ fmt: pre-commit-install ## Lint and format files
 
 .PHONY: test
 test: venv ## Run tests
-	$(ACTIVATE_VENV) python3 -m pytest tests/unit
+	$(ACTIVATE_VENV) $(PYTHON) -m pytest tests/unit
 
 BOARD_MOUNT_POINT ?= ""
 
