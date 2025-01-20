@@ -23,6 +23,9 @@ There is more information in the OS specific guides on how to find your board's 
 
 To see the output of your code you can connect to the board using the serial console. You can find more information on how to do that in the OS specific guides.
 
+### Notes on Serial Console
+If all you see is a blank screen when you connect to the serial console, try pressing `CTRL+C` to see if you can get a prompt. If that doesn't work, try pressing `CTRL+D` to reset the board.
+
 ## Continuous Integration (CI)
 This repo has a continuous integration system using Github Actions. Anytime you push code to the repo, it will run a series of tests. If you see a failure in the CI, you can click on the details to see what went wrong.
 
