@@ -7,8 +7,15 @@ help: ## Display this help.
 
 ##@ Development
 
-ACTIVATE_VENV := . venv/bin/activate;
-BOARD_MOUNT_POINT ?= /Volumes/PYSQUARED
+ifeq ($(OS),Windows_NT)
+BIN_DIR := venv/Scripts
+PYTHON := $(BIN_DIR)/python.exe
+else
+BIN_DIR := venv/bin
+PYTHON := $(BIN_DIR)/python
+endif
+
+ACTIVATE_VENV := . $(BIN_DIR)/activate;
 
 venv:
 	@echo "Creating virtual environment..."
@@ -33,11 +40,18 @@ fmt: pre-commit-install ## Lint and format files
 
 .PHONY: test
 test: venv ## Run tests
-	$(ACTIVATE_VENV) python3 -m pytest tests/unit
+	$(ACTIVATE_VENV) $(PYTHON) -m pytest tests/unit
+
+BOARD_MOUNT_POINT ?= ""
 
 .PHONY: install
-install: build ## Install the project onto a connected PROVES Kit use `BOARD_MOUNT_POINT` to specify the mount point
-	rsync -avh artifacts/proves/ $(BOARD_MOUNT_POINT) --delete
+install: build ## Install the project onto a connected PROVES Kit use `make install BOARD_MOUNT_POINT=/my_board_destination/` to specify the mount point
+ifeq ($(OS),Windows_NT)
+	rm -rf $(BOARD_MOUNT_POINT)
+	cp -r artifacts/proves/* $(BOARD_MOUNT_POINT)
+else
+	$(call rsync_to_dest,$(BOARD_MOUNT_POINT))
+endif
 
 .PHONY: clean
 clean: ## Remove all gitignored files such as downloaded libraries and artifacts
@@ -48,10 +62,15 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 .PHONY: build
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
-	@rm -rf artifacts/proves/
 	@mkdir -p artifacts/proves
-	@cp config.json artifacts/proves/
-	@cp ./*.py artifacts/proves/
-	@find ./lib -type d -name '__pycache__' -prune -o -type f -print | cpio -pdm artifacts/proves/
+	$(call rsync_to_dest,artifacts/proves/)
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
+
+define rsync_to_dest
+	@if [ -z "$(1)" ]; then \
+		echo "Issue with Make target, rsync destination is not specified. Stopping."; \
+		exit 1; \
+	fi
+	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete
+endef
