@@ -9,8 +9,9 @@ To set up your development environment on Windows, follow these steps:
 
 1. **Install Python**: Download and install Python from the [Microsoft Store](https://apps.microsoft.com/detail/9pjpw5ldxlz5).
 2. **Install Git**: Download and install Git from [git-scm.com](https://git-scm.com/downloads). Make sure to also install the Git Bash terminal during the setup process.
-3. **Install Chocolatey**: Chocolatey is a package manager for Windows. Follow the instructions on [chocolatey.org](https://chocolatey.org/install) to install it.
-4. **Install Required Packages**: Open a command prompt or Git Bash terminal and run the following command to install required packages:
+3. **Install Putty**: Download and install Putty from [putty.org](https://putty.org/).
+4. **Install Chocolatey**: Chocolatey is a package manager for Windows. Follow the instructions on [chocolatey.org](https://chocolatey.org/install) to install it.
+5. **Install Required Packages**: Open a command prompt or Git Bash terminal and run the following command to install required packages:
     ```sh
     choco install make rsync zip
     ```
@@ -53,3 +54,6 @@ And your install command will look like:
 ```sh
 make install BOARD_MOUNT_POINT=/mnt/d/
 ```
+
+## Accessing the Serial Console
+To see streaming logs and use the on-board repl you must access the Circuit Python serial console. For information on how to access the serial console, visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-windows).

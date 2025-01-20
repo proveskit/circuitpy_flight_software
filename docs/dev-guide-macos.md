@@ -8,6 +8,11 @@ To get started with development on MacOS, follow these steps:
     ```sh
     xcode-select --install
     ```
+1. **Install Homebrew**: Homebrew is a package manager for MacOS. Follow the instructions on [brew.sh](https://brew.sh/) to install it.
+1. **Install Required Packages**: Open a terminal and run the following command to install required packages:
+    ```sh
+    brew install screen
+    ```
 
 You should now be able to run the `make` command in the root of the repo to get started.
 
@@ -23,3 +28,15 @@ For example, if the board is mounted at `/Volumes/PYSQUARED/` then your install 
 ```sh
 make install BOARD_MOUNT_POINT=/Volumes/PYSQUARED/
 ```
+
+## Accessing the Serial Console
+To see streaming logs and use the on-board repl you must access the Circuit Python serial console. Accessing the serial console starts with finding the tty port for the board. The easiest way to do that is by plugging in your board and running:
+```sh
+ls -lah /dev
+```
+Look for the file that was created around the same time that you plugged in the board. For Mac users the port typically looks like `/dev/tty.usbmodem101`. You can then connect to the board using the `screen` command:
+```sh
+screen /dev/tty.usbmodem101
+```
+
+For more information visit the [Circuit Python Serial Console documentation](https://learn.adafruit.com/welcome-to-circuitpython/advanced-serial-console-on-mac-and-linux).

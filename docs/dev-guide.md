@@ -21,6 +21,8 @@ make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
 
 There is more information in the OS specific guides on how to find your board's mount point.
 
+To see the output of your code you can connect to the board using the serial console. You can find more information on how to do that in the OS specific guides.
+
 ## Continuous Integration (CI)
 This repo has a continuous integration system using Github Actions. Anytime you push code to the repo, it will run a series of tests. If you see a failure in the CI, you can click on the details to see what went wrong.
 
