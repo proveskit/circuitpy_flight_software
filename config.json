@@ -43,7 +43,6 @@
         "Woah is that the Launcher Orbiter?????",
         "Everything in life is a spring if you think hard enough!"
     ],
-
 "debug": true,
 "legacy": false,
 "heating": false,
@@ -60,7 +59,6 @@
 "current_draw": 255,
 "REBOOT_TIME": 3600,
 "turbo_clock": false,
-
 "super_secret_code": "ABCD",
 "repeat_code": "RP",
 "jokereply": [
