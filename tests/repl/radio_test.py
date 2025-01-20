@@ -259,9 +259,12 @@ class RadioTest:
 
         while True:
             if device_selection == "A":
+                self.number_of_attempts += 1
+                if self.number_of_attempts >= 5:
+                    print("Too many attempts. Quitting.")
+                    break
                 time.sleep(1)
                 self.device_under_test(self.number_of_attempts)
-                self.number_of_attempts += 1
             elif device_selection == "B":
                 time.sleep(1)
                 self.receiver()
