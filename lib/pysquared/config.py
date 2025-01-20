@@ -74,19 +74,40 @@ class Config:
         """
         self._config[key] = value
 
+    def setList(self, key: str, value: str) -> None:
+        """Sets the string value from a list inside of the config dictionary
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[key].append(value)
+
     """
     Categorized saver functions
     """
 
+    def saveStrValue(self, key: str, strValue: str) -> None:
+        """Saves the string value to config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass
 
-#    def saveStrValue(self, key: str, strValue: str) -> None:
-# add logic to write back to config
+    def saveIntValue(self, key: str, intValue: int) -> None:
+        """Saves the int value to config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass
 
-#    def saveIntValue(self, key: str, intValue: int) -> None:
-# add logic to write back to config
+    def saveFloatValue(self, key: str, floatValue: float) -> None:
+        """Saves the float value to config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass
 
-#    def saveFloatValue(self, key: str, floatValue: float) -> None:
-# add logic to write back to config
-
-#    def saveBoolValue(self, key: str, boolValue: bool) -> None:
-# add logic to write back to config
+    def saveBoolValue(self, key: str, boolValue: bool) -> None:
+        """Saves the bool value to config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass

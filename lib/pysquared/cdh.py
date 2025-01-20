@@ -29,11 +29,11 @@ class cdh:
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat, msg) -> None:
         # try
-        try:
-            cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
-            cubesat.radio1.destination = cubesat.cfg["gs"]  # target gs radiohead ID
-        except Exception:
-            pass
+        # try:
+        #    cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
+        #    cubesat.radio1.destination = cubesat.cfg["gs"]  # target gs radiohead ID
+        # except Exception:
+        #    pass
         # check that message is for me
         if msg[0] == cubesat.radio1.node:
             # TODO check for optional radio config
