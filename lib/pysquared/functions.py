@@ -13,7 +13,7 @@ import traceback
 import alarm
 
 from lib.pysquared.battery_helper import BatteryHelper
-from lib.pysquared.Config import Config
+from lib.pysquared.config import Config
 from lib.pysquared.debugcolor import co
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
@@ -41,19 +41,19 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        self.config: Config = Config
-        self.cubesatName: str = Config.getStr("cubesatName")
+        self.config: Config = config
+        self.cubesatName: str = config.getStr("cubesatName")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = Config.getList("jokes")
-        self.last_battery_temp: float = Config.getFloat("last_battery_temp")
-        self.sleep_duration: int = Config.getInt("sleep_duration")
-        self.callsign: str = Config.getStr("callsign")
+        self.jokes: list[str] = config.getList("jokes")
+        self.last_battery_temp: float = config.getFloat("last_battery_temp")
+        self.sleep_duration: int = config.getInt("sleep_duration")
+        self.callsign: str = config.getStr("callsign")
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = Config.getBool("detumble_enable_z")
-        self.detumble_enable_x: bool = Config.getBool("detumble_enable_x")
-        self.detumble_enable_y: bool = Config.getBool("detumble_enable_y")
+        self.detumble_enable_z: bool = config.getBool("detumble_enable_z")
+        self.detumble_enable_x: bool = config.getBool("detumble_enable_x")
+        self.detumble_enable_y: bool = config.getBool("detumble_enable_y")
 
     """
     Satellite Management Functions

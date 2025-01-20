@@ -32,7 +32,7 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 # Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.bitflags import bitFlag, multiBitFlag
-from lib.pysquared.Config import Config  # Configs
+from lib.pysquared.config import Config  # Configs
 from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
@@ -92,33 +92,33 @@ class Satellite:
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def __init__(self, Config: Config) -> None:  # Config Object
-        self.cubesatName: str = Config.getStr("cubesatName")  # used once
+    def __init__(self, config: Config) -> None:  # Config Object
+        self.cubesatName: str = config.getStr("cubesatName")  # used once
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = Config.getBool("debug")
-        self.legacy: bool = Config.getBool("legacy")
-        self.heating: bool = Config.getBool("heating")
-        self.orpheus: bool = Config.getBool("orpheus")  # maybe change var name
-        self.is_licensed: bool = Config.getBool("is_licensed")
+        self.debug: bool = config.getBool("debug")
+        self.legacy: bool = config.getBool("legacy")
+        self.heating: bool = config.getBool("heating")
+        self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
+        self.is_licensed: bool = config.getBool("is_licensed")
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = Config.getInt("NORMAL_TEMP")
-        self.NORMAL_BATT_TEMP: int = Config.getInt("NORMAL_BATT_TEMP")
-        self.NORMAL_MICRO_TEMP: int = Config.getInt("NORMAL_MICRO_TEMP")
-        self.NORMAL_CHARGE_CURRENT: float = Config.getFloat("NORMAL_CHARGE_CURRENT")
-        self.NORMAL_BATTERY_VOLTAGE: float = Config.getFloat("NORMAL_BATTERY_VOLTAGE")
-        self.CRITICAL_BATTERY_VOLTAGE: float = Config.getFloat(
+        self.NORMAL_TEMP: int = config.getInt("NORMAL_TEMP")
+        self.NORMAL_BATT_TEMP: int = config.getInt("NORMAL_BATT_TEMP")
+        self.NORMAL_MICRO_TEMP: int = config.getInt("NORMAL_MICRO_TEMP")
+        self.NORMAL_CHARGE_CURRENT: float = config.getFloat("NORMAL_CHARGE_CURRENT")
+        self.NORMAL_BATTERY_VOLTAGE: float = config.getFloat("NORMAL_BATTERY_VOLTAGE")
+        self.CRITICAL_BATTERY_VOLTAGE: float = config.getFloat(
             "CRITICAL_BATTERY_VOLTAGE"
         )
-        self.vlowbatt: float = Config.getFloat("vlowbatt")
-        self.battery_voltage: float = Config.getFloat("battery_voltage")
-        self.current_draw: float = Config.getFloat("current_draw")
-        self.REBOOT_TIME: int = Config.getInt("REBOOT_TIME")
-        self.turbo_clock: bool = Config.getBool("turbo_clock")
+        self.vlowbatt: float = config.getFloat("vlowbatt")
+        self.battery_voltage: float = config.getFloat("battery_voltage")
+        self.current_draw: float = config.getFloat("current_draw")
+        self.REBOOT_TIME: int = config.getInt("REBOOT_TIME")
+        self.turbo_clock: bool = config.getBool("turbo_clock")
 
         """
         Setting up data buffers

@@ -1,7 +1,7 @@
 import random
 import time
 
-from lib.pysquared.Config import Config
+from lib.pysquared.config import Config
 
 
 class cdh:
@@ -9,7 +9,7 @@ class cdh:
     Constructor
     """
 
-    def __init__(self, Config: Config) -> None:
+    def __init__(self, config: Config) -> None:
         self._commands: dict = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
@@ -19,11 +19,11 @@ class cdh:
             b"\xa5\xb4": "joke_reply",
             b"\x56\xc4": "FSK",
         }
-        self._jokereply: list[str] = Config.getList("jokereply")
-        self._super_secret_code: str = Config.getStr("super_secret_code").encode(
+        self._jokereply: list[str] = config.getList("jokereply")
+        self._super_secret_code: str = config.getStr("super_secret_code").encode(
             "utf-8"
         )
-        self._repeat_code: str = Config.getStr("repeat_code").encode("utf-8")
+        self._repeat_code: str = config.getStr("repeat_code").encode("utf-8")
         print(f"Super secret code is: {self._super_secret_code}")
 
     ############### hot start helper ###############
