@@ -499,17 +499,24 @@ class Satellite:
             return
 
         try:
-            self.debug_print(f"Channel {channel}:")
             addresses: list[int] = self.tca[channel].scan()
             valid_addresses: list[int] = [
                 addr for addr in addresses if addr not in [0x00, 0x19, 0x1E, 0x6B, 0x77]
             ]
 
             if not valid_addresses and 0x77 in addresses:
-                self.error_print(f"No Devices Found on {channel_to_face[channel]}.")
+                self.logger.error(
+                    filename=filename,
+                    channel=channel,
+                    message=f"No Devices Found on {channel_to_face[channel]}.",
+                )
                 self.hardware[channel_to_face[channel]] = False
             else:
-                self.debug_print([hex(addr) for addr in valid_addresses])
+                self.logger.debug(
+                    filename=filename,
+                    channel=channel,
+                    valid_addresses=[hex(addr) for addr in valid_addresses],
+                )
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
