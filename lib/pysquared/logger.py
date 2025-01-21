@@ -1,17 +1,11 @@
 import json
 import time
 
-# from adafruit_blinka import Enum
 import adafruit_logging as logging
-
-# class DebugMode(Enum):
-# PRINTMODE = False
-# DEBUGMODE = True
 
 
 class Logger:
     def __init__(self):
-        # self.debugmode = DebugMode.DEBUGMODE
         self.internal_logger = logging.getLogger("logger")
         self.internal_logger.setLevel(logging.DEBUG)
         self.logToFile = False
