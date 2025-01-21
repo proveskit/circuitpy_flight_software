@@ -8,7 +8,6 @@ Library Repo:
 """
 
 # Common CircuitPython Libs
-import json
 import sys
 import time
 import traceback
@@ -33,6 +32,7 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 # Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.bitflags import bitFlag, multiBitFlag
+from lib.pysquared.config import Config  # Configs
 from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
@@ -92,45 +92,33 @@ class Satellite:
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def __init__(self) -> None:
-        # parses json & assigns data to variables
-        with open("config.json", "r") as f:
-            json_data = f.read()
-        config = json.loads(json_data)
-
+    def __init__(self, config: Config) -> None:
+        self.cubesatName: str = config.getStr("cubesatName")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config["debug"]  # Define verbose output here. True or False
-        self.legacy: bool = config[
-            "legacy"
-        ]  # Define if the board is used with legacy or not
-        self.heating: bool = config["heating"]  # Currently not used
-        self.orpheus: bool = config[
-            "orpheus"
-        ]  # Define if the board is used with Orpheus or not
-        self.is_licensed: bool = config["is_licensed"]
+        self.debug: bool = config.getBool("debug")
+        self.legacy: bool = config.getBool("legacy")
+        self.heating: bool = config.getBool("heating")
+        self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
+        self.is_licensed: bool = config.getBool("is_licensed")
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = config["NORMAL_TEMP"]
-        self.NORMAL_BATT_TEMP: int = config[
-            "NORMAL_BATT_TEMP"
-        ]  # Set to 0 BEFORE FLIGHT!!!!!
-        self.NORMAL_MICRO_TEMP: int = config["NORMAL_MICRO_TEMP"]
-        self.NORMAL_CHARGE_CURRENT: float = config["NORMAL_CHARGE_CURRENT"]
-        self.NORMAL_BATTERY_VOLTAGE: float = config["NORMAL_BATTERY_VOLTAGE"]  # 6.9
-        self.CRITICAL_BATTERY_VOLTAGE: float = config["CRITICAL_BATTERY_VOLTAGE"]  # 6.6
-        self.vlowbatt: float = config["vlowbatt"]
-        self.battery_voltage: float = config[
-            "battery_voltage"
-        ]  # default value for testing REPLACE WITH REAL VALUE
-        self.current_draw: float = config[
-            "current_draw"
-        ]  # default value for testing REPLACE WITH REAL VALUE
-        self.REBOOT_TIME: int = config["REBOOT_TIME"]  # 1 hour
-        self.turbo_clock: bool = config["turbo_clock"]
+        self.NORMAL_TEMP: int = config.getInt("NORMAL_TEMP")
+        self.NORMAL_BATT_TEMP: int = config.getInt("NORMAL_BATT_TEMP")
+        self.NORMAL_MICRO_TEMP: int = config.getInt("NORMAL_MICRO_TEMP")
+        self.NORMAL_CHARGE_CURRENT: float = config.getFloat("NORMAL_CHARGE_CURRENT")
+        self.NORMAL_BATTERY_VOLTAGE: float = config.getFloat("NORMAL_BATTERY_VOLTAGE")
+        self.CRITICAL_BATTERY_VOLTAGE: float = config.getFloat(
+            "CRITICAL_BATTERY_VOLTAGE"
+        )
+        self.vlowbatt: float = config.getFloat("vlowbatt")
+        self.battery_voltage: float = config.getFloat("battery_voltage")
+        self.current_draw: float = config.getFloat("current_draw")
+        self.REBOOT_TIME: int = config.getInt("REBOOT_TIME")
+        self.turbo_clock: bool = config.getBool("turbo_clock")
 
         """
         Setting up data buffers
@@ -229,7 +217,7 @@ class Satellite:
                 self.i2c0: busio.I2C = busio.I2C(board.I2C0_SCL, board.I2C0_SDA)
                 self.hardware["I2C0"] = True
             else:
-                self.debug_print("[Orpheus] I2C0 not initialized")
+                self.debug_print(f"{self.cubesatName} I2C0 not initialized")
 
         except Exception as e:
             self.error_print(

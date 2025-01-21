@@ -12,7 +12,8 @@ import time
 
 import microcontroller
 
-import lib.pysquared.pysquared as pysquared
+from lib.pysquared.config import Config
+from lib.pysquared.pysquared import Satellite
 
 print("=" * 70)
 print("Hello World!")
@@ -27,8 +28,10 @@ try:
         print(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    print("Initializing CubeSat")
-    c = pysquared.Satellite()
+    print("Initializing Config")
+    config = Config()
+    print("Initializing Cubesat")
+    c = Satellite(config)
     c.watchdog_pet()
 
     import gc  # Garbage collection
@@ -41,7 +44,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c)
+    f = functions.functions(c, config)
 
     def initial_boot():
         c.watchdog_pet()
