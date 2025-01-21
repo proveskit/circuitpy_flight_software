@@ -4,23 +4,24 @@ except ImportError:
     pass
 
 
-class bitFlag:
+class Flag:
     """
-    get() -> bool: Check if specific bit in a specific byte (held in byte array of nvm) is on (1 -> True) or off (0 -> False)
-    toggle(value: bool) -> None: Set specific bit in a specific byte (held in byte array of nvm) to on (1) or off (0)
+    Flag class for managing boolean flags stored in non-volatile memory
     """
 
-    def __init__(self, index: int, bit: int, datastore: ByteArray) -> None:
+    def __init__(self, index: int, bit_index: int, datastore: ByteArray) -> None:
         self._index = index  # Index of specific byte in array of bytes
-        self._bit = bit  # Position of bit within specific byte
+        self._bit = bit_index  # Position of bit within specific byte
         self._datastore = datastore  # Array of bytes (Non-volatile Memory)
-        self._bit_mask = 1 << (bit % 8)  # Creating bitmask with bit position
+        self._bit_mask = 1 << bit_index  # Creating bitmask with bit position
         # Ex. bit = 3 -> 3 % 8 = 3 -> 1 << 3 = 00001000
 
-    def get(self) -> bool:  # Return if bit value/flag is on (1) or off (0)
+    def get(self) -> bool:
+        """Get flag value"""
         return bool(self._datastore[self._index] & self._bit_mask)
 
     def toggle(self, value: bool) -> None:
+        """Toggle flag value"""
         if value:
             # If true, perform OR on specific byte and bitmask to set bit to set specific bit to 1
             self._datastore[self._index] |= self._bit_mask
