@@ -23,8 +23,8 @@ class Flag:
     def toggle(self, value: bool) -> None:
         """Toggle flag value"""
         if value:
-            # If true, perform OR on specific byte and bitmask to set bit to set specific bit to 1
+            # If true, perform OR on specific byte and bitmask to set bit to 1
             self._datastore[self._index] |= self._bit_mask
         else:
-            # If false, perform AND on specific byte and inverted bitmask to set specific bit to 0
+            # If false, perform AND on specific byte and inverted bitmask to set bit to 0
             self._datastore[self._index] &= ~self._bit_mask

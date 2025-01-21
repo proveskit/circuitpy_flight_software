@@ -115,7 +115,7 @@ def hreset(cubesat):
 
 
 def FSK(cubesat):
-    cubesat.f_fsk = True
+    cubesat.f_fsk.toggle(True)
 
 
 def joke_reply(cubesat):
@@ -132,7 +132,7 @@ def shutdown(cubesat, args):
     if args == b"\x0b\xfdI\xec":
         print("valid shutdown command received")
         # set shutdown NVM bit flag
-        cubesat.f_shtdwn = True
+        cubesat.f_shtdwn.toggle(True)
 
         """
         Exercise for the user:
@@ -154,7 +154,7 @@ def shutdown(cubesat, args):
             monotonic_time=time.monotonic() + eval("1e" + str(_t))
         )  # default 1 day
         # set hot start flag right before sleeping
-        cubesat.f_hotstrt = True
+        cubesat.f_hotstrt.toggle(True)
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
 

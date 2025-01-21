@@ -186,7 +186,7 @@ class Satellite:
         )
 
         if self.f_softboot:
-            self.f_softboot = False
+            self.f_softboot.toggle(True)
 
         """
         Setting up the watchdog pin.
@@ -419,7 +419,7 @@ class Satellite:
 
         if self.f_fsk:
             self.debug_print("Next restart will be in LoRa mode.")
-            self.f_fsk = False
+            self.f_fsk.toggle(False)
 
         """
         Prints init State of PySquared Hardware

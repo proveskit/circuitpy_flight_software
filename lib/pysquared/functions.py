@@ -443,7 +443,7 @@ class functions:
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(120)
 
         self.cubesat.enable_rf.value = True
@@ -455,7 +455,7 @@ class functions:
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(600)
 
         self.cubesat.enable_rf.value = True
