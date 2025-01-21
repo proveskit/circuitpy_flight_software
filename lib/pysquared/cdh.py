@@ -4,7 +4,7 @@ import time
 from lib.pysquared.config import Config
 
 
-class cdh:
+class CommandDataHandler:
     """
     Constructor
     """
@@ -28,12 +28,6 @@ class cdh:
 
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat, msg) -> None:
-        # try
-        # try:
-        #    cubesat.radio1.node = cubesat.cfg["id"]  # this sat's radiohead ID
-        #    cubesat.radio1.destination = cubesat.cfg["gs"]  # target gs radiohead ID
-        # except Exception:
-        #    pass
         # check that message is for me
         if msg[0] == cubesat.radio1.node:
             # TODO check for optional radio config
@@ -138,7 +132,7 @@ class cdh:
         if args == b"\x0b\xfdI\xec":
             print("valid shutdown command received")
             # set shutdown NVM bit flag
-            cubesat.f_shtdwn = True
+            cubesat.f_shtdwn: bool = True
 
             """
             Exercise for the user:
@@ -160,7 +154,7 @@ class cdh:
                 monotonic_time=time.monotonic() + eval("1e" + str(_t))
             )  # default 1 day
             # set hot start flag right before sleeping
-            cubesat.f_hotstrt = True
+            cubesat.f_hotstrt: bool = True
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(cubesat, args) -> None:

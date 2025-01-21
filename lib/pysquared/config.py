@@ -84,28 +84,35 @@ class Config:
     Categorized saver functions
     """
 
-    def saveStrValue(self, key: str, strValue: str) -> None:
+    def saveStr(self, key: str, strValue: str) -> None:
         """Saves the string value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
         pass
 
-    def saveIntValue(self, key: str, intValue: int) -> None:
+    def saveInt(self, key: str, intValue: int) -> None:
         """Saves the int value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
         pass
 
-    def saveFloatValue(self, key: str, floatValue: float) -> None:
+    def saveFloat(self, key: str, floatValue: float) -> None:
         """Saves the float value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
         pass
 
-    def saveBoolValue(self, key: str, boolValue: bool) -> None:
+    def saveBool(self, key: str, boolValue: bool) -> None:
+        """Saves the bool value to config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass
+
+    def saveList(self, key: str, listValue: str) -> None:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """

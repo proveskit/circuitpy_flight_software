@@ -237,9 +237,9 @@ class functions:
     def listen(self) -> bool:
         # need to instanciate cdh to feed it the config var
         # assigned from the Config object
-        from lib.pysquared.cdh import cdh
+        from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = cdh(self.config)
+        cdh = CommandDataHandler(self.config)
 
         # This just passes the message through. Maybe add more functionality later.
         try:

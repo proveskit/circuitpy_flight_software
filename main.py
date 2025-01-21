@@ -12,7 +12,7 @@ import time
 
 import microcontroller
 
-from lib.pysquared.Config import Config
+from lib.pysquared.config import Config
 from lib.pysquared.pysquared import Satellite
 
 print("=" * 70)
@@ -44,7 +44,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c, config)  # pass config object inside here
+    f = functions.functions(c, config)
 
     def initial_boot():
         c.watchdog_pet()

@@ -92,8 +92,8 @@ class Satellite:
         if self.debug:
             print(co("[pysquared]" + str(statement), "red", "bold"))
 
-    def __init__(self, config: Config) -> None:  # Config Object
-        self.cubesatName: str = config.getStr("cubesatName")  # used once
+    def __init__(self, config: Config) -> None:
+        self.cubesatName: str = config.getStr("cubesatName")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
