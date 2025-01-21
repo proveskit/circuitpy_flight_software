@@ -47,7 +47,6 @@ class Face:
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
-                # self.debug_print("[ERROR][Temperature Sensor]" + str(e))
                 self.logger.error(
                     filename=filename, message="[Temperature Sensor]" + str(e)
                 )
@@ -59,7 +58,6 @@ class Face:
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
-                # self.debug_print("[ERROR][Light Sensor]" + str(e))
                 self.logger.error(filename=filename, message="[Light Sensor]" + str(e))
 
         if "DRV" in senlist:
@@ -69,7 +67,6 @@ class Face:
                 self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
-                # self.debug_print("[ERROR][Motor Driver]" + str(e))
                 self.logger.error(filename=filename, messagge="[Motor Driver]" + str(e))
 
         gc.collect()  # Clean up after initialization

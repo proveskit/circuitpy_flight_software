@@ -56,7 +56,6 @@ class PacketManager:
 
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size
-        # print(f"Packing data of length {len(data)} into {total_packets} packets")
         self.logger.info(
             filename=filename,
             message=f"Packing data of length {len(data)} into {total_packets} packets",
@@ -66,7 +65,6 @@ class PacketManager:
         for seq in range(total_packets):
             # Create header
             header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
-            # print(f"Created header: {[hex(b) for b in header]}")
             self.logger.info(
                 filename=filename, message=f"Created header: {[hex(b) for b in header]}"
             )
@@ -78,9 +76,6 @@ class PacketManager:
 
             # Combine header and payload
             packet = header + payload
-            # print(
-            # f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}"
-            # )
             self.logger.info(
                 filename=filename,
                 message=f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}",

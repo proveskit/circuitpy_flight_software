@@ -57,7 +57,6 @@ class BatteryHelper:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
                 if self.debug_mode:
-                    # print(f"ACK byte received: {byte}")
                     self.logger.info(
                         filename=filename, message=f"ACK byte received: {byte}"
                     )
@@ -88,7 +87,6 @@ class BatteryHelper:
         try:
             text = response.decode("utf-8")
             if self.debug_mode:
-                # print(f"Buffer: {text}")
                 self.logger.info(filename=filename, message=f"Buffer: {text}")
 
             # Check for complete message
@@ -98,7 +96,6 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            # print(f"Error decoding message: {e}")
             self.logger.error(filename=filename, message=f"Error decoding message: {e}")
 
         return ""
@@ -118,7 +115,6 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            # print(f"UART error: {e}")
             self.logger.error(filename=filename, message=f"UART error: {e}")
             return ""
 
@@ -165,13 +161,11 @@ class BatteryHelper:
 
             except Exception as e:
                 if self.debug_mode:
-                    # print(f"Error parsing metrics: {e}")
                     self.logger.error(
                         filename=filename, message=f"Error parsing metrics: {e}"
                     )
 
         if self.debug_mode:
-            # print("Failed to get valid power metrics")
             self.logger.warning(
                 filename=filename, message="Failed to get valid power metrics"
             )
@@ -271,8 +265,6 @@ class BatteryHelper:
     def debug_timing(self):
         """Measure and print timing of each step"""
 
-        # print("\nTiming analysis:")
-
         # Measure command send time
         start = time.monotonic()
         self.uart.write(bytes(self.CMD_GET_POWER.encode()))
@@ -291,18 +283,11 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                # print(f"Parse error: {e}")
                 self.logger.error(filename=filename, message=f"Parse error: {e}")
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time
         total_time = (time.monotonic() - start) * 1000
-
-        """ print(f"Send time: {send_time:.2f}ms")
-        print(f"Read time: {read_time:.2f}ms")
-        print(f"Parse time: {parse_time:.2f}ms")
-        print(f"Total time: {total_time:.2f}ms")
-        print(f"Response: {response}") """
 
         self.logger.info(
             filename=filename,

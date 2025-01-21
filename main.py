@@ -30,7 +30,6 @@ loiter_time = 5
 
 try:
     for i in range(loiter_time):
-        # print(f"Code Starting in {loiter_time-i} seconds")
         logger.info(
             filename=filename, message=f"Code Starting in {loiter_time-i} seconds"
         )
@@ -38,8 +37,6 @@ try:
 
     logger.debug(filename=filename, message="Initializing Config")
     config = Config()
-    # print("Initializing Cubesat")
-    logger.info(filename=filename, message="Initializing CubeSat")
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
@@ -53,7 +50,7 @@ try:
         if c.debug:
             print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
-    f = functions.functions(c, logger=logger, config)
+    f = functions.functions(c, logger, config)
 
     def initial_boot():
         c.watchdog_pet()
@@ -77,19 +74,17 @@ try:
             filename=filename,
             message="Error in Boot Sequence: " + "".join(traceback.format_exception(e)),
         )
-        # debug_print("Error in Boot Sequence: " + "".join(traceback.format_exception(e)))
+
     finally:
         # logger.debug("MAIN", "Something went wrong!", foo="bar")
         # NOTE: @blakejameson: the comment above shouldnt be in the finally block
         pass
 
     def send_imu():
-        # debug_print("Looking to get imu data...")
         logger.info(filename=filename, message="Looking to get imu data...")
         IMUData = []
         c.watchdog_pet(filename=filename, message="IMU has baton")
-        logger.info()
-        # debug_print("IMU has baton")
+        logger.info(filename=filename, message="IMU has baton")
         IMUData = f.get_imu_data()
         c.watchdog_pet()
         f.send(IMUData)
@@ -155,7 +150,6 @@ try:
                 f.listen()
 
     except Exception as e:
-        # debug_print("Critical in Main Loop: " + "".join(traceback.format_exception(e)))
         logger.error(
             filename=filename,
             message="Critical in Main Loop: " + "".join(traceback.format_exception(e)),
@@ -164,12 +158,10 @@ try:
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
     finally:
-        # debug_print("Going Neutral!")
         logger.info(filename=filename, message="Going Neutral!")
 
         c.RGB = (0, 0, 0)
         c.hardware["WDT"] = False
 
 except Exception as e:
-    # print(e)
     logger.error(filename=filename, message=e)

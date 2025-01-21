@@ -41,7 +41,6 @@ class functions:
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.debug: bool = cubesat.debug
         self.logger.info(filename=filename, message="Initializing Functionalities")
-        # self.debug_print("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
@@ -68,7 +67,6 @@ class functions:
         return self.cubesat.current_draw
 
     def safe_sleep(self, duration: int = 15) -> None:
-        # self.debug_print("Setting Safe Sleep Mode")
         self.logger.info(filename=filename, message="Setting Safe Sleep Mode")
 
         iterations: int = 0
@@ -85,15 +83,13 @@ class functions:
             self.cubesat.watchdog_pet()
 
     def listen_loiter(self) -> None:
-        # self.debug_print("Listening for 10 seconds")
-        self.logger.info(filename=filename, message="Listening for 10 seconds")
+        self.logger.debug(filename=filename, message="Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
-        # self.debug_print("Sleeping for 20 seconds")
-        self.logger.info(filename=filename, message="Sleeping for 20 seconds")
+        self.logger.debug(filename=filename, message="Sleeping for 20 seconds")
         self.cubesat.watchdog_pet()
         self.safe_sleep(self.sleep_duration)
         self.cubesat.watchdog_pet()
@@ -114,11 +110,9 @@ class functions:
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
-            # self.debug_print("Sent Packet: " + message)
-            self.logger.info(filename=filename, message="Sent Packet: " + message)
+            self.logger.debug(filename=filename, message="Sent Packet: " + message)
         else:
             self.logger.warning(filename=filename, message="Failed to send packet")
-            # self.debug_print("Failed to send packet")
         del self.field
         del Field
         gc.collect()
@@ -144,10 +138,6 @@ class functions:
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
-            # self.debug_print(
-            # "Error with obtaining power data: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Error with obtaining power data: "
@@ -217,10 +207,6 @@ class functions:
                 f"FK:{int(self.cubesat.f_fsk)}",
             ]
         except Exception as e:
-            # self.debug_print(
-            # "Couldn't aquire data for the state of health: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Couldn't aquire data for the state of health: "
@@ -251,8 +237,7 @@ class functions:
         import lib.pysquared.Field as Field
 
         self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
-        # self.debug_print("Sending Face Data")
-        self.logger.info(filename=filename, message="Sending Face Data")
+        self.logger.debug(filename=filename, message="Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
@@ -273,15 +258,10 @@ class functions:
 
         # This just passes the message through. Maybe add more functionality later.
         try:
-            # self.debug_print("Listening")
-            self.logger.info(filename=filename, message="Listening")
+            self.logger.debug(filename=filename, message="Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
-            # self.debug_print(
-            # "An Error has occured while listening: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="An Error has occured while listening: "
@@ -291,17 +271,12 @@ class functions:
 
         try:
             if received is not None:
-                # self.debug_print("Recieved Packet: " + str(received))
-                self.logger.info(
+                self.logger.debug(
                     filename=filename, message="Recieved Packet: " + str(received)
                 )
                 cdh.message_handler(self.cubesat, received, self.logger)
                 return True
         except Exception as e:
-            # self.debug_print(
-            # "An Error has occured while handling command: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="An Error has occured while handling command: "
@@ -314,8 +289,7 @@ class functions:
 
     def listen_joke(self) -> bool:
         try:
-            # self.debug_print("Listening")
-            self.logger(filename=filename, message="Listening")
+            self.logger.debug(filename=filename, message="Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
@@ -323,10 +297,6 @@ class functions:
             else:
                 return False
         except Exception as e:
-            # self.debug_print(
-            # "An Error has occured while listening: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="An Error has occured while listening: "
@@ -342,7 +312,6 @@ class functions:
 
     def all_face_data(self) -> list:
         # self.cubesat.all_faces_on()
-        # self.debug_print(gc.mem_free())
         self.logger.debug(
             filename=filename, message="Bytes free: " + str(gc.mem_free())
         )
@@ -351,7 +320,6 @@ class functions:
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            # self.debug_print(gc.mem_free())
             self.logger.debug(
                 filename=filename, message="Bytes free: " + str(gc.mem_free())
             )
@@ -360,7 +328,6 @@ class functions:
             a: Big_Data.AllFaces = Big_Data.AllFaces(
                 self.debug, self.cubesat.tca, self.logger
             )
-            # self.debug_print(gc.mem_free())
             self.logger.debug(
                 filename=filename, message="Bytes free: " + str(gc.mem_free())
             )
@@ -372,7 +339,6 @@ class functions:
             gc.collect()
 
         except Exception as e:
-            # self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
             self.logger.error(
                 filename=filename,
                 message="Big_Data error" + "".join(traceback.format_exception(e)),
@@ -387,9 +353,6 @@ class functions:
             return self.battery.get_power_metrics()
 
         except Exception as e:
-            # self.debug_print(
-            # "Error retrieving battery data" + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Error retrieving battery data"
@@ -410,9 +373,6 @@ class functions:
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
         except Exception as e:
-            # self.debug_print(
-            # "Error retrieving IMU data" + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Error retrieving IMU data"
@@ -423,8 +383,7 @@ class functions:
 
     def OTA(self) -> None:
         # resets file system to whatever new file is received
-        # self.debug_print("Implement an OTA Function Here")
-        self.debug(filename=filename, message="Implement an OTA Function Here")
+        self.logger.debug(filename=filename, message="Implement an OTA Function Here")
         pass
 
     """
@@ -432,8 +391,7 @@ class functions:
     """
 
     def log_face_data(self, data) -> None:
-        # self.debug_print("Logging Face Data")
-        self.logger.info(filename=filename, message="Logging Face Data")
+        self.logger.debug(filename=filename, message="Logging Face Data")
         try:
             self.cubesat.log("/faces.txt", data)
         except Exception as e:
@@ -441,15 +399,12 @@ class functions:
                 filename=filename,
                 message="SD error: " + "".join(traceback.format_exception(e)),
             )
-            # self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     def log_error_data(self, data) -> None:
-        # self.debug_print("Logging Error Data")
         self.logger.debug(filename=filename, message="Logging Error Data")
         try:
             self.cubesat.log("/error.txt", data)
         except Exception as e:
-            # self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
             self.logger.error(
                 filename=filename,
                 message="SD error: " + "".join(traceback.format_exception(e)),
@@ -462,8 +417,7 @@ class functions:
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7, margin: float = 0.2, seq: int = 118) -> None:
-        # self.debug_print("Detumbling")
-        self.logger.info(filename=filename, message="Detumbling")
+        self.logger.debug(filename=filename, message="Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
         try:
@@ -473,9 +427,6 @@ class functions:
                 self.debug, self.cubesat.tca, self.logger
             )
         except Exception as e:
-            # self.debug_print(
-            # "Error Importing Big Data: " + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Error Importing Big Data: "
@@ -485,10 +436,6 @@ class functions:
         try:
             a.sequence = 52
         except Exception as e:
-            # self.debug_print(
-            # "Error setting motor driver sequences: "
-            # + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Error setting motor driver sequences: "
@@ -519,30 +466,22 @@ class functions:
                             data[0][x] = 0.0
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
-                    # self.debug_print("Dipole: " + str(dipole))
-                    self.logger.info(
+                    self.logger.debug(
                         filename=filename, message="Dipole: " + str(dipole)
                     )
                     self.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
-                # self.debug_print(
-                # "Detumble error: " + "".join(traceback.format_exception(e))
-                # )
                 self.logger.error(
                     filename=filename,
                     message="Detumble error: " + "".join(traceback.format_exception(e)),
                 )
 
         try:
-            # self.debug_print("Attempting")
-            self.logger.info(filename=filename, message="Attempting")
+            self.logger.debug(filename=filename, message="Attempting")
             do_detumble()
         except Exception as e:
-            # self.debug_print(
-            # "Detumble error: " + "".join(traceback.format_exception(e))
-            # )
             self.logger.error(
                 filename=filename,
                 message="Detumble error: " + "".join(traceback.format_exception(e)),
@@ -550,8 +489,7 @@ class functions:
         self.cubesat.RGB = (100, 100, 50)
 
     def Short_Hybernate(self) -> Literal[True]:
-        # self.debug_print("Short Hybernation Coming UP")
-        self.logger.info(filename=filename, message="Short Hybernation Coming UP")
+        self.logger.debug(filename=filename, message="Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
@@ -563,8 +501,7 @@ class functions:
         return True
 
     def Long_Hybernate(self) -> Literal[True]:
-        # self.debug_print("LONG Hybernation Coming UP")
-        self.logger.info(filename=filename, message="LONG Hybernation Coming UP")
+        self.logger.debug(filename=filename, message="LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 

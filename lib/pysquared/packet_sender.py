@@ -63,22 +63,18 @@ class PacketSender:
         """Send data with minimal progress updates"""
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        # print(f"Sending {total_packets} packets...")
         logger.info(filename=filename, message=f"Sending {total_packets} packets...")
 
         for i, packet in enumerate(packets):
             if i % progress_interval == 0:
-                # print(f"Progress: {i}/{total_packets}")
                 logger.info(filename=filename, message=f"Progress: {i}/{total_packets}")
 
             if not self.send_packet_with_retry(packet, i):
-                # print(f"Failed at packet {i}/{total_packets}")
                 logger.warning(
                     filename=filename, message=f"Failed at packet {i}/{total_packets}"
                 )
                 return False
 
-        # print(f"Successfully sent {total_packets} packets!")
         logger.info(
             filename=filename, message=f"Successfully sent {total_packets} packets!"
         )
@@ -90,7 +86,6 @@ class PacketSender:
 
         try:
             missing_packets = self.pm.parse_retransmit_request(request_packet)
-            # print(f"\nRetransmit request received for {len(missing_packets)} packets")
             logger.info(
                 filename=filename,
                 message=f"\nRetransmit request received for {len(missing_packets)} packets",
@@ -99,7 +94,6 @@ class PacketSender:
 
             for seq in missing_packets:
                 if seq < len(packets):
-                    # print(f"Retransmitting packet {seq}")
                     logger.info(
                         filename=filename, message=f"Retransmitting packet {seq}"
                     )
@@ -111,7 +105,6 @@ class PacketSender:
             return True
 
         except Exception as e:
-            # print(f"Error handling retransmit request: {e}")
             logger.error(
                 filename=filename, message=f"Error handling retransmit request: {e}"
             )
@@ -125,12 +118,10 @@ class PacketSender:
 
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        # print(f"Sending {total_packets} packets...")
         logger.info(filename=filename, message=f"Sending {total_packets} packets...")
 
         # Send first packet with retry until ACKed
         for attempt in range(self.max_retries):
-            # print(f"Sending first packet (attempt {attempt + 1}/{self.max_retries})")
             logger.info(
                 filename=filename,
                 message=f"Sending first packet (attempt {attempt + 1}/{self.max_retries})",
@@ -143,46 +134,37 @@ class PacketSender:
                 if attempt < self.max_retries - 1:
                     time.sleep(1.0)
                 else:
-                    # print("Failed to get ACK for first packet")
                     logger.warning(
                         filename=filename, message="Failed to get ACK for first packet"
                     )
                     return False
 
         # Send remaining packets without waiting for ACKs
-        # print("Sending remaining packets...")
         logger.info(filename=filename, message="Sending remaining packets...")
         for i in range(1, total_packets):
             if i % 10 == 0:
-                # print(f"Sending packet {i}/{total_packets}")
                 logger.info(
                     filename=filename, message=f"Sending packet {i}/{total_packets}"
                 )
             self.radio.send(packets[i])
             time.sleep(send_delay)
 
-        # print("\nWaiting for retransmit requests...")
         logger.info(filename=filename, message="Waiting for retransmit requests...")
         retransmit_end_time = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
             packet = self.radio.receive()
             if packet:
-                # print(
-                # f"Received potential retransmit request: {[hex(b) for b in packet]}"
-                # )
                 logger.info(
                     filename=filename,
                     message=f"Received potential retransmit request: {[hex(b) for b in packet]}",
                 )
 
                 if self.pm.is_retransmit_request(packet):
-                    # print("Valid retransmit request received!")
                     logger.info(
                         filename=filename, message="Valid retransmit request received!"
                     )
                     missing_packets = self.pm.parse_retransmit_request(packet)
-                    # print(f"Retransmitting packets: {missing_packets}")
                     logger.info(
                         filename=filename,
                         message=f"Retransmitting packets: {missing_packets}",
@@ -193,7 +175,6 @@ class PacketSender:
 
                     for seq in missing_packets:
                         if seq < len(packets):
-                            # print(f"Retransmitting packet {seq}")
                             logger.info(
                                 filename=filename,
                                 message=f"Retransmitting packet {seq}",
@@ -202,7 +183,6 @@ class PacketSender:
                             time.sleep(
                                 0.5
                             )  # Longer delay between retransmitted packets
-                            # print(f"Retransmitting packet {seq}")
                             logger.info(
                                 filename=filename,
                                 message=f"Retransmitting packet {seq}",
@@ -218,6 +198,5 @@ class PacketSender:
 
             time.sleep(0.1)
 
-        # print("Finished sending all packets")
         logger.info(filename=filename, message="Finished sending all packets")
         return True
