@@ -6,7 +6,6 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import gc
-import json
 import random
 import time
 import traceback
@@ -14,6 +13,7 @@ import traceback
 import alarm
 
 from lib.pysquared.battery_helper import BatteryHelper
+from lib.pysquared.config import Config
 from lib.pysquared.debugcolor import co
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
@@ -32,7 +32,7 @@ class functions:
         if self.debug:
             print(co("[Functions]" + str(statement), "green", "bold"))
 
-    def __init__(self, cubesat: Satellite) -> None:
+    def __init__(self, cubesat: Satellite, config: Config) -> None:
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat)
         self.debug: bool = cubesat.debug
@@ -41,23 +41,19 @@ class functions:
         self.pm: PacketManager = PacketManager(max_packet_size=128)
         self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
 
-        # parses json & assigns data to variables
-        with open("config.json", "r") as f:
-            json_data = f.read()
-        config = json.loads(json_data)
-
-        self.cubesatName: str = config["cubesatName"]
+        self.config: Config = config
+        self.cubesatName: str = config.getStr("cubesatName")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = config["jokes"]
-        self.last_battery_temp: float = config["last_battery_temp"]
-        self.sleep_duration: int = config["sleep_duration"]
-        self.callsign: str = config["callsign"]
+        self.jokes: list[str] = config.getList("jokes")
+        self.last_battery_temp: float = config.getFloat("last_battery_temp")
+        self.sleep_duration: int = config.getInt("sleep_duration")
+        self.callsign: str = config.getStr("callsign")
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = config["detumble_enable_z"]
-        self.detumble_enable_x: bool = config["detumble_enable_x"]
-        self.detumble_enable_y: bool = config["detumble_enable_y"]
+        self.detumble_enable_z: bool = config.getBool("detumble_enable_z")
+        self.detumble_enable_x: bool = config.getBool("detumble_enable_x")
+        self.detumble_enable_y: bool = config.getBool("detumble_enable_y")
 
     """
     Satellite Management Functions
@@ -239,7 +235,11 @@ class functions:
         del Field
 
     def listen(self) -> bool:
-        import lib.pysquared.cdh as cdh
+        # need to instanciate cdh to feed it the config var
+        # assigned from the Config object
+        from lib.pysquared.cdh import CommandDataHandler
+
+        cdh = CommandDataHandler(self.config)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
