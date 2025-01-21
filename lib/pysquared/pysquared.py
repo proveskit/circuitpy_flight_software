@@ -93,7 +93,6 @@ class Satellite:
     def error_print(self, statement: Any) -> None:
         self.c_error_count += 1  # Limited to 255 errors
         if self.debug:
-            # print(co("[pysquared]" + str(statement), "red", "bold"))
             self.logger.error(filename=filename, message=str(statement))
 
     def safe_init(error_severity="ERROR"):
