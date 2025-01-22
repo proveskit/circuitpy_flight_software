@@ -13,6 +13,7 @@ import time
 import microcontroller
 
 import lib.pysquared.pysquared as pysquared
+from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
 logger = Logger()
@@ -21,9 +22,6 @@ filename = "main.py"
 logger.info(
     filename=filename, software_version="2.0.0", published_date="November 19, 2024"
 )
-
-from lib.pysquared.config import Config
-from lib.pysquared.pysquared import Satellite
 
 
 loiter_time = 5

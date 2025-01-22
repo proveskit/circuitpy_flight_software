@@ -1,12 +1,11 @@
 import random
 import time
 
-
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
-
 filename = "cdh.py"
+
 
 class CommandDataHandler:
     """
@@ -63,57 +62,58 @@ class CommandDataHandler:
                 if len(msg) > 6:
                     self.logger.info(filename=filename, message="command with args")
                 try:
-                        cmd_args = msg[6:]  # arguments are everything after
-                        self.logger.info(
+                    cmd_args = msg[6:]  # arguments are everything after
+                    self.logger.info(
                         filename=filename, message="cmd args: {}".format(cmd_args)
                     )
                 except Exception as e:
-                        self.logger.error(
+                    self.logger.error(
                         filename=filename, message="arg decoding error: {}".format(e)
                     )
             if cmd in self._commands:
-                    try:
-                        if cmd_args is None:
-                            self.logger.info(
+                try:
+                    if cmd_args is None:
+                        self.logger.info(
                             filename=filename,
                             message="running {} (no args)".format(self._commands[cmd]),
                         )
                         # eval a string turns it into a func name
-                            eval(self._commands[cmd])(cubesat)
-                        else:
-                            print(
-                                "running {} (with args: {})".format(
-                                    self._commands[cmd], cmd_args
-                                )
+                        eval(self._commands[cmd])(cubesat)
+                    else:
+                        print(
+                            "running {} (with args: {})".format(
+                                self._commands[cmd], cmd_args
                             )
-                            self.logger.info(
+                        )
+                        self.logger.info(
                             filename=filename,
                             message="running {} (with args: {})".format(
                                 self._commands[cmd], cmd_args
                             ),
                         )
-                        eval(self._commands[cmd])(cubesat, cmd_args)
-                    except Exception as e:
-                        # print("something went wrong: {}".format(e))
-                        self.logger.error(
+                    eval(self._commands[cmd])(cubesat, cmd_args)
+                except Exception as e:
+                    # print("something went wrong: {}".format(e))
+                    self.logger.error(
                         filename=filename, message="something went wrong: {}".format(e)
                     )
                     cubesat.radio1.send(str(e).encode())
             else:
-                    
                 self.logger.info(filename=filename, message="invalid command!")
                 cubesat.radio1.send(b"invalid cmd" + msg[4:])
                 # check for multi-message mode
                 if multi_msg:
                     # TODO check for optional radio config
-                    self.logger.info(filename=filename, message="multi-message mode enabled")
-                response = cubesat.radio1.receive(
-                        keep_listening=True,
-                        with_ack=True,
-                        with_header=True,
-                        view=True,
-                        timeout=10,
+                    self.logger.info(
+                        filename=filename, message="multi-message mode enabled"
                     )
+                response = cubesat.radio1.receive(
+                    keep_listening=True,
+                    with_ack=True,
+                    with_header=True,
+                    view=True,
+                    timeout=10,
+                )
                 if response is not None:
                     cubesat.c_gs_resp += 1
                     self.message_handler(cubesat, response)
@@ -123,8 +123,8 @@ class CommandDataHandler:
                 cubesat.radio1.send(msg[6:])
             except Exception as e:
                 self.logger.error(
-                filename=filename, message="error repeating message: {}".format(e)
-            )
+                    filename=filename, message="error repeating message: {}".format(e)
+                )
         else:
             self.logger.info(filename=filename, message="bad code?")
 
@@ -155,7 +155,9 @@ class CommandDataHandler:
     def shutdown(self, cubesat, args) -> None:
         # make shutdown require yet another pass-code
         if args == b"\x0b\xfdI\xec":
-            self.logger.info(filename=filename, message="valid shutdown command received")
+            self.logger.info(
+                filename=filename, message="valid shutdown command received"
+            )
             # set shutdown NVM bit flag
             cubesat.f_shtdwn = True
 
@@ -182,13 +184,13 @@ class CommandDataHandler:
             cubesat.f_hotstrt = True
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self,cubesat, args) -> None:
-       
+    def query(self, cubesat, args) -> None:
         self.logger.info(filename=filename, message=f"query: {args}")
-    
-        self.logger.info(filename=filename, message=cubesat.radio1.send(data=str(eval(args))))
+
+        self.logger.info(
+            filename=filename, message=cubesat.radio1.send(data=str(eval(args)))
+        )
 
     def exec_cmd(self, cubesat, args) -> None:
-        
         self.logger.info(filename=filename, message=f"exec: {args}")
         exec(args)
