@@ -84,37 +84,47 @@ class Config:
     Categorized saver functions
     """
 
-    def saveStr(self, key: str, strValue: str) -> None:
+    def saveStr(self, key: str, value: str) -> None:
         """Saves the string value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
-        pass
+        self.setStr(key, value)
+        self.saveToConfig()
 
-    def saveInt(self, key: str, intValue: int) -> None:
+    def saveInt(self, key: str, value: int) -> None:
         """Saves the int value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
-        pass
+        self.setInt(key, value)
+        self.saveToConfig()
 
-    def saveFloat(self, key: str, floatValue: float) -> None:
+    def saveFloat(self, key: str, value: float) -> None:
         """Saves the float value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
-        pass
+        self.setFloat(key, value)
+        self.saveToConfig()
 
-    def saveBool(self, key: str, boolValue: bool) -> None:
+    def saveBool(self, key: str, value: bool) -> None:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
-        pass
+        self.setBool(key, value)
+        self.saveToConfig()
 
-    def saveList(self, key: str, listValue: str) -> None:
+    def saveList(self, key: str, value: str) -> None:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config
-        pass
+        self.setList(key, value)
+        self.saveToConfig()
+
+    def saveToConfig(self) -> None:
+        # writes data to the json file
+        with open("config.json", "w") as f:
+            json.dump(self._config, f, indent=4)  # formats it??? will test
