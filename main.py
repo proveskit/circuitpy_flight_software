@@ -99,6 +99,8 @@ try:
         f.joke()
 
         f.listen_loiter()
+        
+        f.pcb_comms()
 
     def critical_power_operations():
         initial_boot()
