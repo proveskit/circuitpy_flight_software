@@ -100,7 +100,9 @@ class Satellite:
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
                 if self.debug:
-                    self.debug_print(f"Initializing {hardware_key}")
+                    self.logger.debug(
+                        filename=filename, message=f"Initializing {hardware_key}"
+                    )
 
                 try:
                     device: Any = func(self, *args, **kwargs)
@@ -367,7 +369,10 @@ class Satellite:
 
         # Alternative Implementations of hardware initialization specific for orpheus
         def orpheus_skip_I2C(hardware_key: str) -> None:
-            self.debug_print(f"[{self.cubesatName}] {hardware_key} not initialized")
+            self.logger.debug(
+                filename=filename,
+                message=f"[{self.cubesatName}] {hardware_key} not initialized",
+            )
             return None
 
         def orpheus_init_UART(hardware_key: str):

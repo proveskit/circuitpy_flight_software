@@ -246,15 +246,11 @@ class functions:
         gc.collect()
 
     def listen(self) -> bool:
-        super_secret_code = self.config["super_secret_code"].encode("utf-8")
-        self.logger.info(
-            filename=filename, message=f"Super secret code is: {super_secret_code}"
-        )
         # need to instanciate cdh to feed it the config var
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.config)
+        cdh = CommandDataHandler(self.config, self.logger)
 
         # This just passes the message through. Maybe add more functionality later.
         try:

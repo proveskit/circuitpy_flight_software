@@ -28,7 +28,10 @@ class CommandDataHandler:
             "utf-8"
         )
         self._repeat_code: str = config.getStr("repeat_code").encode("utf-8")
-        print(f"Super secret code is: {self._super_secret_code}")
+        self.logger.info(
+            filename=filename,
+            message=f"Super secret code is: {self._super_secret_code}",
+        )
 
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat, msg) -> None:
@@ -80,11 +83,6 @@ class CommandDataHandler:
                         # eval a string turns it into a func name
                         eval(self._commands[cmd])(cubesat)
                     else:
-                        print(
-                            "running {} (with args: {})".format(
-                                self._commands[cmd], cmd_args
-                            )
-                        )
                         self.logger.info(
                             filename=filename,
                             message="running {} (with args: {})".format(
@@ -93,7 +91,6 @@ class CommandDataHandler:
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    # print("something went wrong: {}".format(e))
                     self.logger.error(
                         filename=filename, message="something went wrong: {}".format(e)
                     )
@@ -146,7 +143,6 @@ class CommandDataHandler:
 
     def joke_reply(self, cubesat) -> None:
         joke: str = random.choice(self._jokereply)
-        # print(joke)
         self.logger.info(filename=filename, message=joke)
         cubesat.radio1.send(joke)
 
