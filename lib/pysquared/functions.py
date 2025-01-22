@@ -17,6 +17,8 @@ from lib.pysquared.config import Config
 from lib.pysquared.debugcolor import co
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
+from lib.pysquared.FCB_class import FCBCommunicator
+from lib.pysquared.easy_comms_circuit import fcb_comm
 
 try:
     from typing import Any, List, Literal, OrderedDict, Union
