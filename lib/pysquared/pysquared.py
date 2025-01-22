@@ -617,6 +617,13 @@ class Satellite:
         except Exception as e:
             self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
 
+    @property
+    def time(self) -> Union[tuple[int, int, int], None]:
+        try:
+            return self.rtc.get_time()
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+
     @time.setter
     def time(self, hms: tuple[int, int, int]) -> None:
         """
