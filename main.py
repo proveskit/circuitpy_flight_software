@@ -17,23 +17,18 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
 logger = Logger()
-filename = "main.py"
 
-logger.info(
-    filename=filename, software_version="2.0.0", published_date="November 19, 2024"
-)
+logger.info(message=" ", software_version="2.0.0", published_date="November 19, 2024")
 
 
 loiter_time = 5
 
 try:
     for i in range(loiter_time):
-        logger.info(
-            filename=filename, message=f"Code Starting in {loiter_time-i} seconds"
-        )
+        logger.info(message=f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    logger.debug(filename=filename, message="Initializing Config")
+    logger.debug(message="Initializing Config")
     config = Config()
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
@@ -62,14 +57,13 @@ try:
 
     try:
         c.c_boot += 1  # Increment boot number
-        logger.info(filename=filename, message="Boot number: %s" % str(c.c_boot))
-        logger.info(filename=filename, message=str(gc.mem_free()) + " Bytes remaining")
+        logger.info(message="Boot number: %s" % str(c.c_boot))
+        logger.info(message=str(gc.mem_free()) + " Bytes remaining")
 
         initial_boot()
 
     except Exception as e:
         logger.error(
-            filename=filename,
             message="Error in Boot Sequence: " + "".join(traceback.format_exception(e)),
         )
 
@@ -79,10 +73,10 @@ try:
         pass
 
     def send_imu():
-        logger.info(filename=filename, message="Looking to get imu data...")
+        logger.info(message="Looking to get imu data...")
         IMUData = []
-        c.watchdog_pet(filename=filename, message="IMU has baton")
-        logger.info(filename=filename, message="IMU has baton")
+        c.watchdog_pet(message="IMU has baton")
+        logger.info(message="IMU has baton")
         IMUData = f.get_imu_data()
         c.watchdog_pet()
         f.send(IMUData)
@@ -149,17 +143,16 @@ try:
 
     except Exception as e:
         logger.error(
-            filename=filename,
             message="Critical in Main Loop: " + "".join(traceback.format_exception(e)),
         )
         time.sleep(10)
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
     finally:
-        logger.info(filename=filename, message="Going Neutral!")
+        logger.info(message="Going Neutral!")
 
         c.RGB = (0, 0, 0)
         c.hardware["WDT"] = False
 
 except Exception as e:
-    logger.error(filename=filename, message=e)
+    logger.error(message=e)

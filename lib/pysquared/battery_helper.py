@@ -6,8 +6,6 @@ from lib.pysquared.logger import Logger
 # Author: Michael Pham
 # Date: 2024-11-05
 
-filename = "battery_helper.py"
-
 
 class BatteryHelper:
     """Helper class for interfacing with PicoSquared battery management system"""
@@ -57,9 +55,7 @@ class BatteryHelper:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
                 if self.debug_mode:
-                    self.logger.info(
-                        filename=filename, message=f"ACK byte received: {byte}"
-                    )
+                    self.logger.info(message=f"ACK byte received: {byte}")
                 if byte == b"A":
                     return True
             time.sleep(0.001)
@@ -87,7 +83,7 @@ class BatteryHelper:
         try:
             text = response.decode("utf-8")
             if self.debug_mode:
-                self.logger.info(filename=filename, message=f"Buffer: {text}")
+                self.logger.info(message=f"Buffer: {text}")
 
             # Check for complete message
             if "AA<" in text and ">" in text:
@@ -96,7 +92,7 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            self.logger.error(filename=filename, message=f"Error decoding message: {e}")
+            self.logger.error(message=f"Error decoding message: {e}")
 
         return ""
 
@@ -115,7 +111,7 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            self.logger.error(filename=filename, message=f"UART error: {e}")
+            self.logger.error(message=f"UART error: {e}")
             return ""
 
     def _is_valid_message(self, msg):
@@ -161,14 +157,10 @@ class BatteryHelper:
 
             except Exception as e:
                 if self.debug_mode:
-                    self.logger.error(
-                        filename=filename, message=f"Error parsing metrics: {e}"
-                    )
+                    self.logger.error(message=f"Error parsing metrics: {e}")
 
         if self.debug_mode:
-            self.logger.warning(
-                filename=filename, message="Failed to get valid power metrics"
-            )
+            self.logger.warning(message="Failed to get valid power metrics")
         return (0.0, 0.0, 0.0, 0.0, False, 0.0)
 
     def get_error_metrics(self):
@@ -283,14 +275,13 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                self.logger.error(filename=filename, message=f"Parse error: {e}")
+                self.logger.error(message=f"Parse error: {e}")
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time
         total_time = (time.monotonic() - start) * 1000
 
         self.logger.info(
-            filename=filename,
             send_time=f"{send_time:.2f}ms",
             read_time=f"{read_time:.2f}ms",
             parse_time=f"{parse_time:.2f}ms",
