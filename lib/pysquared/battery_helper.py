@@ -55,7 +55,7 @@ class BatteryHelper:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
                 if self.debug_mode:
-                    self.logger.info("ACK received", "ack"=byte)
+                    self.logger.info("ACK received", ack=byte)
                 if byte == b"A":
                     return True
             time.sleep(0.001)
@@ -83,7 +83,7 @@ class BatteryHelper:
         try:
             text = response.decode("utf-8")
             if self.debug_mode:
-                self.logger.info(message=f"Buffer: {text}")
+                self.logger.info(f"Buffer: {text}")
 
             # Check for complete message
             if "AA<" in text and ">" in text:
@@ -92,7 +92,7 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            self.logger.error("Error decoding message", "err"=e)
+            self.logger.error("Error decoding message", err=e)
 
         return ""
 
@@ -111,7 +111,7 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            self.logger.error(message=f"UART error: {e}")
+            self.logger.error(f"UART error: {e}")
             return ""
 
     def _is_valid_message(self, msg):
@@ -157,10 +157,10 @@ class BatteryHelper:
 
             except Exception as e:
                 if self.debug_mode:
-                    self.logger.error(message=f"Error parsing metrics: {e}")
+                    self.logger.error(f"Error parsing metrics: {e}")
 
         if self.debug_mode:
-            self.logger.warning(message="Failed to get valid power metrics")
+            self.logger.warning("Failed to get valid power metrics")
         return (0.0, 0.0, 0.0, 0.0, False, 0.0)
 
     def get_error_metrics(self):
@@ -275,7 +275,7 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                self.logger.error(message=f"Parse error: {e}")
+                self.logger.error(f"Parse error: {e}")
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time

@@ -55,14 +55,14 @@ class PacketManager:
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size
         self.logger.info(
-            message=f"Packing data of length {len(data)} into {total_packets} packets",
+            f"Packing data of length {len(data)} into {total_packets} packets",
         )
 
         packets = []
         for seq in range(total_packets):
             # Create header
             header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
-            self.logger.info(message=f"Created header: {[hex(b) for b in header]}")
+            self.logger.info(f"Created header: {[hex(b) for b in header]}")
 
             # Get payload slice for this packet
             start = seq * self.payload_size
@@ -72,7 +72,7 @@ class PacketManager:
             # Combine header and payload
             packet = header + payload
             self.logger.info(
-                message=f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}",
+                f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}",
             )
             packets.append(packet)
 

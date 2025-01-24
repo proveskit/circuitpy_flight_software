@@ -45,7 +45,7 @@ class Face:
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.logger.error(message="[Temperature Sensor]" + str(e))
+                self.logger.error("[Temperature Sensor]" + str(e))
 
         if "VEML" in senlist:
             try:
@@ -54,7 +54,7 @@ class Face:
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.logger.error(message="[Light Sensor]" + str(e))
+                self.logger.error("[Light Sensor]" + str(e))
 
         if "DRV" in senlist:
             try:

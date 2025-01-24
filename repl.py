@@ -7,4 +7,4 @@ config = Config.Config()
 logger = Logger()
 c = Satellite.Satellite(config, logger)
 
-logger.info(message="Initialized a cubesat object as `c` in the REPL...")
+logger.info("Initialized a cubesat object as `c` in the REPL...")

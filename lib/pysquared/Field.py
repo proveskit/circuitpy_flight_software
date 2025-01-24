@@ -23,18 +23,18 @@ class Field:
     def Beacon(self, msg):
         try:
             if self.cubesat.is_licensed:
-                self.logger.info(message="I am beaconing: " + str(msg))
+                self.logger.info("I am beaconing: " + str(msg))
                 self.logger.info(
-                    message="Message Success: "
+                    "Message Success: "
                     + str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
                 )
             else:
                 self.logger.debug(
-                    message="Please toggle licensed variable in code once you obtain an amateur radio license",
+                    "Please toggle licensed variable in code once you obtain an amateur radio license",
                 )
         except Exception as e:
             self.logger.error(
-                message="Tried Beaconing but encountered error: ".join(
+                "Tried Beaconing but encountered error: ".join(
                     traceback.format_exception(e)
                 ),
             )
@@ -44,4 +44,4 @@ class Field:
         pass
 
     def __del__(self):
-        self.logger.debug(message="Object Destroyed!")
+        self.logger.debug("Object Destroyed!")
