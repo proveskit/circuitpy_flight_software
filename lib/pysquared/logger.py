@@ -14,10 +14,10 @@ import time
 
 
 class Logger:
-    # def __init__(self):
-    #     self.debugmode = DebugMode.DEBUGMODE
-    #     self.logToFile = False
-    #     self.logToStandardOut = True
+    def __init__(self):
+        self.logToStandardOut = True
+        # self.debugmode = DebugMode.DEBUGMODE
+        # self.logToFile = False
 
     # @blakejameson NOTE: functionality to save logs to file will be implemented at a later point. For now, logs will
     # be output to standard output
