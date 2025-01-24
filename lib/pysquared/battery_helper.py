@@ -92,7 +92,7 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            self.logger.error(message=f"Error decoding message: {e}")
+            self.logger.error("Error decoding message", "err"=e)
 
         return ""
 
