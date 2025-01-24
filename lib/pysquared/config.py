@@ -21,6 +21,9 @@ class Config:
         with open("config.json", "r") as f:
             json_data = f.read()
         self._config: dict = json.loads(json_data)
+        # exception notes
+        # emit a value type and error from the getter functions
+        # if we want to implement exception handling
 
     """
     Categorized getter functions
@@ -88,7 +91,6 @@ class Config:
         """Saves the string value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
         self.setStr(key, value)
         self.saveToConfig()
 
@@ -96,7 +98,6 @@ class Config:
         """Saves the int value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
         self.setInt(key, value)
         self.saveToConfig()
 
@@ -104,7 +105,6 @@ class Config:
         """Saves the float value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
         self.setFloat(key, value)
         self.saveToConfig()
 
@@ -112,7 +112,6 @@ class Config:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
         self.setBool(key, value)
         self.saveToConfig()
 
@@ -120,7 +119,6 @@ class Config:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
         self.setList(key, value)
         self.saveToConfig()
 

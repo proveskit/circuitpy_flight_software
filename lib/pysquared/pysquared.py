@@ -625,7 +625,11 @@ class Satellite:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @time.setter
-    def time(self, hours: int, minutes: int, seconds: int) -> None:
+    def time(self, hms: tuple[int, int, int]) -> None:
+        """
+        hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
+        """
+        hours, minutes, seconds = hms
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_time(hours, minutes, seconds)
@@ -644,7 +648,11 @@ class Satellite:
             self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @date.setter
-    def date(self, year: int, month: int, date: int, weekday: int) -> None:
+    def date(self, ymdw: tuple[int, int, int, int]) -> None:
+        """
+        ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
+        """
+        year, month, date, weekday = ymdw
         if self.hardware["RTC"]:
             try:
                 self.rtc.set_date(year, month, date, weekday)
