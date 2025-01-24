@@ -61,7 +61,6 @@ class Satellite:
 
     # Define NVM flags
     f_softboot: Flag = Flag(index=_FLAG, bit_index=0, datastore=microcontroller.nvm)
-    f_burnarm: Flag = Flag(index=_FLAG, bit_index=2, datastore=microcontroller.nvm)
     f_brownout: Flag = Flag(index=_FLAG, bit_index=3, datastore=microcontroller.nvm)
     f_shtdwn: Flag = Flag(index=_FLAG, bit_index=5, datastore=microcontroller.nvm)
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
@@ -185,8 +184,8 @@ class Satellite:
             ]
         )
 
-        if self.f_softboot:
-            self.f_softboot.toggle(True)
+        if self.f_softboot.get():
+            self.f_softboot.toggle(False)
 
         """
         Setting up the watchdog pin.
@@ -288,7 +287,7 @@ class Satellite:
         self.radio1_DIO4.switch_to_input()
 
         try:
-            if self.f_fsk:
+            if self.f_fsk.get():
                 self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
                     self.spi0,
                     _rf_cs1,
@@ -417,7 +416,7 @@ class Satellite:
         """
         self.scan_tca_channels()
 
-        if self.f_fsk:
+        if self.f_fsk.get():
             self.debug_print("Next restart will be in LoRa mode.")
             self.f_fsk.toggle(False)
 
@@ -516,22 +515,6 @@ class Satellite:
 
         except Exception as e:
             self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
-
-    @property
-    def burnarm(self) -> Flag:
-        return self.f_burnarm
-
-    @burnarm.setter
-    def burnarm(self, value: Flag) -> None:
-        self.f_burnarm: Flag = value
-
-    @property
-    def burned(self) -> Flag:
-        return self.f_burned
-
-    @burned.setter
-    def burned(self, value: Flag) -> None:
-        self.f_burned: Flag = value
 
     @property
     def RGB(self) -> tuple[int, int, int]:

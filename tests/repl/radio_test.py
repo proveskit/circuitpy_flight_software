@@ -33,7 +33,7 @@ if input("FSK or LoRa? [L/f]") == "F":
     print("Resetting in FSK")
     from pysquared import cubesat
 
-print("FSK: " + str(cubesat.f_fsk))
+print("FSK: " + str(cubesat.f_fsk.get()))
 
 options = ["A", "B", "C"]
 
