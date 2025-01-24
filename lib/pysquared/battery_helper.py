@@ -282,6 +282,7 @@ class BatteryHelper:
         total_time = (time.monotonic() - start) * 1000
 
         self.logger.info(
+            "timing analysis",
             send_time=f"{send_time:.2f}ms",
             read_time=f"{read_time:.2f}ms",
             parse_time=f"{parse_time:.2f}ms",
