@@ -52,9 +52,9 @@ try:
         c.watchdog_pet()
         f.listen()
         c.watchdog_pet()
-        # f.state_of_health()
-        # f.listen()
-        # c.watchdog_pet()
+        f.state_of_health()
+        f.listen()
+        c.watchdog_pet()
 
     try:
         c.c_boot += 1  # Increment boot number

@@ -17,7 +17,7 @@ from os import chdir, mkdir, stat
 import board
 import busio
 import digitalio
-import machine
+#import machine
 import microcontroller
 import sdcardio
 from micropython import const
