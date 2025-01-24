@@ -55,7 +55,7 @@ class BatteryHelper:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
                 if self.debug_mode:
-                    self.logger.info(message=f"ACK byte received: {byte}")
+                    self.logger.info("ACK received", "ack"=byte)
                 if byte == b"A":
                     return True
             time.sleep(0.001)
