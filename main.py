@@ -18,7 +18,7 @@ from lib.pysquared.logger import Logger
 
 logger = Logger()
 
-logger.info(message=" ", software_version="2.0.0", published_date="November 19, 2024")
+logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 
 loiter_time = 5
