@@ -50,12 +50,12 @@ try:
         # c.watchdog_pet()
 
     try:
-        c.c_boot += 1  # Increment boot number
+        c.boot_count.increment()
 
         logger.info(
             "FC Board Stats",
             bytes_remaining=gc.mem_free(),
-            boot_number=c.c_boot,
+            boot_number=c.boot_count.get(),
         )
 
         initial_boot()

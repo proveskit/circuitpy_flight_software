@@ -3,6 +3,7 @@ import time
 
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.pysquared import Satellite
 
 
 class CommandDataHandler:
@@ -32,7 +33,7 @@ class CommandDataHandler:
         )
 
     ############### hot start helper ###############
-    def hotstart_handler(self, cubesat, msg) -> None:
+    def hotstart_handler(self, cubesat: Satellite, msg) -> None:
         # check that message is for me
         if msg[0] == cubesat.radio1.node:
             # TODO check for optional radio config
@@ -50,7 +51,7 @@ class CommandDataHandler:
             )
 
     ############### message handler ###############
-    def message_handler(self, cubesat, msg) -> None:
+    def message_handler(self, cubesat: Satellite, msg) -> None:
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -120,7 +121,7 @@ class CommandDataHandler:
     def noop(self) -> None:
         self.logger.info("no-op")
 
-    def hreset(self, cubesat) -> None:
+    def hreset(self, cubesat: Satellite) -> None:
         self.logger.info("Resetting")
         try:
             cubesat.radio1.send(data=b"resetting")
@@ -129,22 +130,22 @@ class CommandDataHandler:
         except Exception:
             pass
 
-    def FSK(cubesat) -> None:
-        cubesat.f_fsk: bool = True
+    def FSK(cubesat: Satellite) -> None:
+        cubesat.f_fsk.toggle(True)
 
-    def joke_reply(self, cubesat) -> None:
+    def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._jokereply)
         self.logger.info("Sending joke reply", joke=joke)
         cubesat.radio1.send(joke)
 
     ########### commands with arguments ###########
 
-    def shutdown(self, cubesat, args) -> None:
+    def shutdown(self, cubesat: Satellite, args) -> None:
         # make shutdown require yet another pass-code
         if args == b"\x0b\xfdI\xec":
             self.logger.info("valid shutdown command received")
             # set shutdown NVM bit flag
-            cubesat.f_shtdwn: bool = True
+            cubesat.f_shtdwn.toggle(True)
 
             """
             Exercise for the user:
@@ -166,14 +167,14 @@ class CommandDataHandler:
                 monotonic_time=time.monotonic() + eval("1e" + str(_t))
             )  # default 1 day
             # set hot start flag right before sleeping
-            cubesat.f_hotstrt: bool = True
+            cubesat.f_hotstrt.toggle(True)
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat, args) -> None:
+    def query(self, cubesat: Satellite, args) -> None:
         self.logger.info("Sending query with args", args=args)
 
         cubesat.radio1.send(data=str(eval(args)))
 
-    def exec_cmd(self, cubesat, args) -> None:
+    def exec_cmd(self, cubesat: Satellite, args) -> None:
         self.logger.info("Executing command", args=args)
         exec(args)

@@ -28,13 +28,11 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-
-# Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
-from lib.pysquared.bitflags import bitFlag, multiBitFlag
 from lib.pysquared.config import Config  # Configs
+from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.nvm.flag import Flag
 
-# Importing typing libraries
 try:
     from typing import Any, Callable, OrderedDict, TextIO, Union
 
@@ -46,11 +44,7 @@ from lib.pysquared.logger import Logger
 
 # NVM register numbers
 _BOOTCNT = const(0)
-_VBUSRST = const(6)
 _ERRORCNT = const(7)
-_TOUTS = const(9)
-_ICHRG = const(11)
-_DIST = const(13)
 _FLAG = const(16)
 
 SEND_BUFF: bytearray = bytearray(252)
@@ -62,26 +56,18 @@ class Satellite:
     """
 
     # General NVM counters
-    c_boot: multiBitFlag = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst: multiBitFlag = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT, lowest_bit=0, num_bits=8
-    )
-    c_distance: multiBitFlag = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg: multiBitFlag = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
+    boot_count: Counter = Counter(index=_BOOTCNT, datastore=microcontroller.nvm)
+    error_count: Counter = Counter(index=_ERRORCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
-    f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
-    f_solar: bitFlag = bitFlag(register=_FLAG, bit=1)
-    f_burnarm: bitFlag = bitFlag(register=_FLAG, bit=2)
-    f_brownout: bitFlag = bitFlag(register=_FLAG, bit=3)
-    f_triedburn: bitFlag = bitFlag(register=_FLAG, bit=4)
-    f_shtdwn: bitFlag = bitFlag(register=_FLAG, bit=5)
-    f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
-    f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
+    f_softboot: Flag = Flag(index=_FLAG, bit_index=0, datastore=microcontroller.nvm)
+    f_brownout: Flag = Flag(index=_FLAG, bit_index=3, datastore=microcontroller.nvm)
+    f_shtdwn: Flag = Flag(index=_FLAG, bit_index=5, datastore=microcontroller.nvm)
+    f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
+    f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count += 1  # Limited to 255 errors
+        self.error_count.increment()
         if self.debug:
             self.logger.error(str(statement))
 
@@ -156,7 +142,7 @@ class Satellite:
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
 
-        if self.f_fsk:
+        if self.f_fsk.get():
             self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
                 self.spi0,
                 _rf_cs1,
@@ -292,7 +278,6 @@ class Satellite:
         """
         Define the boot time and current time
         """
-        self.c_boot += 1
         self.BOOTTIME: int = 1577836800
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
@@ -331,12 +316,8 @@ class Satellite:
             ]
         )
 
-        """
-        NVM Parameter Resets
-        """
-
-        if self.f_softboot:
-            self.f_softboot = False
+        if self.f_softboot.get():
+            self.f_softboot.toggle(False)
 
         """
         Setting up the watchdog pin.
@@ -436,9 +417,9 @@ class Satellite:
         """
         self.scan_tca_channels()
 
-        if self.f_fsk:
+        if self.f_fsk.get():
             self.logger.debug("Next restart will be in LoRa mode.")
-            self.f_fsk = False
+            self.f_fsk.toggle(False)
 
         """
         Prints init State of PySquared Hardware
@@ -538,22 +519,6 @@ class Satellite:
 
         except Exception as e:
             self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
-
-    @property
-    def burnarm(self) -> bitFlag:
-        return self.f_burnarm
-
-    @burnarm.setter
-    def burnarm(self, value: bitFlag) -> None:
-        self.f_burnarm: bitFlag = value
-
-    @property
-    def burned(self) -> bitFlag:
-        return self.f_burned
-
-    @burned.setter
-    def burned(self, value: bitFlag) -> None:
-        self.f_burned: bitFlag = value
 
     @property
     def RGB(self) -> tuple[int, int, int]:

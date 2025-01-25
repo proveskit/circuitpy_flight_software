@@ -16,6 +16,7 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
+from lib.pysquared.pysquared import Satellite
 
 try:
     from typing import List, Literal, OrderedDict, Union
@@ -23,7 +24,6 @@ try:
     import circuitpython_typing
 except Exception:
     pass
-from lib.pysquared.pysquared import Satellite
 
 
 class functions:
@@ -128,7 +128,7 @@ class functions:
             lora_beacon: str = (
                 f"{self.callsign} Hello I am {self.cubesatName}! I am: "
                 + str(self.cubesat.power_mode)
-                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
+                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.boot_count.get()} EC:{self.cubesat.error_count.get()} "
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
@@ -186,15 +186,15 @@ class functions:
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.uptime}",
-                f"BN:{self.cubesat.c_boot}",
+                f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.last_radio_temp()}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
-                f"EC:{self.cubesat.c_error_count}",
-                f"AB:{int(self.cubesat.burned)}",
-                f"BO:{int(self.cubesat.f_brownout)}",
-                f"FK:{int(self.cubesat.f_fsk)}",
+                f"EC:{self.cubesat.error_count.get()}",
+                f"AB:{int(self.cubesat.f_burned.get())}",
+                f"BO:{int(self.cubesat.f_brownout.get())}",
+                f"FK:{int(self.cubesat.f_fsk.get())}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
@@ -432,7 +432,7 @@ class functions:
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(120)
 
         self.cubesat.enable_rf.value = True
@@ -444,7 +444,7 @@ class functions:
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(600)
 
         self.cubesat.enable_rf.value = True
