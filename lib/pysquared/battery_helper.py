@@ -1,5 +1,7 @@
 import time
 
+from lib.pysquared.logger import Logger
+
 # Written with Claude 3.5
 # Author: Michael Pham
 # Date: 2024-11-05
@@ -21,7 +23,7 @@ class BatteryHelper:
     CMD_RESET_MCU = "11"  # Reset microcontroller
     CMD_ERROR = "208"
 
-    def __init__(self, pysquared):
+    def __init__(self, pysquared, logger: Logger):
         """
         Initialize UART helper with existing Pysquared object
 
@@ -31,6 +33,7 @@ class BatteryHelper:
         self.uart = pysquared.uart
         self.last_command_time = 0
         self.debug_mode = True
+        self.logger = logger
 
     def _flush_input(self):
         """Flush the input buffer"""
@@ -52,7 +55,7 @@ class BatteryHelper:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
                 if self.debug_mode:
-                    print(f"ACK byte received: {byte}")
+                    self.logger.info("ACK received", ack=byte)
                 if byte == b"A":
                     return True
             time.sleep(0.001)
@@ -80,7 +83,7 @@ class BatteryHelper:
         try:
             text = response.decode("utf-8")
             if self.debug_mode:
-                print(f"Buffer: {text}")
+                self.logger.info("Read message", buffer=text)
 
             # Check for complete message
             if "AA<" in text and ">" in text:
@@ -89,8 +92,7 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            print(f"Error decoding message: {e}")
-            pass
+            self.logger.error("Error decoding message", err=e)
 
         return ""
 
@@ -109,7 +111,7 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            print(f"UART error: {e}")
+            self.logger.error("UART error", err=e)
             return ""
 
     def _is_valid_message(self, msg):
@@ -155,10 +157,10 @@ class BatteryHelper:
 
             except Exception as e:
                 if self.debug_mode:
-                    print(f"Error parsing metrics: {e}")
+                    self.logger.error("Error parsing metrics", err=e)
 
         if self.debug_mode:
-            print("Failed to get valid power metrics")
+            self.logger.warning("Failed to get valid power metrics")
         return (0.0, 0.0, 0.0, 0.0, False, 0.0)
 
     def get_error_metrics(self):
@@ -255,8 +257,6 @@ class BatteryHelper:
     def debug_timing(self):
         """Measure and print timing of each step"""
 
-        print("\nTiming analysis:")
-
         # Measure command send time
         start = time.monotonic()
         self.uart.write(bytes(self.CMD_GET_POWER.encode()))
@@ -275,14 +275,17 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                print(f"Parse error: {e}")
+                self.logger.error("Parse error", err=e)
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time
         total_time = (time.monotonic() - start) * 1000
 
-        print(f"Send time: {send_time:.2f}ms")
-        print(f"Read time: {read_time:.2f}ms")
-        print(f"Parse time: {parse_time:.2f}ms")
-        print(f"Total time: {total_time:.2f}ms")
-        print(f"Response: {response}")
+        self.logger.info(
+            "timing analysis",
+            send_time=f"{send_time:.2f}ms",
+            read_time=f"{read_time:.2f}ms",
+            parse_time=f"{parse_time:.2f}ms",
+            total_time=f"{total_time:.2f}ms",
+            response=response,
+        )
