@@ -134,7 +134,7 @@ class CommandDataHandler:
 
     def joke_reply(self, cubesat) -> None:
         joke: str = random.choice(self._jokereply)
-        self.logger.info(joke)
+        self.logger.info("Sending joke reply", joke=joke)
         cubesat.radio1.send(joke)
 
     ########### commands with arguments ###########

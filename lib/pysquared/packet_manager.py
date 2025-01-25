@@ -64,7 +64,7 @@ class PacketManager:
         for seq in range(total_packets):
             # Create header
             header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
-            self.logger.info("Created header", header={[hex(b) for b in header]})
+            self.logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
             start = seq * self.payload_size
