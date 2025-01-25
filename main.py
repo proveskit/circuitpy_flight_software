@@ -36,11 +36,6 @@ try:
     import gc  # Garbage collection
 
     import lib.pysquared.functions as functions
-    from lib.pysquared.debugcolor import co
-
-    def debug_print(statement):
-        if c.debug:
-            print(co(str(c.uptime) + "[MAIN]" + str(statement), "blue", "bold"))
 
     f = functions.functions(c, logger, config)
 

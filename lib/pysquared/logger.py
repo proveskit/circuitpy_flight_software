@@ -7,7 +7,6 @@ import json
 import time
 
 
-
 class Logger:
     def __init__(self):
         self.logToStandardOut = True

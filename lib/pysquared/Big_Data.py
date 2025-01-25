@@ -1,7 +1,5 @@
 import gc
 
-from lib.pysquared.debugcolor import co
-
 
 class Face:
     def __init__(self, Add, Pos, debug_state, tca, logger):
@@ -30,10 +28,6 @@ class Face:
         self.mcp = None
         self.veml = None
         self.drv = None
-
-    def debug_print(self, statement):
-        if self.debug:
-            print(co("[FACE]" + statement, "teal", "bold"))
 
     def Sensorinit(self, senlist, address):
         gc.collect()  # Force garbage collection before initializing sensors

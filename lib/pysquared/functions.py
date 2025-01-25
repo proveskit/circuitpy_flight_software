@@ -13,13 +13,12 @@ import alarm
 
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
-from lib.pysquared.debugcolor import co
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
 
 try:
-    from typing import Any, List, Literal, OrderedDict, Union
+    from typing import List, Literal, OrderedDict, Union
 
     import circuitpython_typing
 except Exception:
@@ -28,10 +27,6 @@ from lib.pysquared.pysquared import Satellite
 
 
 class functions:
-    def debug_print(self, statement: Any) -> None:
-        if self.debug:
-            print(co("[Functions]" + str(statement), "green", "bold"))
-
     def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
         self.logger = logger
         self.cubesat: Satellite = cubesat

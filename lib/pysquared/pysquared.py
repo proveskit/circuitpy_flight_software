@@ -33,7 +33,6 @@ from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.bitflags import bitFlag, multiBitFlag
 from lib.pysquared.config import Config  # Configs
-from lib.pysquared.debugcolor import co
 
 # Importing typing libraries
 try:
@@ -80,13 +79,6 @@ class Satellite:
     f_shtdwn: bitFlag = bitFlag(register=_FLAG, bit=5)
     f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
     f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
-
-    def debug_print(self, statement: Any) -> None:
-        """
-        A method for printing debug statements.
-        """
-        if self.debug:
-            print(co("[pysquared]" + str(statement), "green", "bold"))
 
     def error_print(self, statement: Any) -> None:
         self.c_error_count += 1  # Limited to 255 errors

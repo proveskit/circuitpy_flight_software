@@ -3,11 +3,18 @@ from lib.pysquared.logger import Logger
 
 class PacketSender:
     def __init__(
-        self, radio, packet_manager, ack_timeout=2.0, max_retries=3, send_delay=0.2
+        self,
+        logger: Logger,
+        radio,
+        packet_manager,
+        ack_timeout=2.0,
+        max_retries=3,
+        send_delay=0.2,
     ):
         """
         Initialize the packet sender with optimized timing
         """
+        self.logger = logger
         self.radio = radio
         self.pm = packet_manager
         self.ack_timeout = ack_timeout
@@ -57,27 +64,29 @@ class PacketSender:
 
         return False
 
-    def send_data(self, data, logger: Logger, progress_interval=10):
+    def send_data(self, data, progress_interval=10):
         """Send data with minimal progress updates"""
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        logger.info("Sending packets...", num_packets=total_packets)
+        self.logger.info("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
             if i % progress_interval == 0:
-                logger.info(
+                self.logger.info(
                     "Making progress sending packets",
                     current_packet=i,
                     num_packets=total_packets,
                 )
 
             if not self.send_packet_with_retry(packet, i):
-                logger.warning(
+                self.logger.warning(
                     "Failed to send packet", current_packet=i, num_packets=total_packets
                 )
                 return False
 
-        logger.info("Successfully sent all the packets!", num_packets=total_packets)
+        self.logger.info(
+            "Successfully sent all the packets!", num_packets=total_packets
+        )
         return True
 
     def handle_retransmit_request(self, packets, request_packet, logger: Logger):
@@ -86,7 +95,7 @@ class PacketSender:
 
         try:
             missing_packets = self.pm.parse_retransmit_request(request_packet)
-            logger.info(
+            self.logger.info(
                 "Retransmit request received for missing packets",
                 num_missing_packets=len(missing_packets),
             )
@@ -94,7 +103,7 @@ class PacketSender:
 
             for seq in missing_packets:
                 if seq < len(packets):
-                    logger.info("Retransmitting packet ", packet=seq)
+                    self.logger.info("Retransmitting packet ", packet=seq)
                     self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
                     self.radio.send(packets[seq])
@@ -103,7 +112,7 @@ class PacketSender:
             return True
 
         except Exception as e:
-            logger.error("Error handling retransmit request", err=e)
+            self.logger.error("Error handling retransmit request", err=e)
             return False
 
     def fast_send_data(
@@ -114,11 +123,11 @@ class PacketSender:
 
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        logger.info("Sending packets..", num_packets=total_packets)
+        self.logger.info("Sending packets..", num_packets=total_packets)
 
         # Send first packet with retry until ACKed
         for attempt in range(self.max_retries):
-            logger.info(
+            self.logger.info(
                 "Sending first packet",
                 attempt_num=attempt + 1,
                 max_retries=self.max_retries,
@@ -131,34 +140,34 @@ class PacketSender:
                 if attempt < self.max_retries - 1:
                     time.sleep(1.0)
                 else:
-                    logger.warning("Failed to get ACK for first packet")
+                    self.logger.warning("Failed to get ACK for first packet")
                     return False
 
         # Send remaining packets without waiting for ACKs
-        logger.info("Sending remaining packets...")
+        self.logger.info("Sending remaining packets...")
         for i in range(1, total_packets):
             if i % 10 == 0:
-                logger.info(
+                self.logger.info(
                     "Sending packet", current_packet=i, num_packets=total_packets
                 )
             self.radio.send(packets[i])
             time.sleep(send_delay)
 
-        logger.info("Waiting for retransmit requests...")
+        self.logger.info("Waiting for retransmit requests...")
         retransmit_end_time = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
             packet = self.radio.receive()
             if packet:
-                logger.info(
+                self.logger.info(
                     "Received potential retransmit request:",
                     packet=[hex(b) for b in packet],
                 )
 
                 if self.pm.is_retransmit_request(packet):
-                    logger.info("Valid retransmit request received!")
+                    self.logger.info("Valid retransmit request received!")
                     missing_packets = self.pm.parse_retransmit_request(packet)
-                    logger.info(
+                    self.logger.info(
                         "Retransmitting packets", missing_packets=missing_packets
                     )
 
@@ -167,12 +176,12 @@ class PacketSender:
 
                     for seq in missing_packets:
                         if seq < len(packets):
-                            logger.info("Retransmitting packet", packet=seq)
+                            self.logger.info("Retransmitting packet", packet=seq)
                             self.radio.send(packets[seq])
                             time.sleep(
                                 0.5
                             )  # Longer delay between retransmitted packets
-                            logger.info("Retransmitting packet", packet=seq)
+                            self.logger.info("Retransmitting packet", packet=seq)
                             self.radio.send(packets[seq])
                             time.sleep(
                                 0.2
@@ -184,5 +193,5 @@ class PacketSender:
 
             time.sleep(0.1)
 
-        logger.info("Finished sending all packets")
+        self.logger.info("Finished sending all packets")
         return True
