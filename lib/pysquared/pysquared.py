@@ -98,7 +98,9 @@ class Satellite:
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
                 if self.debug:
-                    self.logger.debug(f"Initializing {hardware_key}")
+                    self.logger.debug(
+                        "Initializing hardware component", hardware_key=hardware_key
+                    )
 
                 try:
                     device: Any = func(self, *args, **kwargs)

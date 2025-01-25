@@ -8,7 +8,6 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 import gc
 import random
 import time
-import traceback
 
 import alarm
 
@@ -136,10 +135,7 @@ class functions:
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
-            self.logger.error(
-                "Error with obtaining power data: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Error with obtaining power data: ", err=e)
 
             lora_beacon: str = (
                 f"{self.callsign} Hello I am Yearling^2! I am in: "
@@ -204,10 +200,7 @@ class functions:
                 f"FK:{int(self.cubesat.f_fsk)}",
             ]
         except Exception as e:
-            self.logger.error(
-                "Couldn't aquire data for the state of health: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
         self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
         if not self.state_bool:
@@ -254,10 +247,7 @@ class functions:
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while listening: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("An Error has occured while listening: ", err=e)
             received = None
 
         try:
@@ -266,10 +256,7 @@ class functions:
                 cdh.message_handler(self.cubesat, received, self.logger)
                 return True
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while handling command: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("An Error has occured while handling a command: ", err=e)
         finally:
             del cdh
 
@@ -285,10 +272,7 @@ class functions:
             else:
                 return False
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while listening: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("An Error has occured while listening for a joke", err=e)
             received = None
             return False
 
@@ -299,19 +283,28 @@ class functions:
 
     def all_face_data(self) -> list:
         # self.cubesat.all_faces_on()
-        self.logger.debug("Bytes free: " + str(gc.mem_free()))
+        self.logger.debug(
+            "Free Memory Stat at beginning of all_face_data function",
+            bytes_free=gc.mem_free(),
+        )
         gc.collect()
 
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            self.logger.debug("Bytes free: " + str(gc.mem_free()))
+            self.logger.debug(
+                "Free Memory Stat after importing Big_data library",
+                bytes_free=gc.mem_free(),
+            )
 
             gc.collect()
             a: Big_Data.AllFaces = Big_Data.AllFaces(
                 self.debug, self.cubesat.tca, self.logger
             )
-            self.logger.debug("Bytes free: " + str(gc.mem_free()))
+            self.logger.debug(
+                "Free Memory Stat after initializing All Faces object",
+                bytes_free=gc.mem_free(),
+            )
 
             self.facestring: list = a.Face_Test_All()
 
@@ -320,9 +313,7 @@ class functions:
             gc.collect()
 
         except Exception as e:
-            self.logger.error(
-                "Big_Data error" + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Big_Data error", err=e)
 
         return self.facestring
 
@@ -333,10 +324,7 @@ class functions:
             return self.battery.get_power_metrics()
 
         except Exception as e:
-            self.logger.error(
-                "Error retrieving battery data"
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Error retrieving battery data", err=e)
             return None
 
     def get_imu_data(
@@ -352,9 +340,7 @@ class functions:
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
         except Exception as e:
-            self.logger.error(
-                "Error retrieving IMU data" + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Error retrieving IMU data", err=e)
 
         return data
 
@@ -372,18 +358,14 @@ class functions:
         try:
             self.cubesat.log("/faces.txt", data)
         except Exception as e:
-            self.logger.error(
-                "SD error: " + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("SD error", err=e)
 
     def log_error_data(self, data) -> None:
         self.logger.debug("Logging Error Data")
         try:
             self.cubesat.log("/error.txt", data)
         except Exception as e:
-            self.logger.error(
-                "SD error: " + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("SD error", err=e)
 
     """
     Misc Functions
@@ -402,17 +384,12 @@ class functions:
                 self.debug, self.cubesat.tca, self.logger
             )
         except Exception as e:
-            self.logger.error(
-                "Error Importing Big Data: " + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Error Importing Big Data", err=e)
 
         try:
             a.sequence = 52
         except Exception as e:
-            self.logger.error(
-                "Error setting motor driver sequences: "
-                + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Error setting motor driver sequences", err=e)
 
         def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
@@ -443,17 +420,13 @@ class functions:
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
-                self.logger.error(
-                    "Detumble error: " + "".join(traceback.format_exception(e)),
-                )
+                self.logger.error("Detumble error", err=e)
 
         try:
             self.logger.debug("Attempting")
             do_detumble()
         except Exception as e:
-            self.logger.error(
-                "Detumble error: " + "".join(traceback.format_exception(e)),
-            )
+            self.logger.error("Detumble error", err=e)
         self.cubesat.RGB = (100, 100, 50)
 
     def Short_Hybernate(self) -> Literal[True]:

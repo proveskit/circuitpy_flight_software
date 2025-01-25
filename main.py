@@ -34,7 +34,6 @@ try:
     c.watchdog_pet()
 
     import gc  # Garbage collection
-    import traceback
 
     import lib.pysquared.functions as functions
     from lib.pysquared.debugcolor import co
@@ -57,15 +56,17 @@ try:
 
     try:
         c.c_boot += 1  # Increment boot number
-        logger.info("Boot number: %s" % str(c.c_boot))
-        logger.info(str(gc.mem_free()) + " Bytes remaining")
+
+        logger.info(
+            "FC Board Stats",
+            bytes_remaining=gc.mem_free(),
+            boot_number=c.c_boot,
+        )
 
         initial_boot()
 
     except Exception as e:
-        logger.error(
-            "Error in Boot Sequence: " + "".join(traceback.format_exception(e)),
-        )
+        logger.error("Error in Boot Sequence ", err=e)
 
     finally:
         # logger.debug("MAIN", "Something went wrong!", foo="bar")
@@ -142,9 +143,7 @@ try:
                 f.listen()
 
     except Exception as e:
-        logger.error(
-            "Critical in Main Loop: " + "".join(traceback.format_exception(e)),
-        )
+        logger.critical("Critical in Main Loop", err=e)
         time.sleep(10)
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
@@ -155,4 +154,4 @@ try:
         c.hardware["WDT"] = False
 
 except Exception as e:
-    logger.error(e)
+    logger.error("An exception occured within main.py", err=e)

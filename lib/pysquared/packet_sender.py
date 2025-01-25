@@ -61,17 +61,23 @@ class PacketSender:
         """Send data with minimal progress updates"""
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        logger.info(f"Sending {total_packets} packets...")
+        logger.info("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
             if i % progress_interval == 0:
-                logger.info(f"Progress: {i}/{total_packets}")
+                logger.info(
+                    "Making progress sending packets",
+                    current_packet=i,
+                    num_packets=total_packets,
+                )
 
             if not self.send_packet_with_retry(packet, i):
-                logger.warning(f"Failed at packet {i}/{total_packets}")
+                logger.warning(
+                    "Failed to send packet", current_packet=i, num_packets=total_packets
+                )
                 return False
 
-        logger.info(f"Successfully sent {total_packets} packets!")
+        logger.info("Successfully sent all the packets!", num_packets=total_packets)
         return True
 
     def handle_retransmit_request(self, packets, request_packet, logger: Logger):
@@ -81,13 +87,14 @@ class PacketSender:
         try:
             missing_packets = self.pm.parse_retransmit_request(request_packet)
             logger.info(
-                f"\nRetransmit request received for {len(missing_packets)} packets",
+                "Retransmit request received for missing packets",
+                num_missing_packets=len(missing_packets),
             )
             time.sleep(0.2)  # Small delay before retransmission
 
             for seq in missing_packets:
                 if seq < len(packets):
-                    logger.info(f"Retransmitting packet {seq}")
+                    logger.info("Retransmitting packet ", packet=seq)
                     self.radio.send(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
                     self.radio.send(packets[seq])
@@ -96,7 +103,7 @@ class PacketSender:
             return True
 
         except Exception as e:
-            logger.error(f"Error handling retransmit request: {e}")
+            logger.error("Error handling retransmit request", err=e)
             return False
 
     def fast_send_data(
@@ -107,12 +114,14 @@ class PacketSender:
 
         packets = self.pm.pack_data(data)
         total_packets = len(packets)
-        logger.info(f"Sending {total_packets} packets...")
+        logger.info("Sending packets..", num_packets=total_packets)
 
         # Send first packet with retry until ACKed
         for attempt in range(self.max_retries):
             logger.info(
-                f"Sending first packet (attempt {attempt + 1}/{self.max_retries})",
+                "Sending first packet",
+                attempt_num=attempt + 1,
+                max_retries=self.max_retries,
             )
             self.radio.send(packets[0])
 
@@ -129,7 +138,9 @@ class PacketSender:
         logger.info("Sending remaining packets...")
         for i in range(1, total_packets):
             if i % 10 == 0:
-                logger.info(f"Sending packet {i}/{total_packets}")
+                logger.info(
+                    "Sending packet", current_packet=i, num_packets=total_packets
+                )
             self.radio.send(packets[i])
             time.sleep(send_delay)
 
@@ -147,7 +158,7 @@ class PacketSender:
                     logger.info("Valid retransmit request received!")
                     missing_packets = self.pm.parse_retransmit_request(packet)
                     logger.info(
-                        f"Retransmitting packets: {missing_packets}",
+                        "Retransmitting packets", missing_packets=missing_packets
                     )
 
                     # Add delay before retransmission to let receiver get ready
@@ -155,16 +166,12 @@ class PacketSender:
 
                     for seq in missing_packets:
                         if seq < len(packets):
-                            logger.info(
-                                f"Retransmitting packet {seq}",
-                            )
+                            logger.info("Retransmitting packet", packet=seq)
                             self.radio.send(packets[seq])
                             time.sleep(
                                 0.5
                             )  # Longer delay between retransmitted packets
-                            logger.info(
-                                f"Retransmitting packet {seq}",
-                            )
+                            logger.info("Retransmitting packet", packet=seq)
                             self.radio.send(packets[seq])
                             time.sleep(
                                 0.2

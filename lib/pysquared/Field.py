@@ -4,8 +4,6 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
-import traceback
-
 from lib.pysquared.debugcolor import co
 from lib.pysquared.logger import Logger
 
@@ -33,11 +31,7 @@ class Field:
                     "Please toggle licensed variable in code once you obtain an amateur radio license",
                 )
         except Exception as e:
-            self.logger.error(
-                "Tried Beaconing but encountered error: ".join(
-                    traceback.format_exception(e)
-                ),
-            )
+            self.logger.error("There was an error while Beaconing", err=e)
 
     def troubleshooting(self):
         # this is for troubleshooting comms

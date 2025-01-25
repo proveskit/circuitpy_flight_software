@@ -111,7 +111,7 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            self.logger.error(f"UART error: {e}")
+            self.logger.error("UART error", err=e)
             return ""
 
     def _is_valid_message(self, msg):
@@ -157,7 +157,7 @@ class BatteryHelper:
 
             except Exception as e:
                 if self.debug_mode:
-                    self.logger.error(f"Error parsing metrics: {e}")
+                    self.logger.error("Error parsing metrics", err=e)
 
         if self.debug_mode:
             self.logger.warning("Failed to get valid power metrics")
@@ -275,7 +275,7 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                self.logger.error(f"Parse error: {e}")
+                self.logger.error("Parse error", err=e)
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time

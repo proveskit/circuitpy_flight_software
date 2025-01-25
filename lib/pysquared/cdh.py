@@ -27,7 +27,8 @@ class CommandDataHandler:
         )
         self._repeat_code: str = config.getStr("repeat_code").encode("utf-8")
         self.logger.info(
-            f"Super secret code is: {self._super_secret_code}",
+            "The satellite has a super secret code!",
+            super_secret_code=self._super_secret_code,
         )
 
     ############### hot start helper ###############
@@ -43,7 +44,9 @@ class CommandDataHandler:
             self.message_handler(cubesat, msg)
         else:
             self.logger.info(
-                f"not for me? target id: {hex(msg[0])}, my id: {hex(cubesat.radio1.node)}",
+                "not for me?",
+                target_id=hex(msg[0]),
+                my_id=hex(cubesat.radio1.node),
             )
 
     ############### message handler ###############
@@ -64,7 +67,9 @@ class CommandDataHandler:
                     cmd_args = msg[6:]  # arguments are everything after
                     self.logger.info("cmd args: {}".format(cmd_args))
                 except Exception as e:
-                    self.logger.error("arg decoding error: {}".format(e))
+                    self.logger.error(
+                        "There was an error decoding the arguments", err=e
+                    )
             if cmd in self._commands:
                 try:
                     if cmd_args is None:
@@ -81,7 +86,7 @@ class CommandDataHandler:
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    self.logger.error("something went wrong: {}".format(e))
+                    self.logger.error("something went wrong!", err=e)
                     cubesat.radio1.send(str(e).encode())
             else:
                 self.logger.info("invalid command!")
@@ -105,7 +110,7 @@ class CommandDataHandler:
             try:
                 cubesat.radio1.send(msg[6:])
             except Exception as e:
-                self.logger.error("error repeating message: {}".format(e))
+                self.logger.error("There was an error repeating the message!", err=e)
         else:
             self.logger.info("bad code?")
 
@@ -163,10 +168,10 @@ class CommandDataHandler:
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat, args) -> None:
-        self.logger.info(f"query: {args}")
+        self.logger.info("Here are the query arguments", args=args)
 
         self.logger.info(cubesat.radio1.send(data=str(eval(args))))
 
     def exec_cmd(self, cubesat, args) -> None:
-        self.logger.info(f"exec: {args}")
+        self.logger.info("Executing command", args=args)
         exec(args)

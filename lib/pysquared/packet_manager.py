@@ -55,7 +55,9 @@ class PacketManager:
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size
         self.logger.info(
-            f"Packing data of length {len(data)} into {total_packets} packets",
+            "Packing data into packets",
+            num_packets=total_packets,
+            data_length=len(data),
         )
 
         packets = []
