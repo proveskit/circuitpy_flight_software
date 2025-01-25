@@ -1,13 +1,15 @@
 # Written with Claude 3.5
 # Nov 10, 2024
+from lib.pysquared.logger import Logger
 
 
 class PacketManager:
-    def __init__(self, max_packet_size=128):
+    def __init__(self, logger: Logger, max_packet_size=128):
         """Initialize the packet manager with maximum packet size (default 128 bytes for typical LoRa)"""
         self.max_packet_size = max_packet_size
         self.header_size = 4  # 2 bytes for sequence number, 2 for total packets
         self.payload_size = max_packet_size - self.header_size
+        self.logger = logger
 
     def create_retransmit_request(self, missing_packets):
         """
@@ -52,13 +54,17 @@ class PacketManager:
 
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size
-        print(f"Packing data of length {len(data)} into {total_packets} packets")
+        self.logger.info(
+            "Packing data into packets",
+            num_packets=total_packets,
+            data_length=len(data),
+        )
 
         packets = []
         for seq in range(total_packets):
             # Create header
             header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
-            print(f"Created header: {[hex(b) for b in header]}")
+            self.logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
             start = seq * self.payload_size
@@ -67,8 +73,11 @@ class PacketManager:
 
             # Combine header and payload
             packet = header + payload
-            print(
-                f"Packet {seq}: length={len(packet)}, header={[hex(b) for b in header]}"
+            self.logger.info(
+                "Combining the header and payload to form a Packet",
+                packet=seq,
+                packet_length=len(packet),
+                header=[hex(b) for b in header],
             )
             packets.append(packet)
 
