@@ -456,9 +456,15 @@ class Satellite:
         if self.debug:
             for key, value in self.hardware.items():
                 if value:
-                    self.logger.info(device=key, status=True)
+                    self.logger.info(
+                        "Successfully initialized hardware device",
+                        mdevice=key,
+                        status=True,
+                    )
                 else:
-                    self.logger.warning(device=key, status=False)
+                    self.logger.warning(
+                        "Unable to initialize hardware device", device=key, status=False
+                    )
         # set power mode
         self.power_mode: str = "normal"
 

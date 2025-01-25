@@ -172,7 +172,7 @@ class CommandDataHandler:
     def query(self, cubesat, args) -> None:
         self.logger.info("Here are the query arguments", args=args)
 
-        self.logger.info(cubesat.radio1.send(data=str(eval(args))))
+        cubesat.radio1.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat, args) -> None:
         self.logger.info("Executing command", args=args)

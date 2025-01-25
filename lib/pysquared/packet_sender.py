@@ -151,7 +151,8 @@ class PacketSender:
             packet = self.radio.receive()
             if packet:
                 logger.info(
-                    f"Received potential retransmit request: {[hex(b) for b in packet]}",
+                    "Received potential retransmit request:",
+                    packet=[hex(b) for b in packet],
                 )
 
                 if self.pm.is_retransmit_request(packet):
