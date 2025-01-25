@@ -8,10 +8,10 @@ import time
 
 
 class Logger:
-    def __init__(self):
-        self.logToStandardOut = True
+    def __init__(self) -> None:
+        self.logToStandardOut: bool = True
 
-    def _log(self, level: str, message: str, **kwargs):
+    def _log(self, level: str, message: str, **kwargs) -> None:
         """
         Log a message with a given severity level and any addional key/values.
         """
@@ -27,31 +27,31 @@ class Logger:
         if self.logToStandardOut:
             print(json_output)
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs) -> None:
         """
         Log a message with severity level DEBUG.
         """
         self._log("DEBUG", message, **kwargs)
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs) -> None:
         """
         Log a message with severity level INFO.
         """
         self._log("INFO", message, **kwargs)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs) -> None:
         """
         Log a message with severity level WARNING.
         """
         self._log("WARNING", message, **kwargs)
 
-    def error(self, message: str, **kwargs):
+    def error(self, message: str, **kwargs) -> None:
         """
         Log a message with severity level ERROR.
         """
         self._log("ERROR", message, **kwargs)
 
-    def critical(self, message: str, **kwargs):
+    def critical(self, message: str, **kwargs) -> None:
         """
         Log a message with severity level CRITICAL.
         """

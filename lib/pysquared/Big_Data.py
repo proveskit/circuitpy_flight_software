@@ -1,8 +1,10 @@
 import gc
 
+from lib.pysquared.logger import Logger
+
 
 class Face:
-    def __init__(self, Add, Pos, debug_state, tca, logger):
+    def __init__(self, Add, Pos, debug_state, tca, logger: Logger):
         self.tca = tca
         self.address = Add
         self.position = Pos
@@ -39,7 +41,7 @@ class Face:
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.logger.error("Error Initilizating Temperature Sensor", err=e)
+                self.logger.error("Error Initializing Temperature Sensor", err=e)
 
         if "VEML" in senlist:
             try:
@@ -48,7 +50,7 @@ class Face:
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.logger.error("Error Initilizating Light Sensor", err=e)
+                self.logger.error("Error Initializing Light Sensor", err=e)
 
         if "DRV" in senlist:
             try:
@@ -57,13 +59,13 @@ class Face:
                 self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
-                self.logger.error("Error Initilizating Motor Driver", err=e)
+                self.logger.error("Error Initializing Motor Driver", err=e)
 
         gc.collect()  # Clean up after initialization
 
 
 class AllFaces:
-    def __init__(self, debug, tca, logger):
+    def __init__(self, debug, tca, logger: Logger):
         self.tca = tca
         self.debug = debug
         self.faces = []
