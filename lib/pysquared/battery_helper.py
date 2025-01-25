@@ -83,7 +83,7 @@ class BatteryHelper:
         try:
             text = response.decode("utf-8")
             if self.debug_mode:
-                self.logger.info(f"Buffer: {text}")
+                self.logger.info("Read message", buffer=text)
 
             # Check for complete message
             if "AA<" in text and ">" in text:
@@ -287,5 +287,5 @@ class BatteryHelper:
             read_time=f"{read_time:.2f}ms",
             parse_time=f"{parse_time:.2f}ms",
             total_time=f"{total_time:.2f}ms",
-            response=f"{response}",
+            response={response},
         )

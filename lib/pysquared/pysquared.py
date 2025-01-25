@@ -302,7 +302,7 @@ class Satellite:
         """
         self.c_boot += 1
         self.BOOTTIME: int = 1577836800
-        self.logger.debug(f"Boot time: {self.BOOTTIME}s")
+        self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
@@ -368,7 +368,9 @@ class Satellite:
         # Alternative Implementations of hardware initialization specific for orpheus
         def orpheus_skip_I2C(hardware_key: str) -> None:
             self.logger.debug(
-                f"[{self.cubesatName}] {hardware_key} not initialized",
+                "Hardware component not initialized",
+                cubesat=self.cubesatName,
+                hardware_key=hardware_key,
             )
             return None
 
@@ -503,7 +505,7 @@ class Satellite:
 
             if not valid_addresses and 0x77 in addresses:
                 self.logger.error(
-                    f"No Devices Found on {channel_to_face[channel]}.", channel=channel
+                    "No Devices Found on channel", channel=channel_to_face[channel]
                 )
                 self.hardware[channel_to_face[channel]] = False
             else:
@@ -721,7 +723,7 @@ class Satellite:
     def log(self, filedir: str, msg: str) -> None:
         if self.hardware["SDcard"]:
             try:
-                self.logger.debug(f"writing {msg} to {filedir}")
+                self.logger.debug("Writing a log to a file", msg=msg, file_dir=filedir)
                 with open(filedir, "a+") as f:
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
@@ -736,7 +738,7 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.logger.debug(f"--- Printing File: {filedir} ---")
+            self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
                     self.logger.debug(str(file.read()))
@@ -755,7 +757,7 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.logger.debug(f"--- reading File: {filedir} ---")
+            self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
                     self.logger.debug(str(file.read()))
