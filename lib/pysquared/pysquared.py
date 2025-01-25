@@ -458,7 +458,7 @@ class Satellite:
                 if value:
                     self.logger.info(
                         "Successfully initialized hardware device",
-                        mdevice=key,
+                        device=key,
                         status=True,
                     )
                 else:
