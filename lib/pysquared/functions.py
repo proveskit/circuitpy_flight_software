@@ -107,7 +107,7 @@ class functions:
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
-            self.logger.debug("Sent Packet", msg=message)
+            self.logger.debug("Sent Packet", packet_message=message)
         else:
             self.logger.warning("Failed to send packet")
         del self.field

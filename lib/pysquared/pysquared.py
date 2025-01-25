@@ -729,7 +729,9 @@ class Satellite:
     def log(self, filedir: str, msg: str) -> None:
         if self.hardware["SDcard"]:
             try:
-                self.logger.debug("Writing a log to a file", msg=msg, file_dir=filedir)
+                self.logger.debug(
+                    "Writing a log to a file", log_msg=msg, file_dir=filedir
+                )
                 with open(filedir, "a+") as f:
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
