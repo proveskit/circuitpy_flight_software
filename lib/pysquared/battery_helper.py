@@ -287,5 +287,5 @@ class BatteryHelper:
             read_time=f"{read_time:.2f}ms",
             parse_time=f"{parse_time:.2f}ms",
             total_time=f"{total_time:.2f}ms",
-            response={response},
+            response=response,
         )

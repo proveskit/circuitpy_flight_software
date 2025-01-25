@@ -755,7 +755,7 @@ class Satellite:
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.logger.debug("Printing in read mode", content=line.strip())
+                        self.logger.info(line.strip())
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))

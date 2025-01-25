@@ -77,7 +77,7 @@ class PacketManager:
                 "Combining the header and payload to form a Packet",
                 packet=seq,
                 packet_length=len(packet),
-                header={[hex(b) for b in header]},
+                header=[hex(b) for b in header],
             )
             packets.append(packet)
 

@@ -69,8 +69,6 @@ try:
         logger.error("Error in Boot Sequence", err=e)
 
     finally:
-        # logger.debug("MAIN", "Something went wrong!", foo="bar")
-        # NOTE: @blakejameson: the comment above shouldnt be in the finally block
         pass
 
     def send_imu():

@@ -6,37 +6,11 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
-# from adafruit_blinka import Enum
-
-# class DebugMode(Enum):
-# PRINTMODE = False
-# DEBUGMODE = True
 
 
 class Logger:
     def __init__(self):
         self.logToStandardOut = True
-        # self.debugmode = DebugMode.DEBUGMODE
-        # self.logToFile = False
-
-    # @blakejameson NOTE: functionality to save logs to file will be implemented at a later point. For now, logs will
-    # be output to standard output
-    # def saveLogToFile():
-    #    pass
-
-    # def setLogToFile(self):
-    #     """
-    #     Set the logger to save logs to a file.
-    #     """
-    #     self.logToFile = True
-    #     self.logToStandardOut = False
-
-    # def setLogToStdOut(self):
-    #     """
-    #     Set the logger to output logs to standard output.
-    #     """
-    #     self.logToStandardOut = True
-    #     self.logToFile = False
 
     def _log(self, level: str, message: str, **kwargs):
         """

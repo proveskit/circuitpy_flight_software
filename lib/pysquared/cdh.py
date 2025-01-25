@@ -144,7 +144,7 @@ class CommandDataHandler:
         if args == b"\x0b\xfdI\xec":
             self.logger.info("valid shutdown command received")
             # set shutdown NVM bit flag
-            cubesat.f_shtdwn = True
+            cubesat.f_shtdwn: bool = True
 
             """
             Exercise for the user:
@@ -166,11 +166,11 @@ class CommandDataHandler:
                 monotonic_time=time.monotonic() + eval("1e" + str(_t))
             )  # default 1 day
             # set hot start flag right before sleeping
-            cubesat.f_hotstrt = True
+            cubesat.f_hotstrt: bool = True
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat, args) -> None:
-        self.logger.info("Here are the query arguments", args=args)
+        self.logger.info("Sending query with args", args=args)
 
         cubesat.radio1.send(data=str(eval(args)))
 
