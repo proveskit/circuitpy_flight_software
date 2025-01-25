@@ -66,7 +66,7 @@ try:
         initial_boot()
 
     except Exception as e:
-        logger.error("Error in Boot Sequence ", err=e)
+        logger.error("Error in Boot Sequence", err=e)
 
     finally:
         # logger.debug("MAIN", "Something went wrong!", foo="bar")

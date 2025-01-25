@@ -252,8 +252,8 @@ class functions:
 
         try:
             if received is not None:
-                self.logger.debug("Received Packet: " + str(received))
-                cdh.message_handler(self.cubesat, received, self.logger)
+                self.logger.debug("Received Packet", packet=received)
+                cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
             self.logger.error("An Error has occured while handling a command: ", err=e)
@@ -415,8 +415,8 @@ class functions:
                             data[0][x] = 0.0
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
-                    self.logger.debug("Dipole: " + str(dipole))
-                    self.send("Detumbling! Gyro, Mag: " + str(data))
+                    self.logger.debug("Detumbling", dipole=dipole)
+                    self.send("Detumbling! Gyro, Mag:", data=data)
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:

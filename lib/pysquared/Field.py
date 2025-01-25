@@ -21,10 +21,10 @@ class Field:
     def Beacon(self, msg):
         try:
             if self.cubesat.is_licensed:
-                self.logger.info("I am beaconing: " + str(msg))
+                self.logger.info("I am beaconing", beacon=str(msg))
                 self.logger.info(
-                    "Message Success: "
-                    + str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
+                    "Message Success?",
+                    success=str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
                 )
             else:
                 self.logger.debug(

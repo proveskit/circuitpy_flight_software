@@ -44,7 +44,7 @@ class CommandDataHandler:
             self.message_handler(cubesat, msg)
         else:
             self.logger.info(
-                "not for me?",
+                "Message not for me?",
                 target_id=hex(msg[0]),
                 my_id=hex(cubesat.radio1.node),
             )
@@ -62,10 +62,12 @@ class CommandDataHandler:
                 cmd = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
                 cmd_args = None
                 if len(msg) > 6:
-                    self.logger.info("command with args")
+                    self.logger.info("This is a command with args")
                 try:
                     cmd_args = msg[6:]  # arguments are everything after
-                    self.logger.info("cmd args: {}".format(cmd_args))
+                    self.logger.info(
+                        "Here are the command arguments", cmd_args=cmd_args
+                    )
                 except Exception as e:
                     self.logger.error(
                         "There was an error decoding the arguments", err=e
@@ -74,15 +76,15 @@ class CommandDataHandler:
                 try:
                     if cmd_args is None:
                         self.logger.info(
-                            "running {} (no args)".format(self._commands[cmd]),
+                            "There are no args provided", command=self._commands[cmd]
                         )
                         # eval a string turns it into a func name
                         eval(self._commands[cmd])(cubesat)
                     else:
                         self.logger.info(
-                            "running {} (with args: {})".format(
-                                self._commands[cmd], cmd_args
-                            ),
+                            "running command with args",
+                            command=self._commands[cmd],
+                            cmd_args=cmd_args,
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:

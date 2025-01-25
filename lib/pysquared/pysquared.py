@@ -681,7 +681,7 @@ class Satellite:
 
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
-        self.logger.debug("Current up time: " + str(self.UPTIME))
+        self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
 
@@ -741,11 +741,13 @@ class Satellite:
             self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
-                    self.logger.debug(str(file.read()))
+                    self.logger.debug(
+                        "Printing in binary mode", content=str(file.read())
+                    )
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.logger.debug(str(line.strip()))
+                        self.logger.debug("Printing in read mode", content=line.strip())
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
@@ -816,7 +818,7 @@ class Satellite:
                         n: int = (n + i) % 0xFFFF
                         # print('file number is',n)
                         break
-                self.logger.debug("creating file..." + str(ff))
+                self.logger.debug("creating a file...", file_dir=str(ff))
                 if binary:
                     b: str = "ab"
                 else:
