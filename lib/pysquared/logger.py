@@ -13,6 +13,16 @@ class Logger:
         self.error_count: int = 0
         self.log_level: str = log_level
         self.log_mode: str = log_mode
+        # mapping each level to a numerical value. Used to help support log_level.
+        # If log function used is equal to or above the value, it can be used
+        self.levels_map: dict = {
+            "NOTSET": 0,
+            "DEBUG": 10,
+            "INFO": 20,
+            "WARNING": 30,
+            "ERROR": 40,
+            "CRITICAL": 50,
+        }
 
     def _log(self, level: str, message: str, **kwargs) -> None:
         """
@@ -27,7 +37,10 @@ class Logger:
 
         json_output = json.dumps(kwargs)
 
-        if self.logToStandardOut:
+        if (
+            self.logToStandardOut
+            and self.levels_map[level] >= self.levels_map[self.log_level]
+        ):
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
@@ -52,6 +65,7 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
+        self.increment_error()
         self._log("ERROR", message, **kwargs)
 
     def critical(self, message: str, **kwargs) -> None:
@@ -62,3 +76,6 @@ class Logger:
 
     def increment_error(self) -> None:
         self.error_count += 1
+
+    def get_error_count(self) -> int:
+        return self.error_count
