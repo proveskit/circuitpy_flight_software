@@ -16,19 +16,18 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
-config = Config()
+config: Config = Config()
 
+log_level: str = config.getStr("log_level")
+log_mode: str = config.getStr("log_mode")
 
-log_level = config.getStr("log_level")
-log_mode = config.getStr("log_mode")
-
-logger = Logger(log_level, log_mode)
-logger.debug("Initialied Config")
+logger: Logger = Logger(log_level, log_mode)
+logger.debug("Initialized Config")
 
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 
-loiter_time = 5
+loiter_time: int = 5
 
 try:
     for i in range(loiter_time):
