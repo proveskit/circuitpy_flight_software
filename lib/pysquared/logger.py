@@ -6,9 +6,19 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
+import microcontroller
+from micropython import const
+
+from lib.pysquared.nvm.counter import Counter
+
+# NVM register number
+_ERRORCNT = const(7)
+
 
 class Logger:
     def __init__(self, log_level: str = "DEBUG", log_mode: str = "PRINT") -> None:
+        # mapping each level to a numerical value. Used to help support log_level.
+        # If log function used is equal to or above the value, it can be used
         self.levels_map: dict = {
             "NOTSET": 0,
             "DEBUG": 10,
@@ -19,11 +29,11 @@ class Logger:
         }
         self.log_modes_set = {"PRINT", "FILE", "BOTH"}
         self.logToStandardOut: bool = True
-        self.error_count: int = 0
+        self.error_count: Counter = Counter(
+            index=_ERRORCNT, datastore=microcontroller.nvm
+        )
         self.log_level: str = self.parse_log_level(log_level)
         self.log_mode: str = self.parse_log_mode(log_mode)
-        # mapping each level to a numerical value. Used to help support log_level.
-        # If log function used is equal to or above the value, it can be used
 
     def parse_log_level(self, log_level: str) -> str:
         """
@@ -92,7 +102,7 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
-        self.increment_error()
+        self.error_count.increment()
         self._log("ERROR", message, **kwargs)
 
     def critical(self, message: str, **kwargs) -> None:
@@ -100,9 +110,6 @@ class Logger:
         Log a message with severity level CRITICAL.
         """
         self._log("CRITICAL", message, **kwargs)
-
-    def increment_error(self) -> None:
-        self.error_count += 1
 
     def get_error_count(self) -> int:
         return self.error_count
