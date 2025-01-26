@@ -69,5 +69,10 @@
         "Your Face",
         "not True lol",
         "I have brought peace, freedom, justice, and security to my new empire! Your New Empire?"
-    ]
+    ],
+
+"dictionary": {
+    "id": "0xFB",
+    "gs": "0xFA"
+    }
 }

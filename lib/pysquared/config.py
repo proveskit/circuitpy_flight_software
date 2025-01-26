@@ -4,7 +4,7 @@ distribute these values across the files & variables
 that use them. Instantiation happens in main.
 
 Also it allow values to be set temporarily using setter
-function, and values can be set permanently using the
+functions, and values can be set permanently using the
 saver functions. Following the FPrime model.
 """
 
@@ -125,4 +125,4 @@ class Config:
     def saveToConfig(self) -> None:
         # writes data to the json file
         with open("config.json", "w") as f:
-            json.dump(self._config, f, indent=4)  # formats it??? will test
+            json.dump(self._config, f, indent=4)
