@@ -28,14 +28,11 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-
-# Hardware Specific Libs
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
-from lib.pysquared.bitflags import bitFlag, multiBitFlag
 from lib.pysquared.config import Config  # Configs
-from lib.pysquared.debugcolor import co
+from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.nvm.flag import Flag
 
-# Importing typing libraries
 try:
     from typing import Any, Callable, OrderedDict, TextIO, Union
 
@@ -43,14 +40,11 @@ try:
 except Exception:
     pass
 
+from lib.pysquared.logger import Logger
 
 # NVM register numbers
 _BOOTCNT = const(0)
-_VBUSRST = const(6)
 _ERRORCNT = const(7)
-_TOUTS = const(9)
-_ICHRG = const(11)
-_DIST = const(13)
 _FLAG = const(16)
 
 SEND_BUFF: bytearray = bytearray(252)
@@ -62,42 +56,29 @@ class Satellite:
     """
 
     # General NVM counters
-    c_boot: multiBitFlag = multiBitFlag(register=_BOOTCNT, lowest_bit=0, num_bits=8)
-    c_vbusrst: multiBitFlag = multiBitFlag(register=_VBUSRST, lowest_bit=0, num_bits=8)
-    c_error_count: multiBitFlag = multiBitFlag(
-        register=_ERRORCNT, lowest_bit=0, num_bits=8
-    )
-    c_distance: multiBitFlag = multiBitFlag(register=_DIST, lowest_bit=0, num_bits=8)
-    c_ichrg: multiBitFlag = multiBitFlag(register=_ICHRG, lowest_bit=0, num_bits=8)
+    boot_count: Counter = Counter(index=_BOOTCNT, datastore=microcontroller.nvm)
+    error_count: Counter = Counter(index=_ERRORCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
-    f_softboot: bitFlag = bitFlag(register=_FLAG, bit=0)
-    f_solar: bitFlag = bitFlag(register=_FLAG, bit=1)
-    f_burnarm: bitFlag = bitFlag(register=_FLAG, bit=2)
-    f_brownout: bitFlag = bitFlag(register=_FLAG, bit=3)
-    f_triedburn: bitFlag = bitFlag(register=_FLAG, bit=4)
-    f_shtdwn: bitFlag = bitFlag(register=_FLAG, bit=5)
-    f_burned: bitFlag = bitFlag(register=_FLAG, bit=6)
-    f_fsk: bitFlag = bitFlag(register=_FLAG, bit=7)
-
-    def debug_print(self, statement: Any) -> None:
-        """
-        A method for printing debug statements.
-        """
-        if self.debug:
-            print(co("[pysquared]" + str(statement), "green", "bold"))
+    f_softboot: Flag = Flag(index=_FLAG, bit_index=0, datastore=microcontroller.nvm)
+    f_brownout: Flag = Flag(index=_FLAG, bit_index=3, datastore=microcontroller.nvm)
+    f_shtdwn: Flag = Flag(index=_FLAG, bit_index=5, datastore=microcontroller.nvm)
+    f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
+    f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
     def error_print(self, statement: Any) -> None:
-        self.c_error_count += 1  # Limited to 255 errors
+        self.error_count.increment()
         if self.debug:
-            print(co("[pysquared]" + str(statement), "red", "bold"))
+            self.logger.error(str(statement))
 
     def safe_init(error_severity="ERROR"):
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
                 if self.debug:
-                    self.debug_print(f"Initializing {hardware_key}")
+                    self.logger.debug(
+                        "Initializing hardware component", hardware_key=hardware_key
+                    )
 
                 try:
                     device: Any = func(self, *args, **kwargs)
@@ -161,7 +142,7 @@ class Satellite:
         self.radio1_DIO0.switch_to_input()
         self.radio1_DIO4.switch_to_input()
 
-        if self.f_fsk:
+        if self.f_fsk.get():
             self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
                 self.spi0,
                 _rf_cs1,
@@ -239,7 +220,7 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, logger: Logger) -> None:
         self.cubesatName: str = config.getStr("cubesatName")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
@@ -249,6 +230,7 @@ class Satellite:
         self.heating: bool = config.getBool("heating")
         self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
         self.is_licensed: bool = config.getBool("is_licensed")
+        self.logger = logger
 
         """
         Define the normal power modes
@@ -296,9 +278,8 @@ class Satellite:
         """
         Define the boot time and current time
         """
-        self.c_boot += 1
         self.BOOTTIME: int = 1577836800
-        self.debug_print(f"Boot time: {self.BOOTTIME}s")
+        self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
@@ -335,12 +316,8 @@ class Satellite:
             ]
         )
 
-        """
-        NVM Parameter Resets
-        """
-
-        if self.f_softboot:
-            self.f_softboot = False
+        if self.f_softboot.get():
+            self.f_softboot.toggle(False)
 
         """
         Setting up the watchdog pin.
@@ -363,7 +340,11 @@ class Satellite:
 
         # Alternative Implementations of hardware initialization specific for orpheus
         def orpheus_skip_I2C(hardware_key: str) -> None:
-            self.debug_print(f"[{self.cubesatName}] {hardware_key} not initialized")
+            self.logger.debug(
+                "Hardware component not initialized",
+                cubesat=self.cubesatName,
+                hardware_key=hardware_key,
+            )
             return None
 
         def orpheus_init_UART(hardware_key: str):
@@ -436,28 +417,27 @@ class Satellite:
         """
         self.scan_tca_channels()
 
-        if self.f_fsk:
-            self.debug_print("Next restart will be in LoRa mode.")
-            self.f_fsk = False
+        if self.f_fsk.get():
+            self.logger.debug("Next restart will be in LoRa mode.")
+            self.f_fsk.toggle(False)
 
         """
         Prints init State of PySquared Hardware
         """
-        self.debug_print("PySquared Hardware Initialization Complete!")
+        self.logger.debug("PySquared Hardware Initialization Complete!")
 
         if self.debug:
-            # Find the length of the longest key
-            max_key_length: int = max(len(key) for key in self.hardware.keys())
-
-            print("=" * 16)
-            print("Device  | Status")
             for key, value in self.hardware.items():
-                padded_key: str = key + " " * (max_key_length - len(key))
                 if value:
-                    print(co(f"|{padded_key} | {value} |", "green"))
+                    self.logger.info(
+                        "Successfully initialized hardware device",
+                        device=key,
+                        status=True,
+                    )
                 else:
-                    print(co(f"|{padded_key} | {value}|", "red"))
-            print("=" * 16)
+                    self.logger.warning(
+                        "Unable to initialize hardware device", device=key, status=False
+                    )
         # set power mode
         self.power_mode: str = "normal"
 
@@ -467,7 +447,7 @@ class Satellite:
 
     def scan_tca_channels(self) -> None:
         if not self.hardware["TCA"]:
-            self.debug_print("[WARNING] TCA not initialized")
+            self.logger.warning("TCA not initialized")
             return
 
         channel_to_face: dict[int, str] = {
@@ -497,17 +477,21 @@ class Satellite:
             return
 
         try:
-            self.debug_print(f"Channel {channel}:")
             addresses: list[int] = self.tca[channel].scan()
             valid_addresses: list[int] = [
                 addr for addr in addresses if addr not in [0x00, 0x19, 0x1E, 0x6B, 0x77]
             ]
 
             if not valid_addresses and 0x77 in addresses:
-                self.error_print(f"No Devices Found on {channel_to_face[channel]}.")
+                self.logger.error(
+                    "No Devices Found on channel", channel=channel_to_face[channel]
+                )
                 self.hardware[channel_to_face[channel]] = False
             else:
-                self.debug_print([hex(addr) for addr in valid_addresses])
+                self.logger.debug(
+                    channel=channel,
+                    valid_addresses=[hex(addr) for addr in valid_addresses],
+                )
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
@@ -535,22 +519,6 @@ class Satellite:
 
         except Exception as e:
             self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
-
-    @property
-    def burnarm(self) -> bitFlag:
-        return self.f_burnarm
-
-    @burnarm.setter
-    def burnarm(self, value: bitFlag) -> None:
-        self.f_burnarm: bitFlag = value
-
-    @property
-    def burned(self) -> bitFlag:
-        return self.f_burned
-
-    @burned.setter
-    def burned(self, value: bitFlag) -> None:
-        self.f_burned: bitFlag = value
 
     @property
     def RGB(self) -> tuple[int, int, int]:
@@ -583,7 +551,9 @@ class Satellite:
                     "error unmounting SD card" + "".join(traceback.format_exception(e))
                 )
         try:
-            self.debug_print("Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]")
+            self.logger.debug(
+                "Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
+            )
         except Exception as e:
             self.error_print(
                 "vbus reset error: " + "".join(traceback.format_exception(e))
@@ -674,7 +644,7 @@ class Satellite:
 
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
-        self.debug_print(str("Current up time: " + str(self.UPTIME)))
+        self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
 
@@ -716,7 +686,9 @@ class Satellite:
     def log(self, filedir: str, msg: str) -> None:
         if self.hardware["SDcard"]:
             try:
-                self.debug_print(f"writing {msg} to {filedir}")
+                self.logger.debug(
+                    "Writing a log to a file", log_msg=msg, file_dir=filedir
+                )
                 with open(filedir, "a+") as f:
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
@@ -731,15 +703,16 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- Printing File: {filedir} ---")
+            self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
-                    self.debug_print(file.read())
-                    self.debug_print("")
+                    self.logger.debug(
+                        "Printing in binary mode", content=str(file.read())
+                    )
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.debug_print(line.strip())
+                        self.logger.info(line.strip())
         except Exception as e:
             self.error_print(
                 "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
@@ -751,16 +724,15 @@ class Satellite:
         try:
             if filedir is None:
                 raise Exception("file directory is empty")
-            self.debug_print(f"--- reading File: {filedir} ---")
+            self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
-                    self.debug_print(file.read())
-                    self.debug_print("")
+                    self.logger.debug(str(file.read()))
                     return file.read()
             else:
                 with open(filedir, "r") as file:
                     for line in file:
-                        self.debug_print(line.strip())
+                        self.logger.debug(str(line.strip()))
                     return file
         except Exception as e:
             self.error_print(
@@ -779,10 +751,10 @@ class Satellite:
                 n: int = 0
                 _folder: str = substring[: substring.rfind("/") + 1]
                 _file: str = substring[substring.rfind("/") + 1 :]
-                self.debug_print(
+                self.logger.debug(
                     "Creating new file in directory: /sd{} with file prefix: {}".format(
                         _folder, _file
-                    )
+                    ),
                 )
                 try:
                     chdir("/sd" + _folder)
@@ -811,7 +783,7 @@ class Satellite:
                         n: int = (n + i) % 0xFFFF
                         # print('file number is',n)
                         break
-                self.debug_print("creating file..." + str(ff))
+                self.logger.debug("creating a file...", file_dir=str(ff))
                 if binary:
                     b: str = "ab"
                 else:
@@ -826,4 +798,4 @@ class Satellite:
                 )
                 return None
         else:
-            self.debug_print("[WARNING] SD Card not initialized")
+            self.logger.warning("SD Card not initialized")

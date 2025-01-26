@@ -54,7 +54,7 @@ This software contains all of the libraries required to operate the sensors, pys
 - **adafruit_veml7700.py** This is the library that is responsible for obtaining data from the veml7700 Light Sensor
 - **adafruit_vl6180.py** This is the library that is responsible for obtaining data from the vl6180 LiDAR sensor
 - **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain all the same sensors, this class handles the individual face sensors and returns them all to the main code.
-- **bitflags.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
+- **flag.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
 - **debugcolor.py** This is code that allows for easier debugging and is used by individual classes. Each class utilizes a different color and makes debugging substantially easier
 - **Field.py** This is code that implements the radio module for sending and listening
 - **functions.py** This is a library of functions utilized by the satellite to obtain data, detumble, run the battery heater
