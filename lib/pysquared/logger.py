@@ -8,13 +8,7 @@ import time
 
 
 class Logger:
-    def __init__(self, log_level: str, log_mode: str) -> None:
-        self.logToStandardOut: bool = True
-        self.error_count: int = 0
-        self.log_level: str = self.parse_log_level(log_level)
-        self.log_mode: str = self.parse_log_mode(log_mode)
-        # mapping each level to a numerical value. Used to help support log_level.
-        # If log function used is equal to or above the value, it can be used
+    def __init__(self, log_level: str = "DEBUG", log_mode: str = "PRINT") -> None:
         self.levels_map: dict = {
             "NOTSET": 0,
             "DEBUG": 10,
@@ -23,21 +17,35 @@ class Logger:
             "ERROR": 40,
             "CRITICAL": 50,
         }
-        self.log_modes_set = set("PRINT", "FILE", "BOTH")
+        self.log_modes_set = {"PRINT", "FILE", "BOTH"}
+        self.logToStandardOut: bool = True
+        self.error_count: int = 0
+        self.log_level: str = self.parse_log_level(log_level)
+        self.log_mode: str = self.parse_log_mode(log_mode)
+        # mapping each level to a numerical value. Used to help support log_level.
+        # If log function used is equal to or above the value, it can be used
 
     def parse_log_level(self, log_level: str) -> str:
+        """
+        Parses the log_level entered into the config.json
+        """
         log_level = log_level.upper()
         log_level = log_level.strip()
 
+        # function returns DEBUG as the log_level if an invalid log_level is entered
         if log_level not in self.levels_map:
             log_level = "DEBUG"
 
         return log_level
 
     def parse_log_mode(self, log_mode: str) -> str:
+        """
+        Parses the log_mode entered into the config.json
+        """
         log_mode = log_mode.upper()
         log_mode = log_mode.strip()
 
+        # function returns PRINT as the log_mode if an invalid mode is entered
         if log_mode not in self.log_modes_set:
             log_mode = "PRINT"
 
