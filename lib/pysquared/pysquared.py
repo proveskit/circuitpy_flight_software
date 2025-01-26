@@ -66,11 +66,6 @@ class Satellite:
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
     f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
-    def error_print(self, statement: Any) -> None:
-        self.error_count.increment()
-        if self.debug:
-            self.logger.error(str(statement))
-
     def safe_init(error_severity="ERROR"):
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):

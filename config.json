@@ -45,6 +45,8 @@
     ],
 
 "debug": true,
+"log_level": "DEBUG",
+"log_mode": "PRINT",
 "legacy": false,
 "heating": false,
 "orpheus":true,

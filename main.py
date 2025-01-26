@@ -16,7 +16,14 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
-logger = Logger()
+config = Config()
+
+
+log_level = config.getStr("log_level")
+log_mode = config.getStr("log_mode")
+
+logger = Logger(log_level, log_mode)
+logger.debug("Initialied Config")
 
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
@@ -28,8 +35,6 @@ try:
         logger.info(f"Code Starting in {loiter_time-i} seconds")
         time.sleep(1)
 
-    logger.debug("Initializing Config")
-    config = Config()
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 

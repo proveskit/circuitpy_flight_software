@@ -8,8 +8,11 @@ import time
 
 
 class Logger:
-    def __init__(self) -> None:
+    def __init__(self, log_level: str, log_mode: str) -> None:
         self.logToStandardOut: bool = True
+        self.error_count: int = 0
+        self.log_level: str = log_level
+        self.log_mode: str = log_mode
 
     def _log(self, level: str, message: str, **kwargs) -> None:
         """
@@ -56,3 +59,6 @@ class Logger:
         Log a message with severity level CRITICAL.
         """
         self._log("CRITICAL", message, **kwargs)
+
+    def increment_error(self) -> None:
+        self.error_count += 1
