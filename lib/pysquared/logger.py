@@ -11,8 +11,8 @@ class Logger:
     def __init__(self, log_level: str, log_mode: str) -> None:
         self.logToStandardOut: bool = True
         self.error_count: int = 0
-        self.log_level: str = log_level
-        self.log_mode: str = log_mode
+        self.log_level: str = self.parse_log_level(log_level)
+        self.log_mode: str = self.parse_log_mode(log_mode)
         # mapping each level to a numerical value. Used to help support log_level.
         # If log function used is equal to or above the value, it can be used
         self.levels_map: dict = {
@@ -23,6 +23,28 @@ class Logger:
             "ERROR": 40,
             "CRITICAL": 50,
         }
+        self.log_modes_set = set("PRINT", "FILE", "BOTH")
+
+    def parse_log_level(self, log_level: str) -> str:
+        log_level = log_level.upper()
+        log_level = log_level.strip()
+
+        if log_level not in self.levels_map:
+            log_level = "DEBUG"
+
+        return log_level
+
+    def parse_log_mode(self, log_mode: str) -> str:
+        log_mode = log_mode.upper()
+        log_mode = log_mode.strip()
+
+        if log_mode not in self.log_modes_set:
+            log_mode = "PRINT"
+
+        return log_mode
+
+    def can_print_this_level(self, level: str) -> bool:
+        return self.levels_map[level] >= self.levels_map[self.log_level]
 
     def _log(self, level: str, message: str, **kwargs) -> None:
         """
@@ -37,10 +59,7 @@ class Logger:
 
         json_output = json.dumps(kwargs)
 
-        if (
-            self.logToStandardOut
-            and self.levels_map[level] >= self.levels_map[self.log_level]
-        ):
+        if self.logToStandardOut and self.can_print_this_level(level):
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
