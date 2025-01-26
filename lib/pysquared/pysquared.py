@@ -70,10 +70,9 @@ class Satellite:
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
-                if self.debug:
-                    self.logger.debug(
-                        "Initializing hardware component", hardware_key=hardware_key
-                    )
+                self.logger.debug(
+                    "Initializing hardware component", hardware_key=hardware_key
+                )
 
                 try:
                     device: Any = func(self, *args, **kwargs)
@@ -220,7 +219,6 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config.getBool("debug")
         self.legacy: bool = config.getBool("legacy")
         self.heating: bool = config.getBool("heating")
         self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
@@ -421,18 +419,17 @@ class Satellite:
         """
         self.logger.debug("PySquared Hardware Initialization Complete!")
 
-        if self.debug:
-            for key, value in self.hardware.items():
-                if value:
-                    self.logger.info(
-                        "Successfully initialized hardware device",
-                        device=key,
-                        status=True,
-                    )
-                else:
-                    self.logger.warning(
-                        "Unable to initialize hardware device", device=key, status=False
-                    )
+        for key, value in self.hardware.items():
+            if value:
+                self.logger.info(
+                    "Successfully initialized hardware device",
+                    device=key,
+                    status=True,
+                )
+            else:
+                self.logger.warning(
+                    "Unable to initialize hardware device", device=key, status=False
+                )
         # set power mode
         self.power_mode: str = "normal"
 

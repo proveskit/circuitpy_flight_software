@@ -4,11 +4,10 @@ from lib.pysquared.logger import Logger
 
 
 class Face:
-    def __init__(self, Add, Pos, debug_state, tca, logger: Logger):
+    def __init__(self, Add, Pos, tca, logger: Logger):
         self.tca = tca
         self.address = Add
         self.position = Pos
-        self.debug = debug_state
         self.logger = logger
 
         # Use tuple instead of list for immutable data
@@ -65,16 +64,15 @@ class Face:
 
 
 class AllFaces:
-    def __init__(self, debug, tca, logger: Logger):
+    def __init__(self, tca, logger: Logger):
         self.tca = tca
-        self.debug = debug
         self.faces = []
         self.logger = logger
 
         # Create faces using a loop instead of individual variables
         positions = [("y+", 0), ("y-", 1), ("x+", 2), ("x-", 3), ("z-", 4)]
         for pos, addr in positions:
-            face = Face(addr, pos, debug, tca, self.logger)
+            face = Face(addr, pos, tca, self.logger)
             face.Sensorinit(face.senlist, face.address)
             self.faces.append(face)
             gc.collect()  # Clean up after each face initialization
