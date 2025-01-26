@@ -44,7 +44,6 @@
         "Everything in life is a spring if you think hard enough!"
     ],
 
-"debug": true,
 "log_level": "DEBUG",
 "log_mode": "PRINT",
 "legacy": false,

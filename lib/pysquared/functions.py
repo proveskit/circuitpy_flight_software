@@ -31,7 +31,6 @@ class functions:
         self.logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
-        self.debug: bool = cubesat.debug
         self.logger.info("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
@@ -100,7 +99,7 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
@@ -142,7 +141,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
@@ -199,7 +198,7 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -222,7 +221,7 @@ class functions:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug, self.logger)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         self.logger.debug("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
@@ -295,9 +294,7 @@ class functions:
             )
 
             gc.collect()
-            a: Big_Data.AllFaces = Big_Data.AllFaces(
-                self.debug, self.cubesat.tca, self.logger
-            )
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
             self.logger.debug(
                 "Free Memory Stat after initializing All Faces object",
                 bytes_free=gc.mem_free(),
@@ -359,9 +356,7 @@ class functions:
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            a: Big_Data.AllFaces = Big_Data.AllFaces(
-                self.debug, self.cubesat.tca, self.logger
-            )
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
         except Exception as e:
             self.logger.error("Error Importing Big Data", err=e)
 
