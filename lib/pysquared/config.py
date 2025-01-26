@@ -63,7 +63,7 @@ class Config:
     Categorized setter functions
     """
     # handle errors that might occur:
-    # value is not found, value type is incorrect
+    # key does not match database, value is of different type
 
     def setStr(self, key: str, value: str) -> None:
         """Sets the string value in the config dictionary
@@ -98,6 +98,8 @@ class Config:
     """
     Categorized saver functions
     """
+    # handle errors that might occur:
+    # setter functions returned error, parsing to config returned error
 
     def saveStr(self, key: str, value: str) -> None:
         """Saves the string value to config.json
@@ -133,6 +135,12 @@ class Config:
         """
         self.setList(key, value)
         self.saveToConfig()
+
+    """
+    Parser function
+    """
+    # handle errors that might occur:
+    # config file does not exist, parsing failed
 
     def saveToConfig(self) -> None:
         # writes data to the json file
