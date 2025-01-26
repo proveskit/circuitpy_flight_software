@@ -29,7 +29,7 @@ try:
         time.sleep(1)
 
     logger.debug("Initializing Config")
-    config = Config()
+    config = Config(logger)
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
