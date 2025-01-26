@@ -27,7 +27,7 @@ class Logger:
             "ERROR": 40,
             "CRITICAL": 50,
         }
-        self.log_modes_set = {"PRINT", "FILE", "BOTH"}
+        self.log_modes_set: set = {"PRINT", "FILE", "BOTH"}
         self.logToStandardOut: bool = True
         self.error_count: Counter = Counter(
             index=_ERRORCNT, datastore=microcontroller.nvm
@@ -39,12 +39,12 @@ class Logger:
         """
         Parses the log_level entered into the config.json
         """
-        log_level = log_level.upper()
-        log_level = log_level.strip()
+        log_level: str = log_level.upper()
+        log_level: str = log_level.strip()
 
         # function returns DEBUG as the log_level if an invalid log_level is entered
         if log_level not in self.levels_map:
-            log_level = "DEBUG"
+            log_level: str = "DEBUG"
 
         return log_level
 
@@ -52,12 +52,12 @@ class Logger:
         """
         Parses the log_mode entered into the config.json
         """
-        log_mode = log_mode.upper()
-        log_mode = log_mode.strip()
+        log_mode: str = log_mode.upper()
+        log_mode: str = log_mode.strip()
 
         # function returns PRINT as the log_mode if an invalid mode is entered
         if log_mode not in self.log_modes_set:
-            log_mode = "PRINT"
+            log_mode: str = "PRINT"
 
         return log_mode
 
