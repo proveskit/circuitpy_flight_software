@@ -2,6 +2,7 @@ __pycache__/
 .pytest_cache
 .coverage
 .DS_Store
+.venv
 artifacts/
 coverage-reports/
 tools/
