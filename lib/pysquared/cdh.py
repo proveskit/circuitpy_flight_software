@@ -1,7 +1,7 @@
 import random
 import time
 
-from lib.pysquared.config import Config
+from lib.pysquared.configs.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
 

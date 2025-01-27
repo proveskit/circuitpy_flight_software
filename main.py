@@ -13,7 +13,7 @@ import time
 import microcontroller
 
 import lib.pysquared.pysquared as pysquared
-from lib.pysquared.config import Config
+from lib.pysquared.configs.config import Config
 from lib.pysquared.logger import Logger
 
 logger = Logger()
