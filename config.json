@@ -48,7 +48,7 @@
 "legacy": false,
 "heating": false,
 "orpheus":true,
-"is_licensed":true,
+"is_licensed":False,
 "NORMAL_TEMP": 20,
 "NORMAL_BATT_TEMP": 1,
 "NORMAL_MICRO_TEMP": 20,
