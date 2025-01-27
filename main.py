@@ -21,7 +21,7 @@ config: Config = Config()
 log_level: str = config.getStr("log_level")
 log_mode: str = config.getStr("log_mode")
 
-logger: Logger = Logger(log_level, log_mode)
+logger: Logger = Logger(microcontroller.nvm, log_level, log_mode)
 logger.debug("Initialized Config")
 
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
