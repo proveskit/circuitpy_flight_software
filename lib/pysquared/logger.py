@@ -6,19 +6,29 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
-import microcontroller
 from micropython import const
 
 from lib.pysquared.nvm.counter import Counter
+
+try:
+    from stubs.circuitpython.byte_array import ByteArray
+except ImportError:
+    pass
 
 # NVM register number
 _ERRORCNT = const(7)
 
 
 class Logger:
-    def __init__(self, log_level: str = "DEBUG", log_mode: str = "PRINT") -> None:
+    def __init__(
+        self,
+        datastore: ByteArray,
+        log_level: str = "DEBUG",
+        log_mode: str = "PRINT",
+    ) -> None:
         # mapping each level to a numerical value. Used to help support log_level.
         # If log function used is equal to or above the value, it can be used
+        self.datastore: ByteArray = datastore
         self.levels_map: dict = {
             "NOTSET": 0,
             "DEBUG": 10,
@@ -29,9 +39,7 @@ class Logger:
         }
         self.log_modes_set: set = {"PRINT", "FILE", "BOTH"}
         self.logToStandardOut: bool = True
-        self.error_count: Counter = Counter(
-            index=_ERRORCNT, datastore=microcontroller.nvm
-        )
+        self.error_count: Counter = Counter(index=_ERRORCNT, datastore=self.datastore)
         self.log_level: str = self.parse_log_level(log_level)
         self.log_mode: str = self.parse_log_mode(log_mode)
 
