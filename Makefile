@@ -9,24 +9,26 @@ help: ## Display this help.
 
 ifeq ($(OS),Windows_NT)
 BIN_DIR := venv/Scripts
-PYTHON := $(BIN_DIR)/python.exe
+PYTHON := $(shell which python)
+VENV_PYTHON := $(BIN_DIR)/python.exe
 else
 BIN_DIR := venv/bin
-PYTHON := $(BIN_DIR)/python
+PYTHON := python3
+VENV_PYTHON := $(BIN_DIR)/python
 endif
 
 ACTIVATE_VENV := . $(BIN_DIR)/activate;
 
 venv:
 	@echo "Creating virtual environment..."
-	@python3 -m venv venv
-	@$(ACTIVATE_VENV) pip install --upgrade pip --quiet
-	@$(ACTIVATE_VENV) pip install --requirement requirements.txt --quiet
+	@$(PYTHON) -m venv venv
+	@$(VENV_PYTHON) -m pip install --upgrade pip --quiet
+	@$(VENV_PYTHON) -m pip install --requirement requirements.txt --quiet
 
 .PHONY: download-libraries
 download-libraries: venv ## Download the required libraries
 	@echo "Downloading libraries..."
-	@$(ACTIVATE_VENV) pip install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
+	@$(VENV_PYTHON) -m pip install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
 	@rm -rf lib/*.dist-info
 
 .PHONY: pre-commit-install
