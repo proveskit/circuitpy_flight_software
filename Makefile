@@ -7,16 +7,6 @@ help: ## Display this help.
 
 ##@ Development
 
-ifeq ($(OS),Windows_NT)
-BIN_DIR := .venv/Scripts
-PYTHON := $(BIN_DIR)/python.exe
-else
-BIN_DIR := .venv/bin
-PYTHON := $(BIN_DIR)/python
-endif
-
-ACTIVATE_VENV := . $(BIN_DIR)/activate;
-
 .venv: ## Create a virtual environment
 	@echo "Creating virtual environment..."
 	@$(MAKE) uv
