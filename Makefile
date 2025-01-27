@@ -8,39 +8,42 @@ help: ## Display this help.
 ##@ Development
 
 ifeq ($(OS),Windows_NT)
-BIN_DIR := venv/Scripts
+BIN_DIR := .venv/Scripts
 PYTHON := $(BIN_DIR)/python.exe
 else
-BIN_DIR := venv/bin
+BIN_DIR := .venv/bin
 PYTHON := $(BIN_DIR)/python
 endif
 
 ACTIVATE_VENV := . $(BIN_DIR)/activate;
 
-venv:
+.venv: ## Create a virtual environment
 	@echo "Creating virtual environment..."
-	@python3 -m venv venv
-	@$(ACTIVATE_VENV) pip install --upgrade pip --quiet
-	@$(ACTIVATE_VENV) pip install --requirement requirements.txt --quiet
+	@$(MAKE) uv
+	@$(UV) venv
+	@$(UV) pip install --requirement pyproject.toml
 
 .PHONY: download-libraries
-download-libraries: venv ## Download the required libraries
+download-libraries: .venv ## Download the required libraries
 	@echo "Downloading libraries..."
-	@$(ACTIVATE_VENV) pip install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
+	@$(UV) pip install --requirement lib/requirements.txt --target lib --no-deps --upgrade --quiet
 	@rm -rf lib/*.dist-info
+	@rm -rf lib/.lock
 
 .PHONY: pre-commit-install
-pre-commit-install: venv
+pre-commit-install: uv
 	@echo "Installing pre-commit hooks..."
-	@$(ACTIVATE_VENV) pre-commit install > /dev/null
+	@$(UVX) pre-commit install > /dev/null
 
 .PHONY: fmt
 fmt: pre-commit-install ## Lint and format files
-	$(ACTIVATE_VENV) pre-commit run --all-files
+	$(UVX) pre-commit run --all-files
 
 .PHONY: test
-test: venv ## Run tests
-	$(ACTIVATE_VENV) $(PYTHON) -m pytest tests/unit
+test: .venv ## Run tests
+	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
+	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
+	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
 BOARD_MOUNT_POINT ?= ""
 
@@ -74,3 +77,19 @@ define rsync_to_dest
 	fi
 	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete
 endef
+
+##@ Build Tools
+TOOLS_DIR ?= tools
+$(TOOLS_DIR):
+	mkdir -p $(TOOLS_DIR)
+
+### Tool Versions
+UV_VERSION ?= 0.5.24
+
+UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)
+UV ?= $(UV_DIR)/uv
+UVX ?= $(UV_DIR)/uvx
+.PHONY: uv
+uv: $(UV) ## Download uv
+$(UV): $(TOOLS_DIR)
+	@test -s $(UV) || { mkdir -p $(UV_DIR); curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | UV_INSTALL_DIR=$(UV_DIR) sh > /dev/null; }
