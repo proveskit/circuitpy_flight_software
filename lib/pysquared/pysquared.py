@@ -10,7 +10,6 @@ Library Repo:
 # Common CircuitPython Libs
 import sys
 import time
-import traceback
 from collections import OrderedDict
 from os import chdir, mkdir, stat
 
@@ -57,7 +56,6 @@ class Satellite:
 
     # General NVM counters
     boot_count: Counter = Counter(index=_BOOTCNT, datastore=microcontroller.nvm)
-    error_count: Counter = Counter(index=_ERRORCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
     f_softboot: Flag = Flag(index=_FLAG, bit_index=0, datastore=microcontroller.nvm)
@@ -66,27 +64,24 @@ class Satellite:
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
     f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
-    def error_print(self, statement: Any) -> None:
-        self.error_count.increment()
-        if self.debug:
-            self.logger.error(str(statement))
-
-    def safe_init(error_severity="ERROR"):
+    @staticmethod
+    def safe_init():
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
-                if self.debug:
-                    self.logger.debug(
-                        "Initializing hardware component", hardware_key=hardware_key
-                    )
+                self.logger.debug(
+                    "Initializing hardware component", hardware_key=hardware_key
+                )
 
                 try:
                     device: Any = func(self, *args, **kwargs)
                     return device
 
                 except Exception as e:
-                    self.error_print(
-                        f"[{error_severity}][{hardware_key}]: {traceback.format_exception(e)}"
+                    self.logger.error(
+                        "There was an error initializing this hardware component",
+                        hardware_key=hardware_key,
+                        err=e,
                     )
                 return None
 
@@ -196,7 +191,7 @@ class Satellite:
         sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
-    @safe_init(error_severity="WARNING")
+    @safe_init()
     def init_neopixel(self, hardware_key: str) -> None:
         self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
         self.neopwr.switch_to_output(value=True)
@@ -214,8 +209,9 @@ class Satellite:
             )
             self.hardware[hardware_key] = True
         except OSError:
-            self.error_print(
-                "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
+            self.logger.error(
+                "TCA try_lock failed. TCA may be malfunctioning.",
+                hardware_key=hardware_key,
             )
             self.hardware[hardware_key] = False
             return
@@ -225,7 +221,6 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config.getBool("debug")
         self.legacy: bool = config.getBool("legacy")
         self.heating: bool = config.getBool("heating")
         self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
@@ -426,18 +421,17 @@ class Satellite:
         """
         self.logger.debug("PySquared Hardware Initialization Complete!")
 
-        if self.debug:
-            for key, value in self.hardware.items():
-                if value:
-                    self.logger.info(
-                        "Successfully initialized hardware device",
-                        device=key,
-                        status=True,
-                    )
-                else:
-                    self.logger.warning(
-                        "Unable to initialize hardware device", device=key, status=False
-                    )
+        for key, value in self.hardware.items():
+            if value:
+                self.logger.info(
+                    "Successfully initialized hardware device",
+                    device=key,
+                    status=True,
+                )
+            else:
+                self.logger.warning(
+                    "Unable to initialize hardware device", device=key, status=False
+                )
         # set power mode
         self.power_mode: str = "normal"
 
@@ -462,13 +456,15 @@ class Satellite:
             try:
                 self._scan_single_channel(channel, channel_to_face)
             except OSError:
-                self.error_print(
-                    "[ERROR][TCA] TCA try_lock failed. TCA may be malfunctioning."
-                )
+                self.logger.error("TCA try_lock failed. TCA may be malfunctioning.")
                 self.hardware["TCA"] = False
                 return
             except Exception as e:
-                self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
+                self.logger.error(
+                    "There was an Exception during the scan_tca_channels function call",
+                    face=channel_to_face[channel],
+                    err=e,
+                )
 
     def _scan_single_channel(
         self, channel: int, channel_to_face: dict[int, str]
@@ -495,7 +491,11 @@ class Satellite:
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
-            self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
+            self.logger.error(
+                "There was an Exception during the _scan_single_channel function call",
+                face=channel_to_face[channel],
+                err=e,
+            )
         finally:
             self.tca[channel].unlock()
 
@@ -518,7 +518,7 @@ class Satellite:
                 machine.set_clock(62500000)  # 62.5Mhz
 
         except Exception as e:
-            self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
+            self.logger.error("There was an error trying to set the clock", err=e)
 
     @property
     def RGB(self) -> tuple[int, int, int]:
@@ -530,9 +530,13 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
+                self.logger.error(
+                    "There was an error trying to set the new RGB value",
+                    err=e,
+                    value=value,
+                )
         else:
-            self.error_print("[WARNING] NEOPIXEL not initialized")
+            self.logger.warning("The NEOPIXEL device is not initialized")
 
     @property
     def uptime(self) -> int:
@@ -547,52 +551,54 @@ class Satellite:
                 umount("/sd")
                 time.sleep(3)
             except Exception as e:
-                self.error_print(
-                    "error unmounting SD card" + "".join(traceback.format_exception(e))
-                )
+                self.logger.error("There was an error unmounting the SD card", err=e)
         try:
             self.logger.debug(
                 "Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
             )
         except Exception as e:
-            self.error_print(
-                "vbus reset error: " + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("There was a vbus reset error", err=e)
 
     @property
     def gyro(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.gyro
         except Exception as e:
-            self.error_print("[ERROR][GYRO]" + "".join(traceback.format_exception(e)))
+            self.logger.error("There was an error retrieving the gyro values", err=e)
 
     @property
     def accel(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.acceleration
         except Exception as e:
-            self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
+            self.logger.error(
+                "There was an error retrieving the accelerometer values", err=e
+            )
 
     @property
     def internal_temperature(self) -> Union[float, None]:
         try:
             return self.imu.temperature
         except Exception as e:
-            self.error_print("[ERROR][TEMP]" + "".join(traceback.format_exception(e)))
+            self.logger.error(
+                "There was an error retrieving the internal temperature value", err=e
+            )
 
     @property
     def mag(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.mangetometer.magnetic
         except Exception as e:
-            self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
+            self.logger.error(
+                "There was an error retrieving the magnetometer sensor values", err=e
+            )
 
     @property
     def time(self) -> Union[tuple[int, int, int], None]:
         try:
             return self.rtc.get_time()
         except Exception as e:
-            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            self.logger.error("There was an error retrieving the RTC time", err=e)
 
     @time.setter
     def time(self, hms: tuple[int, int, int]) -> None:
@@ -604,18 +610,23 @@ class Satellite:
             try:
                 self.rtc.set_time(hours, minutes, seconds)
             except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                self.logger.error(
+                    "There was an error setting the RTC time",
+                    err=e,
+                    hms=hms,
+                    hour=hms[0],
+                    minutes=hms[1],
+                    seconds=hms[2],
                 )
         else:
-            self.error_print("[WARNING] RTC not initialized")
+            self.logger.warning("The RTC is not initialized")
 
     @property
     def date(self) -> Union[tuple[int, int, int, int], None]:
         try:
             return self.rtc.get_date()
         except Exception as e:
-            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            self.logger.error("There was an error retrieving RTC date", err=e)
 
     @date.setter
     def date(self, ymdw: tuple[int, int, int, int]) -> None:
@@ -627,11 +638,17 @@ class Satellite:
             try:
                 self.rtc.set_date(year, month, date, weekday)
             except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                self.logger.error(
+                    "There was an error setting the RTC date",
+                    err=e,
+                    ymdw=ymdw,
+                    year=ymdw[0],
+                    month=ymdw[1],
+                    date=ymdw[2],
+                    weekday=ymdw[3],
                 )
         else:
-            self.error_print("[WARNING] RTC not initialized")
+            self.logger.warning("RTC not initialized")
 
     """
     Maintenence Functions
@@ -674,9 +691,10 @@ class Satellite:
                 self.enable_rf.value = True
                 self.power_mode: str = "maximum"
         except Exception as e:
-            self.error_print(
-                "Error in changing operations of powermode: "
-                + "".join(traceback.format_exception(e))
+            self.logger.error(
+                "There was an Error in changing operations of powermode",
+                err=e,
+                mode=mode,
             )
 
     """
@@ -693,11 +711,9 @@ class Satellite:
                     t = int(time.monotonic())
                     f.write("{}, {}\n".format(t, msg))
             except Exception as e:
-                self.error_print(
-                    "SD CARD error: " + "".join(traceback.format_exception(e))
-                )
+                self.logger.error("SD CARD error", err=e)
         else:
-            self.error_print("[WARNING] SD Card not initialized")
+            self.logger.warning("SD Card not initialized")
 
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
@@ -714,8 +730,8 @@ class Satellite:
                     for line in file:
                         self.logger.info(line.strip())
         except Exception as e:
-            self.error_print(
-                "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
+            self.logger.error(
+                "Can't print file", filedir=filedir, err=e, binary_mode=binary
             )
 
     def read_file(
@@ -735,8 +751,8 @@ class Satellite:
                         self.logger.debug(str(line.strip()))
                     return file
         except Exception as e:
-            self.error_print(
-                "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
+            self.logger.error(
+                "Can't read file", filedir=filedir, err=e, binary_mode=binary
             )
 
     def new_file(self, substring: str, binary: bool = False) -> Union[str, None]:
@@ -759,15 +775,17 @@ class Satellite:
                 try:
                     chdir("/sd" + _folder)
                 except OSError:
-                    self.error_print(
-                        "Directory {} not found. Creating...".format(_folder)
+                    self.logger.error(
+                        "The directory was not found. Now Creating...",
+                        directory=_folder,
                     )
                     try:
                         mkdir("/sd" + _folder)
                     except Exception as e:
-                        self.error_print(
-                            "Error with creating new file: "
-                            + "".join(traceback.format_exception(e))
+                        self.logger.error(
+                            "Error with creating new file",
+                            err=e,
+                            filedir="/sd" + _folder,
                         )
                         return None
                 for i in range(0xFFFF):
@@ -778,8 +796,12 @@ class Satellite:
                         if n is not None:
                             stat(ff)
                     except Exception as e:
-                        self.error_print("file number is {}".format(n))
-                        self.error_print(e)
+                        self.logger.error(
+                            "There was an error running the stat function on this file",
+                            filedir=ff,
+                            file_num=n,
+                            err=e,
+                        )
                         n: int = (n + i) % 0xFFFF
                         # print('file number is',n)
                         break
@@ -793,8 +815,8 @@ class Satellite:
                 chdir("/")
                 return ff
             except Exception as e:
-                self.error_print(
-                    "Error creating file: " + "".join(traceback.format_exception(e))
+                self.logger.error(
+                    "Error creating file", filedir=ff, err=e, binary_mode=binary
                 )
                 return None
         else:

@@ -32,7 +32,6 @@ class BatteryHelper:
         """
         self.uart = pysquared.uart
         self.last_command_time = 0
-        self.debug_mode = True
         self.logger = logger
 
     def _flush_input(self):
@@ -54,8 +53,7 @@ class BatteryHelper:
         while (time.monotonic() - start) * 1000 < 10:
             if self.uart.in_waiting:
                 byte = self.uart.read(1)
-                if self.debug_mode:
-                    self.logger.info("ACK received", ack=byte)
+                self.logger.info("ACK received", ack=byte)
                 if byte == b"A":
                     return True
             time.sleep(0.001)
@@ -82,8 +80,7 @@ class BatteryHelper:
 
         try:
             text = response.decode("utf-8")
-            if self.debug_mode:
-                self.logger.info("Read message", buffer=text)
+            self.logger.info("Read message", buffer=text)
 
             # Check for complete message
             if "AA<" in text and ">" in text:
@@ -156,11 +153,9 @@ class BatteryHelper:
                     )
 
             except Exception as e:
-                if self.debug_mode:
-                    self.logger.error("Error parsing metrics", err=e)
+                self.logger.error("Error parsing metrics", err=e)
 
-        if self.debug_mode:
-            self.logger.warning("Failed to get valid power metrics")
+        self.logger.warning("Failed to get valid power metrics")
         return (0.0, 0.0, 0.0, 0.0, False, 0.0)
 
     def get_error_metrics(self):

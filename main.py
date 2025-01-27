@@ -16,12 +16,15 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
-logger = Logger()
+log_level: str = "DEBUG"
+log_mode: str = "PRINT"
 
+
+logger: Logger = Logger(microcontroller.nvm, log_level, log_mode)
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 
-loiter_time = 5
+loiter_time: int = 5
 
 try:
     for i in range(loiter_time):
@@ -29,7 +32,8 @@ try:
         time.sleep(1)
 
     logger.debug("Initializing Config")
-    config = Config()
+    config: Config = Config()
+
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 

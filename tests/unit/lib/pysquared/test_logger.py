@@ -1,11 +1,13 @@
 import pytest
 
 from lib.pysquared.logger import Logger
+from mocks.circuitpython.byte_array import ByteArray
 
 
 @pytest.fixture
 def logger():
-    return Logger()
+    datastore = ByteArray(size=8)
+    return Logger(datastore)
 
 
 def test_debug_log(capsys, logger):
