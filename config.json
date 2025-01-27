@@ -43,9 +43,6 @@
         "Woah is that the Launcher Orbiter?????",
         "Everything in life is a spring if you think hard enough!"
     ],
-
-"log_level": "DEBUG",
-"log_mode": "PRINT",
 "legacy": false,
 "heating": false,
 "orpheus":true,
