@@ -609,6 +609,11 @@ class Satellite:
         else:
             self.logger.warning("The RTC is not initialized")
 
+        try:
+            self.rtc.set_time(hours, minutes, seconds)
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+
     @property
     def date(self) -> Union[tuple[int, int, int, int], None]:
         try:
