@@ -1,3 +1,0 @@
-adafruit-circuitpython-typing==1.11.2
-pre-commit==4.0.1
-pytest==8.3.2
