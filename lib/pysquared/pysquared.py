@@ -517,17 +517,14 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if self.hardware["NEOPIX"]:
-            try:
-                self.neopixel[0] = value
-            except Exception as e:
-                self.logger.error(
-                    "There was an error trying to set the new RGB value",
-                    err=e,
-                    value=value,
-                )
-        else:
-            self.logger.warning("The NEOPIXEL device is not initialized")
+        if not self.hardware["NEOPIX"]:
+            self.error_print("[WARNING] NEOPIXEL not initialized")
+            return
+
+        try:
+            self.neopixel[0] = value
+        except Exception as e:
+            self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
 
     @property
     def uptime(self) -> int:
@@ -625,21 +622,23 @@ class Satellite:
         ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
         """
         year, month, date, weekday = ymdw
-        if self.hardware["RTC"]:
-            try:
-                self.rtc.set_date(year, month, date, weekday)
-            except Exception as e:
-                self.logger.error(
-                    "There was an error setting the RTC date",
-                    err=e,
-                    ymdw=ymdw,
-                    year=ymdw[0],
-                    month=ymdw[1],
-                    date=ymdw[2],
-                    weekday=ymdw[3],
-                )
-        else:
-            self.logger.warning("RTC not initialized")
+        if not self.hardware["RTC"]:
+            self.error_print("[WARNING] RTC not initialized")
+            return
+
+        
+        try:
+            self.rtc.set_date(year, month, date, weekday)
+        except Exception as e:
+            self.logger.error(
+                "There was an error setting the RTC date",
+                err=e,
+                ymdw=ymdw,
+                year=ymdw[0],
+                month=ymdw[1],
+                date=ymdw[2],
+                weekday=ymdw[3],
+            )
 
     """
     Maintenence Functions
