@@ -40,7 +40,7 @@ class functions:
         )
 
         self.config: Config = config
-        self.cubesatName: str = config.getStr("cubesatName")
+        self.cubesat_name: str = config.getStr("cubesat_name")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.getList("jokes")
@@ -126,7 +126,7 @@ class functions:
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am {self.cubesatName}! I am: "
+                f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
                 + f" UT:{self.cubesat.uptime} BN:{self.cubesat.boot_count.get()} EC:{self.cubesat.error_count.get()} "
                 + f"IHBPFJASTMNE! {self.callsign}"

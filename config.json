@@ -1,5 +1,5 @@
 {
-"cubesatName": "Orpheus",
+"cubesat_name": "Orpheus",
 "callsign": "KO6AZM",
 "last_battery_temp": 20.0,
 "sleep_duration": 30,
@@ -60,6 +60,16 @@
 "current_draw": 255,
 "REBOOT_TIME": 3600,
 "turbo_clock": false,
+"radio_cfg": {
+        "id": 251,
+        "ground_station": 250,
+        "frequency": 437.4,
+        "spread_factor": 8,
+        "bw": 125,
+        "cr": 8,
+        "pwr": 23,
+        "st": 80000
+    },
 
 "super_secret_code": "ABCD",
 "repeat_code": "RP",

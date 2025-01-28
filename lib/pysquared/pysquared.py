@@ -221,7 +221,7 @@ class Satellite:
             return
 
     def __init__(self, config: Config, logger: Logger) -> None:
-        self.cubesatName: str = config.getStr("cubesatName")
+        self.cubesat_name: str = config.getStr("cubesat_name")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
@@ -283,11 +283,13 @@ class Satellite:
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
+        # ask for clarificatino on what these mean, and see if id and gs need to really be in config
+        # if yes you can just put the hex value but as an actual int.
         self.radio_cfg: dict[str, float] = {
-            "id": 0xFB,
-            "gs": 0xFA,
-            "freq": 437.4,
-            "sf": 8,
+            "id": 0xFB,  # identification?
+            "gs": 0xFA,  # ground station?
+            "freq": 437.4,  # frequency
+            "sf": 8,  # spread factor
             "bw": 125,
             "cr": 8,
             "pwr": 23,
@@ -342,7 +344,7 @@ class Satellite:
         def orpheus_skip_I2C(hardware_key: str) -> None:
             self.logger.debug(
                 "Hardware component not initialized",
-                cubesat=self.cubesatName,
+                cubesat=self.cubesat_name,
                 hardware_key=hardware_key,
             )
             return None
