@@ -156,38 +156,38 @@ class PacketSender:
 
         while time.monotonic() < retransmit_end_time:
             packet = self.radio.receive()
-            if packet:
-                self.logger.info(
-                    "Received potential retransmit request:",
-                    packet=[hex(b) for b in packet],
-                )
+            if not packet:
+                break
 
-                if self.pm.is_retransmit_request(packet):
-                    self.logger.info("Valid retransmit request received!")
-                    missing_packets = self.pm.parse_retransmit_request(packet)
-                    self.logger.info(
-                        "Retransmitting packets", missing_packets=missing_packets
-                    )
+            self.logger.info(
+                "Received potential retransmit request:",
+                packet=[hex(b) for b in packet],
+            )
 
-                    # Add delay before retransmission to let receiver get ready
-                    time.sleep(1)
+            if not self.pm.is_retransmit_request(packet):
+                break
 
-                    for seq in missing_packets:
-                        if seq < len(packets):
-                            self.logger.info("Retransmitting packet", packet=seq)
-                            self.radio.send(packets[seq])
-                            time.sleep(
-                                0.5
-                            )  # Longer delay between retransmitted packets
-                            self.logger.info("Retransmitting packet", packet=seq)
-                            self.radio.send(packets[seq])
-                            time.sleep(
-                                0.2
-                            )  # Longer delay between retransmitted packets
+            self.logger.info("Valid retransmit request received!")
+            missing_packets = self.pm.parse_retransmit_request(packet)
+            self.logger.info("Retransmitting packets", missing_packets=missing_packets)
 
-                    # Reset timeout and add extra delay after retransmission
-                    time.sleep(1.0)
-                    retransmit_end_time = time.monotonic() + retransmit_wait
+            # Add delay before retransmission to let receiver get ready
+            time.sleep(1)
+
+            for seq in missing_packets:
+                if seq >= len(packets):
+                    break
+
+                self.logger.info("Retransmitting packet", packet=seq)
+                self.radio.send(packets[seq])
+                time.sleep(0.5)  # Longer delay between retransmitted packets
+                self.logger.info("Retransmitting packet", packet=seq)
+                self.radio.send(packets[seq])
+                time.sleep(0.2)  # Longer delay between retransmitted packets
+
+            # Reset timeout and add extra delay after retransmission
+            time.sleep(1.0)
+            retransmit_end_time = time.monotonic() + retransmit_wait
 
             time.sleep(0.1)
 
