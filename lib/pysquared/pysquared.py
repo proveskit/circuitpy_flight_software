@@ -64,31 +64,28 @@ class Satellite:
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
     f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
-    def safe_init(error_severity="ERROR"):
-        def decorator(func: Callable[..., Any]):
-            def wrapper(self, *args, **kwargs):
-                hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
-                self.logger.debug(
-                    "Initializing hardware component", hardware_key=hardware_key
+    def safe_init(func: Callable[..., Any]):
+        def wrapper(self, *args, **kwargs):
+            hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
+            self.logger.debug(
+                "Initializing hardware component", hardware_key=hardware_key
+            )
+
+            try:
+                device: Any = func(self, *args, **kwargs)
+                return device
+
+            except Exception as e:
+                self.logger.error(
+                    "There was an error initializing this hardware component",
+                    hardware_key=hardware_key,
+                    err=e,
                 )
+            return None
 
-                try:
-                    device: Any = func(self, *args, **kwargs)
-                    return device
+        return wrapper
 
-                except Exception as e:
-                    self.logger.error(
-                        "There was an error initializing this hardware component",
-                        hardware_key=hardware_key,
-                        err=e,
-                    )
-                return None
-
-            return wrapper
-
-        return decorator
-
-    @safe_init()
+    @safe_init
     def init_general_hardware(
         self,
         init_func: Callable[..., Any],
@@ -121,7 +118,7 @@ class Satellite:
         self.hardware[hardware_key] = True
         return hardware_instance
 
-    @safe_init()
+    @safe_init
     def init_radio(self, hardware_key: str) -> None:
         # Define Radio Ditial IO Pins
         _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
@@ -172,7 +169,7 @@ class Satellite:
         # if self.legacy:
         #    self.enable_rf.value = False
 
-    @safe_init()
+    @safe_init
     def init_RTC(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
@@ -180,7 +177,7 @@ class Satellite:
         self.rtc.configure_backup_switchover(mode="level", interrupt=True)
         self.hardware[hardware_key] = True
 
-    @safe_init()
+    @safe_init
     def init_SDCard(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
         _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
@@ -190,7 +187,7 @@ class Satellite:
         sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
-    @safe_init(error_severity="WARNING")
+    @safe_init
     def init_neopixel(self, hardware_key: str) -> None:
         self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
         self.neopwr.switch_to_output(value=True)
@@ -200,7 +197,7 @@ class Satellite:
         self.neopixel[0] = (0, 0, 255)
         self.hardware[hardware_key] = True
 
-    @safe_init()
+    @safe_init
     def init_TCA_multiplexer(self, hardware_key: str) -> None:
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
