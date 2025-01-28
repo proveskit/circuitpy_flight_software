@@ -64,7 +64,6 @@ class Satellite:
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
     f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
-    @staticmethod
     def safe_init():
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
