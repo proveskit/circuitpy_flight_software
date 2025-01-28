@@ -64,7 +64,7 @@ class Satellite:
     f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
     f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
 
-    def safe_init():
+    def safe_init(error_severity="ERROR"):
         def decorator(func: Callable[..., Any]):
             def wrapper(self, *args, **kwargs):
                 hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
@@ -190,7 +190,7 @@ class Satellite:
         sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
-    @safe_init()
+    @safe_init(error_severity="WARNING")
     def init_neopixel(self, hardware_key: str) -> None:
         self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
         self.neopwr.switch_to_output(value=True)
