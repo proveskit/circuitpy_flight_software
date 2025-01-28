@@ -601,14 +601,12 @@ class Satellite:
         """
         hours, minutes, seconds = hms
         if self.hardware["RTC"]:
-            try:
-                self.rtc.set_time(hours, minutes, seconds)
-            except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
-                )
-        else:
             self.error_print("[WARNING] RTC not initialized")
+
+        try:
+            self.rtc.set_time(hours, minutes, seconds)
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     @property
     def date(self) -> Union[tuple[int, int, int, int], None]:
@@ -741,57 +739,53 @@ class Satellite:
         directory is created on the SD!
         int padded with zeros will be appended to the last found file
         """
-        if self.hardware["SDcard"]:
-            try:
-                ff: str = ""
-                n: int = 0
-                _folder: str = substring[: substring.rfind("/") + 1]
-                _file: str = substring[substring.rfind("/") + 1 :]
-                self.logger.debug(
-                    "Creating new file in directory: /sd{} with file prefix: {}".format(
-                        _folder, _file
-                    ),
-                )
-                try:
-                    chdir("/sd" + _folder)
-                except OSError:
-                    self.error_print(
-                        "Directory {} not found. Creating...".format(_folder)
-                    )
-                    try:
-                        mkdir("/sd" + _folder)
-                    except Exception as e:
-                        self.error_print(
-                            "Error with creating new file: "
-                            + "".join(traceback.format_exception(e))
-                        )
-                        return None
-                for i in range(0xFFFF):
-                    ff: str = "/sd{}{}{:05}.txt".format(
-                        _folder, _file, (n + i) % 0xFFFF
-                    )
-                    try:
-                        if n is not None:
-                            stat(ff)
-                    except Exception as e:
-                        self.error_print("file number is {}".format(n))
-                        self.error_print(e)
-                        n: int = (n + i) % 0xFFFF
-                        # print('file number is',n)
-                        break
-                self.logger.debug("creating a file...", file_dir=str(ff))
-                if binary:
-                    b: str = "ab"
-                else:
-                    b: str = "a"
-                with open(ff, b) as f:
-                    f.tell()
-                chdir("/")
-                return ff
-            except Exception as e:
-                self.error_print(
-                    "Error creating file: " + "".join(traceback.format_exception(e))
-                )
-                return None
-        else:
+        if not self.hardware["SDcard"]:
             self.logger.warning("SD Card not initialized")
+
+        try:
+            ff: str = ""
+            n: int = 0
+            _folder: str = substring[: substring.rfind("/") + 1]
+            _file: str = substring[substring.rfind("/") + 1 :]
+            self.logger.debug(
+                "Creating new file in directory: /sd{} with file prefix: {}".format(
+                    _folder, _file
+                ),
+            )
+            try:
+                chdir("/sd" + _folder)
+            except OSError:
+                self.error_print("Directory {} not found. Creating...".format(_folder))
+                try:
+                    mkdir("/sd" + _folder)
+                except Exception as e:
+                    self.error_print(
+                        "Error with creating new file: "
+                        + "".join(traceback.format_exception(e))
+                    )
+                    return None
+            for i in range(0xFFFF):
+                ff: str = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
+                try:
+                    if n is not None:
+                        stat(ff)
+                except Exception as e:
+                    self.error_print("file number is {}".format(n))
+                    self.error_print(e)
+                    n: int = (n + i) % 0xFFFF
+                    # print('file number is',n)
+                    break
+            self.logger.debug("creating a file...", file_dir=str(ff))
+            if binary:
+                b: str = "ab"
+            else:
+                b: str = "a"
+            with open(ff, b) as f:
+                f.tell()
+            chdir("/")
+            return ff
+        except Exception as e:
+            self.error_print(
+                "Error creating file: " + "".join(traceback.format_exception(e))
+            )
+            return None
