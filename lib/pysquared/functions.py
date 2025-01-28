@@ -347,24 +347,6 @@ class functions:
         pass
 
     """
-    Logging Functions
-    """
-
-    def log_face_data(self, data) -> None:
-        self.logger.debug("Logging Face Data")
-        try:
-            self.cubesat.log("/faces.txt", data)
-        except Exception as e:
-            self.logger.error("SD error", err=e)
-
-    def log_error_data(self, data) -> None:
-        self.logger.debug("Logging Error Data")
-        try:
-            self.cubesat.log("/error.txt", data)
-        except Exception as e:
-            self.logger.error("SD error", err=e)
-
-    """
     Misc Functions
     """
 
