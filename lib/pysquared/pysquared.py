@@ -526,13 +526,13 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if self.hardware["NEOPIX"]:
-            try:
-                self.neopixel[0] = value
-            except Exception as e:
-                self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
-        else:
+        if not self.hardware["NEOPIX"]:
             self.error_print("[WARNING] NEOPIXEL not initialized")
+
+        try:
+            self.neopixel[0] = value
+        except Exception as e:
+            self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
 
     @property
     def uptime(self) -> int:
@@ -623,15 +623,14 @@ class Satellite:
         ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
         """
         year, month, date, weekday = ymdw
-        if self.hardware["RTC"]:
-            try:
-                self.rtc.set_date(year, month, date, weekday)
-            except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
-                )
-        else:
+        if not self.hardware["RTC"]:
             self.error_print("[WARNING] RTC not initialized")
+            return
+
+        try:
+            self.rtc.set_date(year, month, date, weekday)
+        except Exception as e:
+            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
 
     """
     Maintenence Functions
@@ -684,20 +683,17 @@ class Satellite:
     """
 
     def log(self, filedir: str, msg: str) -> None:
-        if self.hardware["SDcard"]:
-            try:
-                self.logger.debug(
-                    "Writing a log to a file", log_msg=msg, file_dir=filedir
-                )
-                with open(filedir, "a+") as f:
-                    t = int(time.monotonic())
-                    f.write("{}, {}\n".format(t, msg))
-            except Exception as e:
-                self.error_print(
-                    "SD CARD error: " + "".join(traceback.format_exception(e))
-                )
-        else:
+        if not self.hardware["SDcard"]:
             self.error_print("[WARNING] SD Card not initialized")
+            return
+
+        try:
+            self.logger.debug("Writing a log to a file", log_msg=msg, file_dir=filedir)
+            with open(filedir, "a+") as f:
+                t = int(time.monotonic())
+                f.write("{}, {}\n".format(t, msg))
+        except Exception as e:
+            self.error_print("SD CARD error: " + "".join(traceback.format_exception(e)))
 
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
