@@ -98,40 +98,51 @@ class Config:
         """Saves the string value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_str(key, str_value)
+        self.save_to_config()
 
     def save_int(self, key: str, int_value: int) -> None:
         """Saves the int value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_int(key, int_value)
+        self.save_to_config()
 
     def save_float(self, key: str, float_value: float) -> None:
         """Saves the float value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_float(key, float_value)
+        self.save_to_config()
 
     def save_bool(self, key: str, bool_value: bool) -> None:
         """Saves the bool value to config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_bool(key, bool_value)
+        self.save_to_config()
 
     def save_list(self, key: str, list_value: str) -> None:
         """Saves the list value to the list in config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_list(key, list_value)
+        self.save_to_config()
 
     def save_dict(self, config_key: str, dict_key: str, dict_value: float) -> None:
         """Saves the float value to the dict in config.json
         Saves value to disk, will persist through reboots
         """
-        # add logic to write back to config
-        pass
+        self.set_list(config_key, dict_key, dict_value)
+        self.save_to_config()
+
+    """
+    Parser function
+    """
+    # handle errors that might occur:
+    # config file does not exist, parsing failed
+
+    def save_to_config(self) -> None:
+        # writes data to the json file
+        with open("config.json", "w") as f:
+            json.dump(self._config, f, indent=4)
