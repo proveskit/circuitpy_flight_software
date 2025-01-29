@@ -674,22 +674,6 @@ class Satellite:
     SD Card Functions
     """
 
-    def log(self, filedir: str, msg: str) -> None:
-        if self.hardware["SDcard"]:
-            try:
-                self.logger.debug(
-                    "Writing a log to a file", log_msg=msg, file_dir=filedir
-                )
-                with open(filedir, "a+") as f:
-                    t = int(time.monotonic())
-                    f.write("{}, {}\n".format(t, msg))
-            except Exception as e:
-                self.error_print(
-                    "SD CARD error: " + "".join(traceback.format_exception(e))
-                )
-        else:
-            self.error_print("[WARNING] SD Card not initialized")
-
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir is None:
