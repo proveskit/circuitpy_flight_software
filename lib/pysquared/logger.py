@@ -52,7 +52,7 @@ class Logger:
 
         json_output = json.dumps(kwargs)
 
-        if self.logToStandardOut and self.can_print_this_level(level_value):
+        if self.log_to_standard_out and self.can_print_this_level(level_value):
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
