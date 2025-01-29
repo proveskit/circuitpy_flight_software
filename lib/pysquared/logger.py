@@ -27,7 +27,7 @@ class Logger:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
 
-    def can_print_this_level(self, level_value: int) -> bool:
+    def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
 
     def _log(self, level: str, level_value: int, message: str, **kwargs) -> None:
