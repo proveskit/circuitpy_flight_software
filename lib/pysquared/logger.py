@@ -29,12 +29,9 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
-        log_mode: int = LogMode.PRINT,
     ) -> None:
-        self.log_to_standard_out: bool = True
-        self.error_counter: Counter = error_counter
-        self.log_level: int = log_level
-        self.log_mode: int = log_mode
+        self._error_counter: Counter = error_counter
+        self._log_level: int = log_level
 
     def can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self.log_level
@@ -77,7 +74,7 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
-        self.error_counter.increment()
+        self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
     def critical(self, message: str, **kwargs) -> None:
