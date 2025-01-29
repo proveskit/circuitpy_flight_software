@@ -1,0 +1,40 @@
+[project]
+name = "circuitpy-flight-software"
+version = "2.0.0"
+description = "Flight Software for the PROVES Kit"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "adafruit-circuitpython-typing==1.11.2",
+    "coverage==7.6.10",
+    "pre-commit==4.0.1",
+    "pytest==8.3.2",
+]
+
+[tool.ruff.format]
+# Use `\n` line endings for all files
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+include = [
+    "lib/**/*.py",
+    "boot.py",
+    "main.py",
+    "repl.py",
+    "safemode.py",
+    ]
+
+[tool.coverage.html]
+directory = "coverage-reports/html"
+
+[tool.coverage.xml]
+output = "coverage-reports/coverage.xml"
