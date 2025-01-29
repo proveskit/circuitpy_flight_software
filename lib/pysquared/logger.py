@@ -77,7 +77,7 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
-        self.error_count.increment()
+        self.error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
     def critical(self, message: str, **kwargs) -> None:
@@ -87,4 +87,4 @@ class Logger:
         self._log("CRITICAL", 5, message, **kwargs)
 
     def get_error_count(self) -> int:
-        return self.error_count.get()
+        return self.error_counter.get()
