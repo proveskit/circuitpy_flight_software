@@ -38,8 +38,6 @@ class Logger:
         log_level: int = LogLevel.DEBUG,
         log_mode: int = LogMode.PRINT,
     ) -> None:
-        # mapping each level to a numerical value. Used to help support log_level.
-        # If log function used is equal to or above the value, it can be used
         self.datastore: ByteArray = datastore
         self.logToStandardOut: bool = True
         self.error_count: Counter = Counter(index=ERRORCNT, datastore=self.datastore)
@@ -97,4 +95,4 @@ class Logger:
         self._log("CRITICAL", 5, message, **kwargs)
 
     def get_error_count(self) -> int:
-        return self.error_count
+        return self.error_count.get()
