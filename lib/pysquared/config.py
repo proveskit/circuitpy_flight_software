@@ -46,6 +46,10 @@ class Config:
         """Gets a list value from the config dictionary"""
         return self._config[key]
 
+    def getDict(self, key: str) -> dict[str, float]:
+        """Gets a dictionary value from the config dictionary"""
+        return self._config[key]
+
     """
     Categorized setter functions
     """
@@ -80,6 +84,12 @@ class Config:
         """
         self._config[key].append(value)
 
+    def setDict(self, configKey: str, dictKey: str, dictValue: float) -> None:
+        """Sets the float value to the dict in config.json
+        Does not save value to disk, will not persist through reboots
+        """
+        self._config[configKey][dictKey] = dictValue
+
     """
     Categorized saver functions
     """
@@ -113,7 +123,14 @@ class Config:
         pass
 
     def saveList(self, key: str, listValue: str) -> None:
-        """Saves the bool value to config.json
+        """Saves the list value to the list in config.json
+        Saves value to disk, will persist through reboots
+        """
+        # add logic to write back to config
+        pass
+
+    def saveDict(self, configKey: str, dictKey: str, dictValue: float) -> None:
+        """Saves the float value to the dict in config.json
         Saves value to disk, will persist through reboots
         """
         # add logic to write back to config

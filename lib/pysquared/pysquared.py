@@ -147,7 +147,7 @@ class Satellite:
                 self.spi0,
                 _rf_cs1,
                 _rf_rst1,
-                self.radio_cfg["freq"],
+                self.radio_cfg["transmit_frequency"],
                 # code_rate=8, code rate does not exist for RFM9xFSK
             )
             self.radio1.fsk_node_address = 1
@@ -160,19 +160,19 @@ class Satellite:
                 self.spi0,
                 _rf_cs1,
                 _rf_rst1,
-                self.radio_cfg["freq"],
+                self.radio_cfg["transmit_frequency"],
                 # code_rate=8, code rate does not exist for RFM9xFSK
             )
             self.radio1.max_output = True
-            self.radio1.tx_power = self.radio_cfg["pwr"]
-            self.radio1.spreading_factor = self.radio_cfg["sf"]
+            self.radio1.tx_power = self.radio_cfg["transmit_power"]
+            self.radio1.spreading_factor = self.radio_cfg["LoRa_spread_factor"]
 
             self.radio1.enable_crc = True
             self.radio1.ack_delay = 0.2
             if self.radio1.spreading_factor > 9:
                 self.radio1.preamble_length = self.radio1.spreading_factor
-        self.radio1.node = self.radio_cfg["id"]
-        self.radio1.destination = self.radio_cfg["gs"]
+        self.radio1.node = self.radio_cfg["sender_id"]
+        self.radio1.destination = self.radio_cfg["receiver_id"]
         self.hardware[hardware_key] = True
 
         # if self.legacy:
@@ -283,18 +283,7 @@ class Satellite:
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
-        # ask for clarificatino on what these mean, and see if id and gs need to really be in config
-        # if yes you can just put the hex value but as an actual int.
-        self.radio_cfg: dict[str, float] = {
-            "id": 0xFB,  # identification?
-            "gs": 0xFA,  # ground station?
-            "freq": 437.4,  # frequency
-            "sf": 8,  # spread factor
-            "bw": 125,
-            "cr": 8,
-            "pwr": 23,
-            "st": 80000,
-        }
+        self.radio_cfg: dict[str, float] = config.getDict("radio_cfg")
 
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
