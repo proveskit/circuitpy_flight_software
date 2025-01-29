@@ -34,7 +34,7 @@ class Logger:
         self._log_level: int = log_level
 
     def can_print_this_level(self, level_value: int) -> bool:
-        return level_value >= self.log_level
+        return level_value >= self._log_level
 
     def _log(self, level: str, level_value: int, message: str, **kwargs) -> None:
         """
@@ -49,7 +49,7 @@ class Logger:
 
         json_output = json.dumps(kwargs)
 
-        if self.log_to_standard_out and self.can_print_this_level(level_value):
+        if self.can_print_this_level(level_value):
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
