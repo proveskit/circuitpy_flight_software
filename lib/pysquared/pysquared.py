@@ -221,7 +221,6 @@ class Satellite:
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config.get_bool("debug")
         self.legacy: bool = config.get_bool("legacy")
         self.heating: bool = config.get_bool("heating")
         self.orpheus: bool = config.get_bool("orpheus")  # maybe change var name
