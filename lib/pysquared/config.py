@@ -79,13 +79,13 @@ class Config:
         self._config[key] = value
 
     def set_list(self, key: str, value: str) -> None:
-        """Sets the string value from a list inside of the config dictionary
+        """Adds the string value to the list specified by the key inside of the config dictionary
         Does not save value to disk, will not persist through reboots
         """
         self._config[key].append(value)
 
     def set_dict(self, config_key: str, dict_key: str, dict_value: float) -> None:
-        """Sets the float value to the dict in config.json
+        """Sets the float value to the dictionary inside of the config dictionary 
         Does not save value to disk, will not persist through reboots
         """
         self._config[config_key][dict_key] = dict_value
