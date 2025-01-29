@@ -12,7 +12,7 @@ import time
 import alarm
 
 from lib.pysquared.battery_helper import BatteryHelper
-from lib.pysquared.configs.config import Config
+from lib.pysquared.configuration.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
