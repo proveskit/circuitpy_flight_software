@@ -25,13 +25,13 @@ from storage import VfsFat, mount, umount
 import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
+import lib.pysquared.nvm.register as register
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
-from lib.pysquared.nvm.registers import BOOTCNT, FLAG
 
 try:
     from typing import Any, Callable, OrderedDict, TextIO, Union
@@ -51,14 +51,22 @@ class Satellite:
     """
 
     # General NVM counters
-    boot_count: Counter = Counter(index=BOOTCNT, datastore=microcontroller.nvm)
+    boot_count: Counter = Counter(index=register.BOOTCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
-    f_softboot: Flag = Flag(index=FLAG, bit_index=0, datastore=microcontroller.nvm)
-    f_brownout: Flag = Flag(index=FLAG, bit_index=3, datastore=microcontroller.nvm)
-    f_shtdwn: Flag = Flag(index=FLAG, bit_index=5, datastore=microcontroller.nvm)
-    f_burned: Flag = Flag(index=FLAG, bit_index=6, datastore=microcontroller.nvm)
-    f_fsk: Flag = Flag(index=FLAG, bit_index=7, datastore=microcontroller.nvm)
+    f_softboot: Flag = Flag(
+        index=register.FLAG, bit_index=0, datastore=microcontroller.nvm
+    )
+    f_brownout: Flag = Flag(
+        index=register.FLAG, bit_index=3, datastore=microcontroller.nvm
+    )
+    f_shtdwn: Flag = Flag(
+        index=register.FLAG, bit_index=5, datastore=microcontroller.nvm
+    )
+    f_burned: Flag = Flag(
+        index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
+    )
+    f_fsk: Flag = Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm)
 
     def safe_init(func: Callable[..., Any]):
         def wrapper(self, *args, **kwargs):

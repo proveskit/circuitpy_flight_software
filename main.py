@@ -12,11 +12,15 @@ import time
 
 import microcontroller
 
+import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.nvm.counter import Counter
 
-logger: Logger = Logger(microcontroller.nvm)
+logger: Logger = Logger(
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+)
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 
