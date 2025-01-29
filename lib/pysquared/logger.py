@@ -9,12 +9,6 @@ import time
 from lib.pysquared.nvm.counter import Counter
 
 
-class LogMode:
-    PRINT = 1
-    FILE = 2
-    BOTH = 3
-
-
 class LogLevel:
     NOTSET = 0
     DEBUG = 1
