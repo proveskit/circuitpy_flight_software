@@ -3,20 +3,17 @@ Logger class for handling logging messages with different severity levels.
 Logs can be output to standard output or saved to a file (functionality to be implemented).
 """
 
+# NVM register number
 import json
 import time
 
-from micropython import const
-
 from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.nvm.registers import ERRORCNT
 
 try:
     from stubs.circuitpython.byte_array import ByteArray
 except ImportError:
     pass
-
-# NVM register number
-_ERRORCNT = const(7)
 
 
 class Logger:
@@ -39,7 +36,7 @@ class Logger:
         }
         self.log_modes_set: set = {"PRINT", "FILE", "BOTH"}
         self.logToStandardOut: bool = True
-        self.error_count: Counter = Counter(index=_ERRORCNT, datastore=self.datastore)
+        self.error_count: Counter = Counter(index=ERRORCNT, datastore=self.datastore)
         self.log_level: str = self.parse_log_level(log_level)
         self.log_mode: str = self.parse_log_mode(log_mode)
 

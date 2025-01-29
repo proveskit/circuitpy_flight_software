@@ -16,11 +16,7 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 
-log_level: str = "DEBUG"
-log_mode: str = "PRINT"
-
-
-logger: Logger = Logger(microcontroller.nvm, log_level, log_mode)
+logger: Logger = Logger(microcontroller.nvm)
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 

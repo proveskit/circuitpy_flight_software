@@ -31,6 +31,7 @@ from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
+from lib.pysquared.nvm.registers import BOOTCNT, FLAG
 
 try:
     from typing import Any, Callable, OrderedDict, TextIO, Union
@@ -41,11 +42,6 @@ except Exception:
 
 from lib.pysquared.logger import Logger
 
-# NVM register numbers
-_BOOTCNT = const(0)
-_ERRORCNT = const(7)
-_FLAG = const(16)
-
 SEND_BUFF: bytearray = bytearray(252)
 
 
@@ -55,14 +51,14 @@ class Satellite:
     """
 
     # General NVM counters
-    boot_count: Counter = Counter(index=_BOOTCNT, datastore=microcontroller.nvm)
+    boot_count: Counter = Counter(index=BOOTCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
-    f_softboot: Flag = Flag(index=_FLAG, bit_index=0, datastore=microcontroller.nvm)
-    f_brownout: Flag = Flag(index=_FLAG, bit_index=3, datastore=microcontroller.nvm)
-    f_shtdwn: Flag = Flag(index=_FLAG, bit_index=5, datastore=microcontroller.nvm)
-    f_burned: Flag = Flag(index=_FLAG, bit_index=6, datastore=microcontroller.nvm)
-    f_fsk: Flag = Flag(index=_FLAG, bit_index=7, datastore=microcontroller.nvm)
+    f_softboot: Flag = Flag(index=FLAG, bit_index=0, datastore=microcontroller.nvm)
+    f_brownout: Flag = Flag(index=FLAG, bit_index=3, datastore=microcontroller.nvm)
+    f_shtdwn: Flag = Flag(index=FLAG, bit_index=5, datastore=microcontroller.nvm)
+    f_burned: Flag = Flag(index=FLAG, bit_index=6, datastore=microcontroller.nvm)
+    f_fsk: Flag = Flag(index=FLAG, bit_index=7, datastore=microcontroller.nvm)
 
     def safe_init(func: Callable[..., Any]):
         def wrapper(self, *args, **kwargs):
