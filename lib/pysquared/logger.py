@@ -84,4 +84,4 @@ class Logger:
         self._log("CRITICAL", 5, message, **kwargs)
 
     def get_error_count(self) -> int:
-        return self.error_counter.get()
+        return self._error_counter.get()
