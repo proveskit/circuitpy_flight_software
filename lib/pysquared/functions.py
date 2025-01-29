@@ -40,18 +40,18 @@ class functions:
         )
 
         self.config: Config = config
-        self.cubesat_name: str = config.getStr("cubesat_name")
+        self.cubesat_name: str = config.get_str("cubesat_name")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = config.getList("jokes")
-        self.last_battery_temp: float = config.getFloat("last_battery_temp")
-        self.sleep_duration: int = config.getInt("sleep_duration")
-        self.callsign: str = config.getStr("callsign")
+        self.jokes: list[str] = config.get_list("jokes")
+        self.last_battery_temp: float = config.get_float("last_battery_temp")
+        self.sleep_duration: int = config.get_int("sleep_duration")
+        self.callsign: str = config.get_str("callsign")
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = config.getBool("detumble_enable_z")
-        self.detumble_enable_x: bool = config.getBool("detumble_enable_x")
-        self.detumble_enable_y: bool = config.getBool("detumble_enable_y")
+        self.detumble_enable_z: bool = config.get_bool("detumble_enable_z")
+        self.detumble_enable_x: bool = config.get_bool("detumble_enable_x")
+        self.detumble_enable_y: bool = config.get_bool("detumble_enable_y")
 
     """
     Satellite Management Functions

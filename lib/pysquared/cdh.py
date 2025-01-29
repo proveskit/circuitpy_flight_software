@@ -22,11 +22,11 @@ class CommandDataHandler:
             b"\xa5\xb4": "joke_reply",
             b"\x56\xc4": "FSK",
         }
-        self._jokereply: list[str] = config.getList("jokereply")
-        self._super_secret_code: str = config.getStr("super_secret_code").encode(
+        self._jokereply: list[str] = config.get_list("jokereply")
+        self._super_secret_code: str = config.get_str("super_secret_code").encode(
             "utf-8"
         )
-        self._repeat_code: str = config.getStr("repeat_code").encode("utf-8")
+        self._repeat_code: str = config.get_str("repeat_code").encode("utf-8")
         self.logger.info(
             "The satellite has a super secret code!",
             super_secret_code=self._super_secret_code,

@@ -221,33 +221,33 @@ class Satellite:
             return
 
     def __init__(self, config: Config, logger: Logger) -> None:
-        self.cubesat_name: str = config.getStr("cubesat_name")
+        self.cubesat_name: str = config.get_str("cubesat_name")
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.debug: bool = config.getBool("debug")
-        self.legacy: bool = config.getBool("legacy")
-        self.heating: bool = config.getBool("heating")
-        self.orpheus: bool = config.getBool("orpheus")  # maybe change var name
-        self.is_licensed: bool = config.getBool("is_licensed")
+        self.debug: bool = config.get_bool("debug")
+        self.legacy: bool = config.get_bool("legacy")
+        self.heating: bool = config.get_bool("heating")
+        self.orpheus: bool = config.get_bool("orpheus")  # maybe change var name
+        self.is_licensed: bool = config.get_bool("is_licensed")
         self.logger = logger
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = config.getInt("NORMAL_TEMP")
-        self.NORMAL_BATT_TEMP: int = config.getInt("NORMAL_BATT_TEMP")
-        self.NORMAL_MICRO_TEMP: int = config.getInt("NORMAL_MICRO_TEMP")
-        self.NORMAL_CHARGE_CURRENT: float = config.getFloat("NORMAL_CHARGE_CURRENT")
-        self.NORMAL_BATTERY_VOLTAGE: float = config.getFloat("NORMAL_BATTERY_VOLTAGE")
-        self.CRITICAL_BATTERY_VOLTAGE: float = config.getFloat(
+        self.NORMAL_TEMP: int = config.get_int("NORMAL_TEMP")
+        self.NORMAL_BATT_TEMP: int = config.get_int("NORMAL_BATT_TEMP")
+        self.NORMAL_MICRO_TEMP: int = config.get_int("NORMAL_MICRO_TEMP")
+        self.NORMAL_CHARGE_CURRENT: float = config.get_float("NORMAL_CHARGE_CURRENT")
+        self.NORMAL_BATTERY_VOLTAGE: float = config.get_float("NORMAL_BATTERY_VOLTAGE")
+        self.CRITICAL_BATTERY_VOLTAGE: float = config.get_float(
             "CRITICAL_BATTERY_VOLTAGE"
         )
-        self.vlowbatt: float = config.getFloat("vlowbatt")
-        self.battery_voltage: float = config.getFloat("battery_voltage")
-        self.current_draw: float = config.getFloat("current_draw")
-        self.REBOOT_TIME: int = config.getInt("REBOOT_TIME")
-        self.turbo_clock: bool = config.getBool("turbo_clock")
+        self.vlowbatt: float = config.get_float("vlowbatt")
+        self.battery_voltage: float = config.get_float("battery_voltage")
+        self.current_draw: float = config.get_float("current_draw")
+        self.REBOOT_TIME: int = config.get_int("REBOOT_TIME")
+        self.turbo_clock: bool = config.get_bool("turbo_clock")
 
         """
         Setting up data buffers
@@ -283,7 +283,7 @@ class Satellite:
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
 
-        self.radio_cfg: dict[str, float] = config.getDict("radio_cfg")
+        self.radio_cfg: dict[str, float] = config.get_dict("radio_cfg")
 
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
