@@ -31,7 +31,7 @@ class Logger:
         log_level: int = LogLevel.NOTSET,
         log_mode: int = LogMode.PRINT,
     ) -> None:
-        self.logToStandardOut: bool = True
+        self.log_to_standard_out: bool = True
         self.error_counter: Counter = error_counter
         self.log_level: int = log_level
         self.log_mode: int = log_mode
