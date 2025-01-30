@@ -137,26 +137,24 @@ class BatteryHelper:
         """
         response = self._send_command(self.CMD_GET_POWER)
 
-        if response:
-            try:
-                parts = response.split(",")
-                if len(parts) == 5:
-                    return (
-                        float(parts[0]),
-                        float(parts[1]),
-                        float(parts[2]),
-                        float(parts[3]),
-                        bool(int(parts[4])),
-                        self.get_battery_percentage(
-                            float(parts[0]), bool(int(parts[4]))
-                        ),
-                    )
+        if not response:
+            self.logger.warning("Failed to get valid power metrics")
+            return (0.0, 0.0, 0.0, 0.0, False, 0.0)
 
-            except Exception as e:
-                self.logger.error("Error parsing metrics", err=e)
+        try:
+            parts = response.split(",")
+            if len(parts) == 5:
+                return (
+                    float(parts[0]),
+                    float(parts[1]),
+                    float(parts[2]),
+                    float(parts[3]),
+                    bool(int(parts[4])),
+                    self.get_battery_percentage(float(parts[0]), bool(int(parts[4]))),
+                )
 
-        self.logger.warning("Failed to get valid power metrics")
-        return (0.0, 0.0, 0.0, 0.0, False, 0.0)
+        except Exception as e:
+            self.logger.error("Error parsing metrics", err=e)
 
     def get_error_metrics(self):
         """

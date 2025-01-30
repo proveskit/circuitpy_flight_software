@@ -13,13 +13,12 @@ class Field:
         self.logger = logger
 
     def Beacon(self, msg):
+        if not self.cubesat.is_licensed:
+            self.logger.debug(
+                "Please toggle licensed variable in code once you obtain an amateur radio license",
+            )
+            return
         try:
-            if not self.cubesat.is_licensed:
-                self.logger.debug(
-                    "Please toggle licensed variable in code once you obtain an amateur radio license",
-                )
-                return
-
             self.logger.info(
                 "I am beaconing",
                 beacon=str(msg),
