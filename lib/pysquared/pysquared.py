@@ -517,14 +517,17 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if not self.hardware["NEOPIX"]:
-            self.error_print("[WARNING] NEOPIXEL not initialized")
-            return
-
-        try:
-            self.neopixel[0] = value
-        except Exception as e:
-            self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
+        if self.hardware["NEOPIX"]:
+            try:
+                self.neopixel[0] = value
+            except Exception as e:
+                self.logger.error(
+                    "There was an error trying to set the new RGB value",
+                    err=e,
+                    value=value,
+                )
+        else:
+            self.logger.warning("The NEOPIXEL device is not initialized")
 
     @property
     def uptime(self) -> int:
@@ -594,25 +597,21 @@ class Satellite:
         hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
         """
         hours, minutes, seconds = hms
-        if self.hardware["RTC"]:
-            try:
-                self.rtc.set_time(hours, minutes, seconds)
-            except Exception as e:
-                self.logger.error(
-                    "There was an error setting the RTC time",
-                    err=e,
-                    hms=hms,
-                    hour=hms[0],
-                    minutes=hms[1],
-                    seconds=hms[2],
-                )
-        else:
+        if not self.hardware["RTC"]:
             self.logger.warning("The RTC is not initialized")
+            return
 
         try:
             self.rtc.set_time(hours, minutes, seconds)
         except Exception as e:
-            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            self.logger.error(
+                "There was an error setting the RTC time",
+                err=e,
+                hms=hms,
+                hour=hms[0],
+                minutes=hms[1],
+                seconds=hms[2],
+            )
 
     @property
     def date(self) -> Union[tuple[int, int, int, int], None]:
@@ -628,10 +627,9 @@ class Satellite:
         """
         year, month, date, weekday = ymdw
         if not self.hardware["RTC"]:
-            self.error_print("[WARNING] RTC not initialized")
+            self.logger.warning("RTC not initialized")
             return
 
-        
         try:
             self.rtc.set_date(year, month, date, weekday)
         except Exception as e:
