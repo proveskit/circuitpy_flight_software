@@ -35,7 +35,6 @@ You can find our Getting Started Guide [here](docs/dev-guide.md).
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
 - **main.py** This code tasks all the functions the satellite should do in a semi-asynchronous manner utilizing the asyncio library
-- **payload.py** This code implements any desired payload. On the Pleiades missions, the payload has been the BNO055 IMU. Since the use of a stemmaQT connector allows multiple devices on the same bus, a BNO IMU could be used in conjunction with several other sensors if desired.
 - **safemode.py** This code is unimplemented pending new firmware releases that allow the microconrtoller to perform a routine when in safemode
 ### pysquared lib
 This software library contains all of the libraries required to operate the sensors, PySquared board, and radio module.
@@ -48,8 +47,11 @@ This software library contains all of the libraries required to operate the sens
 - **adafruit_rfm.py** This is a library that implements all the radio hardware. This code is a modified version of the pycubed_rfm9x which is a modified version of the adafruit_rfm9x file.
 - **cdh.py** This is the code that handles all the commands. A majority of this code is pulled from the cdh file developed by Max Holliday at Stanford.
 - **detumble.py** This code implements the B-dot algorithm and returns outputs that allow the system to do a controlled detumble with the satellite's embedded magnetourquer coils
+- **payload.py** This code implements any desired payload. On the Pleiades missions, the payload has been the BNO055 IMU. Since the use of a stemmaQT connector allows multiple devices on the same bus, a BNO IMU could be used in conjunction with several other sensors if desired.
+- **logger.py** This class emulates the logging abilities of mainline Python and creates .json format logs for all of the satellite activities.
+- **config.json** This file is used to configure the system variables for the satelite software.
 ## Adafruit Libraires
-These are open source software libraries that are pull from Adafruit. They don't ship by default anymore in our repo, instead they are installed by our package manager when you run the `make` toolchain. 
+These are open source software libraries that are pull from Adafruit. They don't ship by default anymore in our repo, instead they are installed by our package manager when you run the `make` toolchain.
 - **asyncio** This is the library responsible for scheduling tasks in the main code
 - **adafruit_bno055.py** This is the library that is responsible for obtaining data from the BNO055 IMU
 - **adafruit_drv2605.mpy** This is the pre-compiled library that is responsible for driving the magnetorquer coils using the drv2605 motor driver
@@ -60,8 +62,8 @@ These are open source software libraries that are pull from Adafruit. They don't
 - **adafruit_veml7700.py** This is the library that is responsible for obtaining data from the veml7700 Light Sensor
 - **adafruit_vl6180.py** This is the library that is responsible for obtaining data from the vl6180 LiDAR sensor
 ## tests
-This software is used for performing tests on the satellite. Currently this is seperated into `repl` (tests that are meant to be run from the REPL enviroment on the board) and `unit` (tests that can be run independently of the hardware). 
-- **radio_test.py** This is an omnibus radio testing script that will allow you to send, receive, and command boards running the PySquared library. 
+This software is used for performing tests on the satellite. Currently this is seperated into `repl` (tests that are meant to be run from the REPL enviroment on the board) and `unit` (tests that can be run independently of the hardware).
+- **radio_test.py** This is an omnibus radio testing script that will allow you to send, receive, and command boards running the PySquared library.
 
 ## Testing setup
 
