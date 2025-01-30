@@ -18,6 +18,7 @@ class Field:
                 "Please toggle licensed variable in code once you obtain an amateur radio license",
             )
             return
+
         try:
             self.logger.info(
                 "I am beaconing",
