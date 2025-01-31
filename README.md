@@ -49,7 +49,7 @@ This software library contains all of the libraries required to operate the sens
 - **detumble.py** This code implements the B-dot algorithm and returns outputs that allow the system to do a controlled detumble with the satellite's embedded magnetourquer coils
 - **payload.py** This code implements any desired payload. On the Pleiades missions, the payload has been the BNO055 IMU. Since the use of a stemmaQT connector allows multiple devices on the same bus, a BNO IMU could be used in conjunction with several other sensors if desired.
 - **logger.py** This class emulates the logging abilities of mainline Python and creates .json format logs for all of the satellite activities.
-- **config.json** This file is used to configure the system variables for the satelite software.
+- **config.json** This file is used to configure the system variables for the satellite software.
 ## Adafruit Libraires
 These are open source software libraries that are pull from Adafruit. They don't ship by default anymore in our repo, instead they are installed by our package manager when you run the `make` toolchain.
 - **asyncio** This is the library responsible for scheduling tasks in the main code
