@@ -27,7 +27,7 @@ CONFIG_SCHEMA = {
     "CRITICAL_BATTERY_VOLTAGE": float,
     "vlowbatt": float,
     "battery_voltage": float,
-    "current_draw": int,
+    "current_draw": float,
     "REBOOT_TIME": int,
     "turbo_clock": bool,
     "radio_cfg": dict,
@@ -165,6 +165,7 @@ def test_field_types(config_data):
         "NORMAL_BATTERY_VOLTAGE",
         "CRITICAL_BATTERY_VOLTAGE",
         "vlowbatt",
+        "current_draw",
         "battery_voltage",
     ]
     for field in float_fields:
@@ -175,7 +176,6 @@ def test_field_types(config_data):
         "NORMAL_TEMP",
         "NORMAL_BATT_TEMP",
         "NORMAL_MICRO_TEMP",
-        "current_draw",
         "REBOOT_TIME",
     ]
     for field in int_fields:
@@ -232,7 +232,7 @@ def test_voltage_ranges(config_data):
     ]
     for field in voltage_fields:
         value = config_data[field]
-        assert 0 <= value <= 12.0, f"{field} must be between 0V and 12V"
+        assert 5.2 <= value <= 8.4, f"{field} must be between 5.2V and 8.4V"
 
 
 def test_time_values(config_data):

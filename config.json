@@ -55,8 +55,8 @@
 "NORMAL_BATTERY_VOLTAGE": 6.9,
 "CRITICAL_BATTERY_VOLTAGE": 6.6,
 "vlowbatt": 6.0,
-"battery_voltage": 3.3,
-"current_draw": 255,
+"battery_voltage": 5.2,
+"current_draw": 240.5,
 "REBOOT_TIME": 3600,
 "turbo_clock": false,
 "radio_cfg": {
