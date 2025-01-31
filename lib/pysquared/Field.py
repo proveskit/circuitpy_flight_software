@@ -8,8 +8,7 @@ from lib.pysquared.logger import Logger
 
 
 class Field:
-    def __init__(self, cubesat, debug, logger: Logger):
-        self.debug = debug
+    def __init__(self, cubesat, logger: Logger):
         self.cubesat = cubesat
         self.logger = logger
 
