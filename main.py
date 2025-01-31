@@ -12,16 +12,19 @@ import time
 
 import microcontroller
 
+import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.nvm.counter import Counter
 
-logger = Logger()
-
+logger: Logger = Logger(
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+)
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
 
-loiter_time = 5
+loiter_time: int = 5
 
 try:
     for i in range(loiter_time):
@@ -29,7 +32,8 @@ try:
         time.sleep(1)
 
     logger.debug("Initializing Config")
-    config = Config()
+    config: Config = Config()
+
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
