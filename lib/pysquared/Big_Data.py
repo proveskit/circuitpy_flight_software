@@ -1,14 +1,14 @@
 import gc
 
-from lib.pysquared.debugcolor import co
+from lib.pysquared.logger import Logger
 
 
 class Face:
-    def __init__(self, Add, Pos, debug_state, tca):
+    def __init__(self, Add, Pos, tca, logger: Logger):
         self.tca = tca
         self.address = Add
         self.position = Pos
-        self.debug = debug_state
+        self.logger = logger
 
         # Use tuple instead of list for immutable data
         self.senlist = ()
@@ -30,10 +30,6 @@ class Face:
         self.veml = None
         self.drv = None
 
-    def debug_print(self, statement):
-        if self.debug:
-            print(co("[FACE]" + statement, "teal", "bold"))
-
     def Sensorinit(self, senlist, address):
         gc.collect()  # Force garbage collection before initializing sensors
 
@@ -44,7 +40,7 @@ class Face:
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.debug_print("[ERROR][Temperature Sensor]" + str(e))
+                self.logger.error("Error Initializing Temperature Sensor", err=e)
 
         if "VEML" in senlist:
             try:
@@ -53,7 +49,7 @@ class Face:
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.debug_print("[ERROR][Light Sensor]" + str(e))
+                self.logger.error("Error Initializing Light Sensor", err=e)
 
         if "DRV" in senlist:
             try:
@@ -62,21 +58,21 @@ class Face:
                 self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
-                self.debug_print("[ERROR][Motor Driver]" + str(e))
+                self.logger.error("Error Initializing Motor Driver", err=e)
 
         gc.collect()  # Clean up after initialization
 
 
 class AllFaces:
-    def __init__(self, debug, tca):
+    def __init__(self, tca, logger: Logger):
         self.tca = tca
-        self.debug = debug
         self.faces = []
+        self.logger = logger
 
         # Create faces using a loop instead of individual variables
         positions = [("y+", 0), ("y-", 1), ("x+", 2), ("x-", 3), ("z-", 4)]
         for pos, addr in positions:
-            face = Face(addr, pos, debug, tca)
+            face = Face(addr, pos, tca, self.logger)
             face.Sensorinit(face.senlist, face.address)
             self.faces.append(face)
             gc.collect()  # Clean up after each face initialization
