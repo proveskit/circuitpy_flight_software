@@ -175,6 +175,6 @@ class CommandDataHandler:
 
         cubesat.radio1.send(data=str(eval(args)))
 
-    def exec_cmd(self, args) -> None:
+    def exec_cmd(self, cubesat: Satellite, args) -> None:
         self.logger.info("Executing command", args=args)
         exec(args)
