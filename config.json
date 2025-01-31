@@ -1,5 +1,5 @@
 {
-"cubesatName": "Orpheus",
+"cubesat_name": "Orpheus",
 "callsign": "KO6AZM",
 "last_battery_temp": 20.0,
 "sleep_duration": 30,
@@ -47,7 +47,7 @@
 "legacy": false,
 "heating": false,
 "orpheus":true,
-"is_licensed":true,
+"is_licensed":false,
 "NORMAL_TEMP": 20,
 "NORMAL_BATT_TEMP": 1,
 "NORMAL_MICRO_TEMP": 20,
@@ -59,6 +59,16 @@
 "current_draw": 255,
 "REBOOT_TIME": 3600,
 "turbo_clock": false,
+"radio_cfg": {
+        "sender_id": 251,
+        "receiver_id": 250,
+        "transmit_frequency": 437.4,
+        "LoRa_spreading_factor": 8,
+        "transmit_bandwidth": 125,
+        "LoRa_coding_rate": 8,
+        "transmit_power": 23,
+        "start_time": 80000
+    },
 "super_secret_code": "ABCD",
 "repeat_code": "RP",
 "jokereply": [

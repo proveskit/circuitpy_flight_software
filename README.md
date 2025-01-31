@@ -35,44 +35,7 @@ from pysquared_eps import cubesat as c
 # Development Getting Started
 We welcome contributions so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
 
-We have a few python tools to make development safer, easier, and more consistent. To get started you'll need to run
-```sh
-make
-```
-
-## Manually testing code on the board
-We are working on improving our automated testing but right now the best way to test your code is to run it on the board. We have provided the following command to make it easy to install code on the board:
-```sh
-make install BOARD_MOUNT_POINT=/PATH_TO_YOUR_BOARD
-```
-
-You can find the path to your board by looking for the volume named `PYSQUARED`
-
-### Mac
-```sh
-ls -lah /Volumes
-...
-drwx------@  1 nate  staff    16K Jan  9 08:09 PYSQUARED/
-```
-
-### Linux or Windows via WSL
-```sh
-df -h
-```
-
-## Build failures
-
-### Lint failure
-Everytime you make a change in git, it's called a commit. We have a tool called a precommit hook that will run before you make each commit to ensure your code is safe and formatted correctly. If you experience a lint failure you can run the following to fix it for you or tell you what's wrong.
-```sh
-make fmt
-```
-
-### Test failure
-To ensure our code works we use automated testing. If you're seeing a testing failure in your build, you can see what's wrong by running those tests yourself with:
-```
-make test
-```
+You can find our Getting Started Guide [here](docs/dev-guide.md).
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
@@ -91,7 +54,7 @@ This software contains all of the libraries required to operate the sensors, pys
 - **adafruit_veml7700.py** This is the library that is responsible for obtaining data from the veml7700 Light Sensor
 - **adafruit_vl6180.py** This is the library that is responsible for obtaining data from the vl6180 LiDAR sensor
 - **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain all the same sensors, this class handles the individual face sensors and returns them all to the main code.
-- **bitflags.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
+- **flag.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
 - **debugcolor.py** This is code that allows for easier debugging and is used by individual classes. Each class utilizes a different color and makes debugging substantially easier
 - **Field.py** This is code that implements the radio module for sending and listening
 - **functions.py** This is a library of functions utilized by the satellite to obtain data, detumble, run the battery heater

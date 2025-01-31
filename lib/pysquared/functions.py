@@ -6,58 +6,51 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 import gc
-import json
 import random
 import time
-import traceback
 
 import alarm
 
 from lib.pysquared.battery_helper import BatteryHelper
-from lib.pysquared.debugcolor import co
+from lib.pysquared.config import Config
+from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
+from lib.pysquared.pysquared import Satellite
 
 try:
-    from typing import Any, List, Literal, OrderedDict, Union
+    from typing import List, Literal, OrderedDict, Union
 
     import circuitpython_typing
 except Exception:
     pass
-from lib.pysquared.pysquared import Satellite
 
 
 class functions:
-    def debug_print(self, statement: Any) -> None:
-        if self.debug:
-            print(co("[Functions]" + str(statement), "green", "bold"))
-
-    def __init__(self, cubesat: Satellite) -> None:
+    def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
+        self.logger = logger
         self.cubesat: Satellite = cubesat
-        self.battery: BatteryHelper = BatteryHelper(cubesat)
-        self.debug: bool = cubesat.debug
-        self.debug_print("Initializing Functionalities")
+        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
+        self.logger.info("Initializing Functionalities")
 
-        self.pm: PacketManager = PacketManager(max_packet_size=128)
-        self.ps: PacketSender = PacketSender(cubesat.radio1, self.pm, max_retries=3)
+        self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
+        self.ps: PacketSender = PacketSender(
+            self.logger, cubesat.radio1, self.pm, max_retries=3
+        )
 
-        # parses json & assigns data to variables
-        with open("config.json", "r") as f:
-            json_data = f.read()
-        config = json.loads(json_data)
-
-        self.cubesatName: str = config["cubesatName"]
+        self.config: Config = config
+        self.cubesat_name: str = config.get_str("cubesat_name")
         self.Errorcount: int = 0
         self.facestring: list = [None, None, None, None, None]
-        self.jokes: list[str] = config["jokes"]
-        self.last_battery_temp: float = config["last_battery_temp"]
-        self.sleep_duration: int = config["sleep_duration"]
-        self.callsign: str = config["callsign"]
+        self.jokes: list[str] = config.get_list("jokes")
+        self.last_battery_temp: float = config.get_float("last_battery_temp")
+        self.sleep_duration: int = config.get_int("sleep_duration")
+        self.callsign: str = config.get_str("callsign")
         self.state_bool: bool = False
         self.face_data_baton: bool = False
-        self.detumble_enable_z: bool = config["detumble_enable_z"]
-        self.detumble_enable_x: bool = config["detumble_enable_x"]
-        self.detumble_enable_y: bool = config["detumble_enable_y"]
+        self.detumble_enable_z: bool = config.get_bool("detumble_enable_z")
+        self.detumble_enable_x: bool = config.get_bool("detumble_enable_x")
+        self.detumble_enable_y: bool = config.get_bool("detumble_enable_y")
 
     """
     Satellite Management Functions
@@ -67,7 +60,7 @@ class functions:
         return self.cubesat.current_draw
 
     def safe_sleep(self, duration: int = 15) -> None:
-        self.debug_print("Setting Safe Sleep Mode")
+        self.logger.info("Setting Safe Sleep Mode")
 
         iterations: int = 0
 
@@ -83,13 +76,13 @@ class functions:
             self.cubesat.watchdog_pet()
 
     def listen_loiter(self) -> None:
-        self.debug_print("Listening for 10 seconds")
+        self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.cubesat.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
-        self.debug_print("Sleeping for 20 seconds")
+        self.logger.debug("Sleeping for 20 seconds")
         self.cubesat.watchdog_pet()
         self.safe_sleep(self.sleep_duration)
         self.cubesat.watchdog_pet()
@@ -106,15 +99,16 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
-            self.debug_print("Sent Packet: " + message)
+            self.logger.debug("Sent Packet", packet_message=message)
         else:
-            self.debug_print("Failed to send packet")
+            self.logger.warning("Failed to send packet")
         del self.field
         del Field
+        gc.collect()
 
     def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
@@ -131,16 +125,14 @@ class functions:
 
         try:
             lora_beacon: str = (
-                f"{self.callsign} Hello I am {self.cubesatName}! I am: "
+                f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
-                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.c_boot} EC:{self.cubesat.c_error_count} "
+                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
-            self.debug_print(
-                "Error with obtaining power data: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Error with obtaining power data: ", err=e)
+
             lora_beacon: str = (
                 f"{self.callsign} Hello I am Yearling^2! I am in: "
                 + "an unidentified"
@@ -149,10 +141,11 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
+        gc.collect()
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
@@ -192,23 +185,20 @@ class functions:
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
                 f"UT:{self.cubesat.uptime}",
-                f"BN:{self.cubesat.c_boot}",
+                f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.last_radio_temp()}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
-                f"EC:{self.cubesat.c_error_count}",
-                f"AB:{int(self.cubesat.burned)}",
-                f"BO:{int(self.cubesat.f_brownout)}",
-                f"FK:{int(self.cubesat.f_fsk)}",
+                f"EC:{self.logger.get_error_count()}",
+                f"AB:{int(self.cubesat.f_burned.get())}",
+                f"BO:{int(self.cubesat.f_brownout.get())}",
+                f"FK:{int(self.cubesat.f_fsk.get())}",
             ]
         except Exception as e:
-            self.debug_print(
-                "Couldn't aquire data for the state of health: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -225,44 +215,44 @@ class functions:
             self.state_bool: bool = False
         del self.field
         del Field
+        gc.collect()
 
     def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.debug)
-        self.debug_print("Sending Face Data")
+        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.logger.debug("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
         del self.field
         del Field
+        gc.collect()
 
     def listen(self) -> bool:
-        import lib.pysquared.cdh as cdh
+        # need to instanciate cdh to feed it the config var
+        # assigned from the Config object
+        from lib.pysquared.cdh import CommandDataHandler
+
+        cdh = CommandDataHandler(self.config, self.logger)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
-            self.debug_print("Listening")
+            self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
-            self.debug_print(
-                "An Error has occured while listening: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("An Error has occured while listening: ", err=e)
             received = None
 
         try:
             if received is not None:
-                self.debug_print("Recieved Packet: " + str(received))
+                self.logger.debug("Received Packet", packet=received)
                 cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
-            self.debug_print(
-                "An Error has occured while handling command: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("An Error has occured while handling a command: ", err=e)
         finally:
             del cdh
 
@@ -270,7 +260,7 @@ class functions:
 
     def listen_joke(self) -> bool:
         try:
-            self.debug_print("Listening")
+            self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
@@ -278,10 +268,7 @@ class functions:
             else:
                 return False
         except Exception as e:
-            self.debug_print(
-                "An Error has occured while listening: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("An Error has occured while listening for a joke", err=e)
             received = None
             return False
 
@@ -292,25 +279,35 @@ class functions:
 
     def all_face_data(self) -> list:
         # self.cubesat.all_faces_on()
-        self.debug_print(gc.mem_free())
+        self.logger.debug(
+            "Free Memory Stat at beginning of all_face_data function",
+            bytes_free=gc.mem_free(),
+        )
         gc.collect()
 
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            self.debug_print(gc.mem_free())
+            self.logger.debug(
+                "Free Memory Stat after importing Big_data library",
+                bytes_free=gc.mem_free(),
+            )
 
             gc.collect()
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
-            self.debug_print(gc.mem_free())
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
+            self.logger.debug(
+                "Free Memory Stat after initializing All Faces object",
+                bytes_free=gc.mem_free(),
+            )
 
             self.facestring: list = a.Face_Test_All()
 
             del a
             del Big_Data
+            gc.collect()
 
         except Exception as e:
-            self.debug_print("Big_Data error" + "".join(traceback.format_exception(e)))
+            self.logger.error("Big_Data error", err=e)
 
         return self.facestring
 
@@ -321,9 +318,7 @@ class functions:
             return self.battery.get_power_metrics()
 
         except Exception as e:
-            self.debug_print(
-                "Error retrieving battery data" + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Error retrieving battery data", err=e)
             return None
 
     def get_imu_data(
@@ -339,34 +334,14 @@ class functions:
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
         except Exception as e:
-            self.debug_print(
-                "Error retrieving IMU data" + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Error retrieving IMU data", err=e)
 
         return data
 
     def OTA(self) -> None:
         # resets file system to whatever new file is received
-        self.debug_print("Implement an OTA Function Here")
+        self.logger.debug("Implement an OTA Function Here")
         pass
-
-    """
-    Logging Functions
-    """
-
-    def log_face_data(self, data) -> None:
-        self.debug_print("Logging Face Data")
-        try:
-            self.cubesat.log("/faces.txt", data)
-        except Exception as e:
-            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
-
-    def log_error_data(self, data) -> None:
-        self.debug_print("Logging Error Data")
-        try:
-            self.cubesat.log("/error.txt", data)
-        except Exception as e:
-            self.debug_print("SD error: " + "".join(traceback.format_exception(e)))
 
     """
     Misc Functions
@@ -375,25 +350,20 @@ class functions:
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7, margin: float = 0.2, seq: int = 118) -> None:
-        self.debug_print("Detumbling")
+        self.logger.debug("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
         try:
             import lib.pysquared.Big_Data as Big_Data
 
-            a: Big_Data.AllFaces = Big_Data.AllFaces(self.debug, self.cubesat.tca)
+            a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
         except Exception as e:
-            self.debug_print(
-                "Error Importing Big Data: " + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Error Importing Big Data", err=e)
 
         try:
             a.sequence = 52
         except Exception as e:
-            self.debug_print(
-                "Error setting motor driver sequences: "
-                + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Error setting motor driver sequences", err=e)
 
         def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
@@ -419,43 +389,39 @@ class functions:
                             data[0][x] = 0.0
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
-                    self.debug_print("Dipole: " + str(dipole))
+                    self.logger.debug("Detumbling", dipole=dipole)
                     self.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
-                self.debug_print(
-                    "Detumble error: " + "".join(traceback.format_exception(e))
-                )
+                self.logger.error("Detumble error", err=e)
 
         try:
-            self.debug_print("Attempting")
+            self.logger.debug("Attempting")
             do_detumble()
         except Exception as e:
-            self.debug_print(
-                "Detumble error: " + "".join(traceback.format_exception(e))
-            )
+            self.logger.error("Detumble error", err=e)
         self.cubesat.RGB = (100, 100, 50)
 
     def Short_Hybernate(self) -> Literal[True]:
-        self.debug_print("Short Hybernation Coming UP")
+        self.logger.debug("Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(120)
 
         self.cubesat.enable_rf.value = True
         return True
 
     def Long_Hybernate(self) -> Literal[True]:
-        self.debug_print("LONG Hybernation Coming UP")
+        self.logger.debug("LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
         self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot = True
+        self.cubesat.f_softboot.toggle(True)
         self.safe_sleep(600)
 
         self.cubesat.enable_rf.value = True

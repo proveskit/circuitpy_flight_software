@@ -6,7 +6,7 @@ import pytest
 
 # Schema definition using type hints for documentation
 CONFIG_SCHEMA = {
-    "cubesatName": str,
+    "cubesat_name": str,
     "callsign": str,
     "last_battery_temp": float,
     "sleep_duration": int,
@@ -30,6 +30,7 @@ CONFIG_SCHEMA = {
     "current_draw": int,
     "REBOOT_TIME": int,
     "turbo_clock": bool,
+    "radio_cfg": dict,
     "super_secret_code": str,
     "repeat_code": str,
     "jokereply": list,
@@ -80,6 +81,36 @@ def validate_config(config: Dict[str, Any]) -> None:
         if config[field] <= 0:
             raise ValueError(f"{field} must be positive")
 
+    # Add radio_cfg validation after voltage validation
+    # Validate radio configuration
+    radio_required_fields = {
+        "sender_id": int,
+        "receiver_id": int,
+        "transmit_frequency": float,
+        "LoRa_spreading_factor": int,
+        "transmit_bandwidth": int,
+        "LoRa_coding_rate": int,
+        "transmit_power": int,
+        "start_time": int,
+    }
+
+    if not isinstance(config["radio_cfg"], dict):
+        raise TypeError("radio_cfg must be a dictionary")
+
+    for field, expected_type in radio_required_fields.items():
+        if field not in config["radio_cfg"]:
+            raise ValueError(f"Required radio config field '{field}' is missing")
+        if not isinstance(config["radio_cfg"][field], expected_type):
+            raise TypeError(
+                f"Radio config field '{field}' must be of type {expected_type.__name__}"
+            )
+
+    # Validate radio config ranges
+    if not 0 <= config["radio_cfg"]["transmit_power"] <= 23:
+        raise ValueError("transmit_power must be between 0 and 23")
+    if not 400 <= config["radio_cfg"]["transmit_frequency"] <= 450:
+        raise ValueError("transmit_frequency must be between 400 and 450 MHz")
+
 
 def load_config(config_path: str) -> dict:
     """Load and parse the config file."""
@@ -123,7 +154,7 @@ def test_config_validation(config_data):
 def test_field_types(config_data):
     """Test that all fields have correct types."""
     # Test string fields
-    string_fields = ["cubesatName", "callsign", "super_secret_code", "repeat_code"]
+    string_fields = ["cubesat_name", "callsign", "super_secret_code", "repeat_code"]
     for field in string_fields:
         assert isinstance(config_data[field], str), f"{field} must be a string"
 
@@ -172,6 +203,23 @@ def test_field_types(config_data):
         assert all(
             isinstance(item, str) for item in config_data[field]
         ), f"All items in {field} must be strings"
+
+    # Add radio config testing after list fields
+    assert isinstance(config_data["radio_cfg"], dict), "radio_cfg must be a dictionary"
+    radio_fields = {
+        "sender_id": int,
+        "receiver_id": int,
+        "transmit_frequency": float,
+        "LoRa_spreading_factor": int,
+        "transmit_bandwidth": int,
+        "LoRa_coding_rate": int,
+        "transmit_power": int,
+        "start_time": int,
+    }
+    for field, expected_type in radio_fields.items():
+        assert isinstance(
+            config_data["radio_cfg"][field], expected_type
+        ), f"radio_cfg.{field} must be a {expected_type.__name__}"
 
 
 def test_voltage_ranges(config_data):
