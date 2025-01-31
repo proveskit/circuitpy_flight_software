@@ -1,10 +1,10 @@
 # from lib.pysquared.pysquared import cubesat as c
-import lib.pysquared.config as Config
-import lib.pysquared.pysquared as Satellite
+from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.pysquared import Satellite
 
-config = Config.Config()
+config = Config()
 logger = Logger()
-c = Satellite.Satellite(config, logger)
+c = Satellite(config=config, logger=logger)
 
 logger.info("Initialized a cubesat object as `c` in the REPL...")

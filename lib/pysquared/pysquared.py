@@ -11,15 +11,14 @@ Library Repo:
 import sys
 import time
 import traceback
-from collections import OrderedDict
 from os import chdir, mkdir, stat
 
+import adafruit_sdcard  # Updated import
 import board
 import busio
 import digitalio
 import machine
 import microcontroller
-import sdcardio
 from micropython import const
 from storage import VfsFat, mount, umount
 
@@ -34,7 +33,7 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 
 try:
-    from typing import Any, Callable, OrderedDict, TextIO, Union
+    from typing import Any, Callable, TextIO, Union
 
     import circuitpython_typing
 except Exception:
@@ -85,10 +84,14 @@ class Satellite:
                     return device
 
                 except Exception as e:
-                    self.error_print(
-                        f"[{error_severity}][{hardware_key}]: {traceback.format_exception(e)}"
+                    error_message = "".join(
+                        traceback.format_exception(None, e, e.__traceback__)
                     )
-                return None
+                    self.error_print(
+                        f"[{error_severity}][{hardware_key}]: {error_message}"
+                    )
+                    self.hardware[hardware_key] = False
+                    return None
 
             return wrapper
 
@@ -104,7 +107,7 @@ class Satellite:
         **kwargs: Any,
     ) -> Any:
         """
-            Args:
+        Args:
             init_func (Callable[..., Any]): The function used to initialize the hardware.
             *args (Any): Positional arguments to pass to the `init_func`.
             hardware_key (str): A unique identifier for the hardware being initialized.
@@ -113,12 +116,12 @@ class Satellite:
             **kwargs (Any): Additional keyword arguments to pass to the `init_func`.
                 Must be placed before `hardware_key`.
 
-            Returns:
-                Any: The initialized hardware instance if successful, or `None` if an error occurs.
+        Returns:
+            Any: The initialized hardware instance if successful, or `None` if an error occurs.
 
         Raises:
-                Exception: Any exception raised by the `init_func` or `orpheus_func`
-                will be caught and handled by the `@safe_init` decorator.
+            Exception: Any exception raised by the `init_func` or `orpheus_func`
+            will be caught and handled by the `@safe_init` decorator.
         """
         if self.orpheus and orpheus_func:
             return orpheus_func(hardware_key)
@@ -129,7 +132,7 @@ class Satellite:
 
     @safe_init()
     def init_radio(self, hardware_key: str) -> None:
-        # Define Radio Ditial IO Pins
+        # Define Radio Digital IO Pins
         _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
         self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
@@ -188,23 +191,54 @@ class Satellite:
 
     @safe_init()
     def init_SDCard(self, hardware_key: str) -> None:
-        # Baud rate depends on the card, 4MHz should be safe
-        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
-        _vfs = VfsFat(_sd)
-        mount(_vfs, "/sd")
-        self.fs = _vfs
-        sys.path.append("/sd")
-        self.hardware[hardware_key] = True
+        # Initialize SPI bus if not already initialized
+        if not hasattr(self, "spi0") or self.spi0 is None:
+            self.logger.debug("Initializing SPI0 bus for SD card")
+            self.spi0 = busio.SPI(board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO)
 
-    @safe_init(error_severity="WARNING")
-    def init_neopixel(self, hardware_key: str) -> None:
-        self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
-        self.neopwr.switch_to_output(value=True)
-        self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
-            board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
-        )
-        self.neopixel[0] = (0, 0, 255)
-        self.hardware[hardware_key] = True
+        # Chip Select (CS) pin for the SD card
+        cs_pin = digitalio.DigitalInOut(
+            board.SPI0_CS1
+        )  # Replace with the correct CS pin
+        cs_pin.direction = digitalio.Direction.OUTPUT
+        cs_pin.value = True  # Deactivate CS by default
+
+        # Ensure the SPI bus is ready
+        try:
+            if not self.spi0.try_lock():
+                self.logger.error("Failed to acquire SPI lock for SD card.")
+                self.hardware[hardware_key] = False
+                return
+            self.spi0.configure(baudrate=4000000, phase=0, polarity=0)
+            self.spi0.unlock()
+        except Exception as e:
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.logger.error(f"SPI bus configuration failed: {error_message}")
+            self.hardware[hardware_key] = False
+            return
+
+        # SD card object using adafruit_sdcard
+        try:
+            self.logger.debug("Creating SDCard object")
+            self.sdcard = adafruit_sdcard.SDCard(self.spi0, cs_pin)
+
+            self.logger.debug("Creating VfsFat filesystem")
+            self.vfs = VfsFat(self.sdcard)
+
+            self.logger.debug("Mounting filesystem at /sd")
+            mount(self.vfs, "/sd")
+
+            sys.path.append("/sd")
+            self.hardware[hardware_key] = True
+            self.logger.info("SD card initialized and mounted at /sd")
+        except Exception as e:
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][{hardware_key}]: {error_message}")
+            self.hardware[hardware_key] = False
 
     @safe_init()
     def init_TCA_multiplexer(self, hardware_key: str) -> None:
@@ -219,6 +253,24 @@ class Satellite:
             )
             self.hardware[hardware_key] = False
             return
+
+    @safe_init()
+    def init_neopixel(self, hardware_key: str) -> None:
+        """
+        Initialize the NeoPixel (RGB LED) using the old implementation.
+        """
+        try:
+            # Initialize the NeoPixel on the NEOPIXEL pin with 1 pixel
+            self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2)
+            self.hardware[hardware_key] = True
+            self.logger.debug("NeoPixel initialized successfully")
+        except Exception as e:
+            # Log any errors that occur during initialization
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][NEOPIXEL]: {error_message}")
+            self.hardware[hardware_key] = False
 
     def __init__(self, config: Config, logger: Logger) -> None:
         self.cubesat_name: str = config.get_str("cubesat_name")
@@ -252,9 +304,6 @@ class Satellite:
         """
         Setting up data buffers
         """
-        # TODO(cosmiccodon/blakejameson):
-        # Data_cache, filenumbers, image_packets, and send_buff are variables that are not used in the codebase. They were put here for Orpheus last minute.
-        # We are unsure if these will be used in the future, so we are keeping them here for now.
         self.data_cache: dict = {}
         self.filenumbers: dict = {}
         self.image_packets: int = 0
@@ -264,10 +313,6 @@ class Satellite:
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
 
-        # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
-        # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
-        # None as a state instead of the values to better manage some conditions with Orpheus.
-        # I need to get a better understanding for the values and flow before potentially refactoring code here.
         self.battery_voltage: float = None
         self.draw_current: float = None
         self.charge_voltage: float = None
@@ -285,27 +330,25 @@ class Satellite:
 
         self.radio_cfg: dict[str, float] = config.get_dict("radio_cfg")
 
-        self.hardware: OrderedDict[str, bool] = OrderedDict(
-            [
-                ("I2C0", False),
-                ("SPI0", False),
-                ("I2C1", False),
-                ("UART", False),
-                ("Radio1", False),
-                ("IMU", False),
-                ("Mag", False),
-                ("SDcard", False),
-                ("NEOPIX", False),
-                ("WDT", False),
-                ("TCA", False),
-                ("Face0", False),
-                ("Face1", False),
-                ("Face2", False),
-                ("Face3", False),
-                ("Face4", False),
-                ("RTC", False),
-            ]
-        )
+        self.hardware: dict[str, bool] = {
+            "I2C0": False,
+            "SPI0": False,
+            "I2C1": False,
+            "UART": False,
+            "Radio1": False,
+            "IMU": False,
+            "Mag": False,
+            "SD Card": False,
+            "NEOPIX": False,
+            "WDT": False,
+            "TCA": False,
+            "Face0": False,
+            "Face1": False,
+            "Face2": False,
+            "Face3": False,
+            "Face4": False,
+            "RTC": False,
+        }
 
         if self.f_softboot.get():
             self.f_softboot.toggle(False)
@@ -326,7 +369,7 @@ class Satellite:
         machine.set_clock(62500000)
 
         """
-        Intializing Communication Buses
+        Initializing Communication Buses
         """
 
         # Alternative Implementations of hardware initialization specific for orpheus
@@ -373,7 +416,7 @@ class Satellite:
             busio.UART,
             board.TX,
             board.RX,
-            baud_rate=self.urate,
+            baudrate=self.urate,
             hardware_key="UART",
             orpheus_func=orpheus_init_UART,
         )
@@ -395,7 +438,7 @@ class Satellite:
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
-        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
+        self.magnetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
         self.init_RTC(hardware_key="RTC")
@@ -413,7 +456,7 @@ class Satellite:
             self.f_fsk.toggle(False)
 
         """
-        Prints init State of PySquared Hardware
+        PySquared Hardware Initialization Complete
         """
         self.logger.debug("PySquared Hardware Initialization Complete!")
 
@@ -429,7 +472,7 @@ class Satellite:
                     self.logger.warning(
                         "Unable to initialize hardware device", device=key, status=False
                     )
-        # set power mode
+        # Set power mode
         self.power_mode: str = "normal"
 
     """
@@ -437,7 +480,7 @@ class Satellite:
     """
 
     def scan_tca_channels(self) -> None:
-        if not self.hardware["TCA"]:
+        if not self.hardware.get("TCA", False):
             self.logger.warning("TCA not initialized")
             return
 
@@ -459,7 +502,10 @@ class Satellite:
                 self.hardware["TCA"] = False
                 return
             except Exception as e:
-                self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
+                )
+                self.error_print(f"[ERROR][FACE]{error_message}")
 
     def _scan_single_channel(
         self, channel: int, channel_to_face: dict[int, str]
@@ -486,7 +532,10 @@ class Satellite:
                 if channel in channel_to_face:
                     self.hardware[channel_to_face[channel]] = True
         except Exception as e:
-            self.error_print(f"[ERROR][FACE]{traceback.format_exception(e)}")
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][FACE]{error_message}")
         finally:
             self.tca[channel].unlock()
 
@@ -500,16 +549,19 @@ class Satellite:
 
     @turbo.setter
     def turbo(self, value: bool) -> None:
-        self.turbo_clock: bool = value
+        self.turbo_clock = value
 
         try:
             if value is True:
-                machine.set_clock(125000000)  # 125Mhz
+                machine.set_clock(125000000)  # 125MHz
             else:
-                machine.set_clock(62500000)  # 62.5Mhz
+                machine.set_clock(62500000)  # 62.5MHz
 
         except Exception as e:
-            self.error_print(f"[ERROR][CLOCK SPEED]{traceback.format_exception(e)}")
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][CLOCK SPEED]{error_message}")
 
     @property
     def RGB(self) -> tuple[int, int, int]:
@@ -517,73 +569,93 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if self.hardware["NEOPIX"]:
+        if self.hardware.get("NEOPIX", False):
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.error_print("[ERROR]" + "".join(traceback.format_exception(e)))
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
+                )
+                self.error_print(f"[ERROR]{error_message}")
         else:
             self.error_print("[WARNING] NEOPIXEL not initialized")
 
     @property
     def uptime(self) -> int:
-        self.CURRENTTIME: int = const(time.time())
+        self.CURRENTTIME = int(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
     @property
     def reset_vbus(self) -> None:
-        # unmount SD card to avoid errors
-        if self.hardware["SDcard"]:
+        # Unmount SD card to avoid errors
+        if self.hardware.get("SD Card", False):
             try:
                 umount("/sd")
                 time.sleep(3)
             except Exception as e:
-                self.error_print(
-                    "error unmounting SD card" + "".join(traceback.format_exception(e))
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
                 )
+                self.error_print("Error unmounting SD card: " + error_message)
         try:
             self.logger.debug(
                 "Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
             )
         except Exception as e:
-            self.error_print(
-                "vbus reset error: " + "".join(traceback.format_exception(e))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
             )
+            self.error_print("VBUS reset error: " + error_message)
 
     @property
     def gyro(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.gyro
         except Exception as e:
-            self.error_print("[ERROR][GYRO]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][GYRO]{error_message}")
 
     @property
     def accel(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.acceleration
         except Exception as e:
-            self.error_print("[ERROR][ACCEL]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][ACCEL]{error_message}")
 
     @property
     def internal_temperature(self) -> Union[float, None]:
         try:
             return self.imu.temperature
         except Exception as e:
-            self.error_print("[ERROR][TEMP]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][TEMP]{error_message}")
 
     @property
     def mag(self) -> Union[tuple[float, float, float], None]:
         try:
-            return self.mangetometer.magnetic
+            return self.magnetometer.magnetic
         except Exception as e:
-            self.error_print("[ERROR][mag]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][MAG]{error_message}")
 
     @property
     def time(self) -> Union[tuple[int, int, int], None]:
         try:
             return self.rtc.get_time()
         except Exception as e:
-            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][RTC]{error_message}")
 
     @time.setter
     def time(self, hms: tuple[int, int, int]) -> None:
@@ -591,13 +663,14 @@ class Satellite:
         hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
         """
         hours, minutes, seconds = hms
-        if self.hardware["RTC"]:
+        if self.hardware.get("RTC", False):
             try:
                 self.rtc.set_time(hours, minutes, seconds)
             except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
                 )
+                self.error_print(f"[ERROR][RTC]{error_message}")
         else:
             self.error_print("[WARNING] RTC not initialized")
 
@@ -606,7 +679,10 @@ class Satellite:
         try:
             return self.rtc.get_date()
         except Exception as e:
-            self.error_print("[ERROR][RTC]" + "".join(traceback.format_exception(e)))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
+            self.error_print(f"[ERROR][RTC]{error_message}")
 
     @date.setter
     def date(self, ymdw: tuple[int, int, int, int]) -> None:
@@ -614,18 +690,19 @@ class Satellite:
         ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
         """
         year, month, date, weekday = ymdw
-        if self.hardware["RTC"]:
+        if self.hardware.get("RTC", False):
             try:
                 self.rtc.set_date(year, month, date, weekday)
             except Exception as e:
-                self.error_print(
-                    "[ERROR][RTC]" + "".join(traceback.format_exception(e))
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
                 )
+                self.error_print(f"[ERROR][RTC]{error_message}")
         else:
             self.error_print("[WARNING] RTC not initialized")
 
     """
-    Maintenence Functions
+    Maintenance Functions
     """
 
     def watchdog_pet(self) -> None:
@@ -634,7 +711,7 @@ class Satellite:
         self.watchdog_pin.value = False
 
     def check_reboot(self) -> None:
-        self.UPTIME: int = self.uptime
+        self.UPTIME = self.uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.REBOOT_TIME:
             self.micro.reset()
@@ -648,26 +725,28 @@ class Satellite:
             if "crit" in mode:
                 self.neopixel.brightness = 0
                 self.enable_rf.value = False
-                self.power_mode: str = "critical"
+                self.power_mode = "critical"
 
             elif "min" in mode:
                 self.neopixel.brightness = 0
                 self.enable_rf.value = False
 
-                self.power_mode: str = "minimum"
+                self.power_mode = "minimum"
 
             elif "norm" in mode:
                 self.enable_rf.value = True
-                self.power_mode: str = "normal"
+                self.power_mode = "normal"
                 # don't forget to reconfigure radios, gps, etc...
 
             elif "max" in mode:
                 self.enable_rf.value = True
-                self.power_mode: str = "maximum"
+                self.power_mode = "maximum"
         except Exception as e:
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
+            )
             self.error_print(
-                "Error in changing operations of powermode: "
-                + "".join(traceback.format_exception(e))
+                "Error in changing operations of powermode: " + error_message
             )
 
     """
@@ -689,9 +768,10 @@ class Satellite:
                     for line in file:
                         self.logger.info(line.strip())
         except Exception as e:
-            self.error_print(
-                "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
             )
+            self.error_print("[ERROR] Can't print file: " + error_message)
 
     def read_file(
         self, filedir: str = None, binary: bool = False
@@ -702,17 +782,19 @@ class Satellite:
             self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
-                    self.logger.debug(str(file.read()))
-                    return file.read()
+                    data = file.read()
+                    self.logger.debug("File content read in binary mode")
+                    return data
             else:
                 with open(filedir, "r") as file:
-                    for line in file:
-                        self.logger.debug(str(line.strip()))
-                    return file
+                    data = file.read()
+                    self.logger.debug("File content read in text mode")
+                    return data
         except Exception as e:
-            self.error_print(
-                "[ERROR] Cant print file: " + "".join(traceback.format_exception(e))
+            error_message = "".join(
+                traceback.format_exception(None, e, e.__traceback__)
             )
+            self.error_print("[ERROR] Can't read file: " + error_message)
 
     def new_file(self, substring: str, binary: bool = False) -> Union[str, None]:
         """
@@ -720,7 +802,7 @@ class Satellite:
         directory is created on the SD!
         int padded with zeros will be appended to the last found file
         """
-        if self.hardware["SDcard"]:
+        if self.hardware.get("SD Card", False):
             try:
                 ff: str = ""
                 n: int = 0
@@ -740,37 +822,35 @@ class Satellite:
                     try:
                         mkdir("/sd" + _folder)
                     except Exception as e:
+                        error_message = "".join(
+                            traceback.format_exception(None, e, e.__traceback__)
+                        )
                         self.error_print(
-                            "Error with creating new file: "
-                            + "".join(traceback.format_exception(e))
+                            "Error with creating new file: " + error_message
                         )
                         return None
                 for i in range(0xFFFF):
-                    ff: str = "/sd{}{}{:05}.txt".format(
-                        _folder, _file, (n + i) % 0xFFFF
-                    )
+                    ff = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
                     try:
                         if n is not None:
                             stat(ff)
-                    except Exception as e:
-                        self.error_print("file number is {}".format(n))
-                        self.error_print(e)
-                        n: int = (n + i) % 0xFFFF
-                        # print('file number is',n)
+                    except Exception:
+                        n = (n + i) % 0xFFFF
                         break
-                self.logger.debug("creating a file...", file_dir=str(ff))
+                self.logger.debug("Creating a file...", file_dir=str(ff))
                 if binary:
-                    b: str = "ab"
+                    mode = "ab"
                 else:
-                    b: str = "a"
-                with open(ff, b) as f:
+                    mode = "a"
+                with open(ff, mode) as f:
                     f.tell()
                 chdir("/")
                 return ff
             except Exception as e:
-                self.error_print(
-                    "Error creating file: " + "".join(traceback.format_exception(e))
+                error_message = "".join(
+                    traceback.format_exception(None, e, e.__traceback__)
                 )
+                self.error_print("Error creating file: " + error_message)
                 return None
         else:
             self.logger.warning("SD Card not initialized")
