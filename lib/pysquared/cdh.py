@@ -34,19 +34,21 @@ class CommandDataHandler:
 
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat: Satellite, msg) -> None:
-        # check that message is not for me
-        if msg[0] != cubesat.radio1.node:
+        # check that message is for me
+        if msg[0] == cubesat.radio1.node:
+            # TODO check for optional radio config
+
+            # manually send ACK
+            cubesat.radio1.send("!", identifier=msg[2], flags=0x80)
+            # TODO remove this delay. for testing only!
+            time.sleep(0.5)
+            self.message_handler(cubesat, msg)
+        else:
             self.logger.info(
                 "Message not for me?",
                 target_id=hex(msg[0]),
                 my_id=hex(cubesat.radio1.node),
             )
-
-        # manually send ACK
-        cubesat.radio1.send("!", identifier=msg[2], flags=0x80)
-        # TODO remove this delay. for testing only!
-        time.sleep(0.5)
-        self.message_handler(cubesat, msg)
 
     ############### message handler ###############
     def message_handler(self, cubesat: Satellite, msg) -> None:
