@@ -38,7 +38,7 @@ You can find our Getting Started Guide [here](docs/dev-guide.md).
 - **safemode.py** This code is unimplemented pending new firmware releases that allow the microconrtoller to perform a routine when in safemode
 ### pysquared lib
 This software library contains all of the libraries required to operate the sensors, PySquared board, and radio module.
-- **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain all the same sensors, this class handles the individual face sensors and returns them all to the main code.
+- **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain the same sensors, this class handles the individual face sensors and returns them all to the main code.
 - **flag.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
 - **debugcolor.py** This is code that allows for easier debugging and is used by individual classes. Each class utilizes a different color and makes debugging substantially easier
 - **Field.py** This is code that implements the radio module for sending and listening
