@@ -160,7 +160,7 @@ class Satellite:
             )
             self.radio1.max_output = True
             self.radio1.tx_power = self.radio_cfg["transmit_power"]
-            self.radio1.spreading_factor = self.radio_cfg["LoRa_spread_factor"]
+            self.radio1.spreading_factor = self.radio_cfg["LoRa_spreading_factor"]
 
             self.radio1.enable_crc = True
             self.radio1.ack_delay = 0.2
