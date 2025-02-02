@@ -17,6 +17,7 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.nvm.flag import Flag
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
@@ -33,6 +34,10 @@ try:
 
     logger.debug("Initializing Config")
     config: Config = Config()
+
+    use_fsk: Flag = Flag(
+        index=register.FLAG, bit_index=7, datastore=microcontroller.nvm
+    )
 
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
