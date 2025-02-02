@@ -33,21 +33,23 @@ class functions:
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.logger.info("Initializing Functionalities")
 
-        self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
-        self.ps: PacketSender = PacketSender(
-            self.logger, cubesat.radio1, self.pm, max_retries=3
+        self.packet_manager: PacketManager = PacketManager(
+            logger=self.logger, max_packet_size=128
+        )
+        self.packet_sneder: PacketSender = PacketSender(
+            self.logger, cubesat.radio1, self.packet_manager, max_retries=3
         )
 
         self.config: Config = config
         self.cubesat_name: str = config.get_str("cubesat_name")
-        self.Errorcount: int = 0
+        self.error_count: int = 0
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.get_list("jokes")
         self.last_battery_temp: float = config.get_float("last_battery_temp")
         self.sleep_duration: int = config.get_int("sleep_duration")
         self.callsign: str = config.get_str("callsign")
-        self.state_bool: bool = False
-        self.face_data_baton: bool = False
+        self.state_of_health_part1: bool = False
+
         self.detumble_enable_z: bool = config.get_bool("detumble_enable_z")
         self.detumble_enable_x: bool = config.get_bool("detumble_enable_x")
         self.detumble_enable_y: bool = config.get_bool("detumble_enable_y")
@@ -117,7 +119,7 @@ class functions:
             data (String, Byte Array): Pass the data to be sent.
             delay (float): Delay in seconds between packets
         """
-        self.ps.send_data(data)
+        self.packet_sneder.send_data(data)
 
     def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
@@ -199,20 +201,20 @@ class functions:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
-        if not self.state_bool:
+        if not self.state_of_health_part1:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
-            self.state_bool: bool = True
+            self.state_of_health_part1: bool = True
         else:
             self.field.Beacon(
                 f"{self.callsign} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
-            self.state_bool: bool = False
+            self.state_of_health_part1: bool = False
         del self.field
         del Field
         gc.collect()
