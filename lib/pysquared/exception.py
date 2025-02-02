@@ -1,4 +1,4 @@
-class NotInitialized(Exception):
+class NotInitializedError(Exception):
     def __init__(self, name, exception=None):
         self._name = name
         self._exception = exception

@@ -10,6 +10,7 @@ import random
 import time
 
 import alarm
+from adafruit_rfm import RFMSPI
 
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
@@ -27,15 +28,18 @@ except Exception:
 
 
 class functions:
-    def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
+    def __init__(
+        self, logger: Logger, config: Config, cubesat: Satellite, radio: RFMSPI
+    ) -> None:
         self.logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
+        self.radio1 = radio
         self.logger.info("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
         self.ps: PacketSender = PacketSender(
-            self.logger, cubesat.radio1, self.pm, max_retries=3
+            self.logger, self.radio1, self.pm, max_retries=3
         )
 
         self.config: Config = config
@@ -78,7 +82,7 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
-        self.cubesat.radio1.receive_timeout = 10
+        self.self.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
@@ -152,7 +156,7 @@ class functions:
 
     def last_radio_temp(self) -> int:
         """Tries to grab former temp from module"""
-        raw_temp = self.cubesat.radio1.read_u8(0x5B)
+        raw_temp = self.self.radio1.read_u8(0x5B)
         temp = raw_temp & 0x7F
         if (raw_temp & 0x80) == 0x80:
             temp = ~temp + 0x01
@@ -240,8 +244,8 @@ class functions:
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
+            self.self.radio1.receive_timeout = 10
+            received = self.self.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -261,8 +265,8 @@ class functions:
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive(keep_listening=True)
+            self.self.radio1.receive_timeout = 10
+            received = self.self.radio1.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
                 return True
             else:
