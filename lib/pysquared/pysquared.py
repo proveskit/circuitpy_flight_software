@@ -46,11 +46,6 @@ SEND_BUFF: bytearray = bytearray(252)
 
 
 class Satellite:
-    """
-    NVM (Non-Volatile Memory) Register Definitions
-    """
-
-    # General NVM counters
     boot_count: Counter = Counter(index=register.BOOTCNT, datastore=microcontroller.nvm)
 
     # Define NVM flags
@@ -95,7 +90,6 @@ class Satellite:
         init_func: Callable[..., Any],
         *args: Any,
         hardware_key,
-        orpheus_func: Callable[..., Any] = None,
         **kwargs: Any,
     ) -> Any:
         """
@@ -103,8 +97,6 @@ class Satellite:
             init_func (Callable[..., Any]): The function used to initialize the hardware.
             *args (Any): Positional arguments to pass to the `init_func`.
             hardware_key (str): A unique identifier for the hardware being initialized.
-            orpheus_func (Callable[..., Any], optional): An alternative function to initialize
-                the hardware if the `orpheus` flag is set. Defaults to `None`.
             **kwargs (Any): Additional keyword arguments to pass to the `init_func`.
                 Must be placed before `hardware_key`.
 
@@ -112,12 +104,9 @@ class Satellite:
                 Any: The initialized hardware instance if successful, or `None` if an error occurs.
 
         Raises:
-                Exception: Any exception raised by the `init_func` or `orpheus_func`
+                Exception: Any exception raised by the `init_func`
                 will be caught and handled by the `@safe_init` decorator.
         """
-        if self.orpheus and orpheus_func:
-            return orpheus_func(hardware_key)
-
         hardware_instance = init_func(*args, **kwargs)
         self.hardware[hardware_key] = True
         return hardware_instance
@@ -223,7 +212,6 @@ class Satellite:
         """
         self.legacy: bool = config.get_bool("legacy")
         self.heating: bool = config.get_bool("heating")
-        self.orpheus: bool = config.get_bool("orpheus")  # maybe change var name
         self.is_licensed: bool = config.get_bool("is_licensed")
         self.logger = logger
 
@@ -323,29 +311,11 @@ class Satellite:
         """
         Intializing Communication Buses
         """
-
-        # Alternative Implementations of hardware initialization specific for orpheus
-        def orpheus_skip_I2C(hardware_key: str) -> None:
-            self.logger.debug(
-                "Hardware component not initialized",
-                cubesat=self.cubesat_name,
-                hardware_key=hardware_key,
-            )
-            return None
-
-        def orpheus_init_UART(hardware_key: str):
-            uart: circuitpython_typing.ByteStream = busio.UART(
-                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
-            )
-            self.hardware[hardware_key] = True
-            return uart
-
         self.i2c0: busio.I2C = self.init_general_hardware(
             busio.I2C,
             board.I2C0_SCL,
             board.I2C0_SDA,
             hardware_key="I2C0",
-            orpheus_func=orpheus_skip_I2C,
         )
 
         self.spi0: busio.SPI = self.init_general_hardware(
@@ -370,7 +340,6 @@ class Satellite:
             board.RX,
             baud_rate=self.urate,
             hardware_key="UART",
-            orpheus_func=orpheus_init_UART,
         )
 
         ######## Temporary Fix for RF_ENAB ########

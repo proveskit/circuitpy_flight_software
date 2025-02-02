@@ -17,7 +17,6 @@ CONFIG_SCHEMA = {
     "debug": bool,
     "legacy": bool,
     "heating": bool,
-    "orpheus": bool,
     "is_licensed": bool,
     "NORMAL_TEMP": int,
     "NORMAL_BATT_TEMP": int,
@@ -189,7 +188,6 @@ def test_field_types(config_data):
         "debug",
         "legacy",
         "heating",
-        "orpheus",
         "is_licensed",
         "turbo_clock",
     ]

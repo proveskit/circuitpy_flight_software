@@ -1,5 +1,5 @@
 {
-  "cubesat_name": "Orpheus",
+  "cubesat_name": "PROVES Kit Demo",
   "callsign": "KO6AZM",
   "last_battery_temp": 20.0,
   "sleep_duration": 30,
@@ -12,7 +12,6 @@
   "debug": true,
   "legacy": false,
   "heating": false,
-  "orpheus": true,
   "is_licensed": false,
   "NORMAL_TEMP": 20,
   "NORMAL_BATT_TEMP": 1,
