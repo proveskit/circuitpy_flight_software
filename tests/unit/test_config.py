@@ -86,9 +86,9 @@ def validate_config(config: Dict[str, Any]) -> None:
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
+        "lora_spreading_factor": int,
         "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
+        "lora_coding_rate": int,
         "transmit_power": int,
         "start_time": int,
     }
@@ -208,9 +208,9 @@ def test_field_types(config_data):
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
+        "lora_spreading_factor": int,
         "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
+        "lora_coding_rate": int,
         "transmit_power": int,
         "start_time": int,
     }
