@@ -9,6 +9,7 @@ from lib.pysquared.radio.base import Radio
 
 class RadioLora(Radio):
     mode = "lora"
+    spi0 = board.SPI()
 
     def __init__(
         self,
