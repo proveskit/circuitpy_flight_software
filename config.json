@@ -43,6 +43,7 @@
         "Woah is that the Launcher Orbiter?????",
         "Everything in life is a spring if you think hard enough!"
     ],
+"debug": true,
 "legacy": false,
 "heating": false,
 "orpheus":true,
@@ -54,8 +55,8 @@
 "NORMAL_BATTERY_VOLTAGE": 6.9,
 "CRITICAL_BATTERY_VOLTAGE": 6.6,
 "vlowbatt": 6.0,
-"battery_voltage": 3.3,
-"current_draw": 255,
+"battery_voltage": 5.2,
+"current_draw": 240.5,
 "REBOOT_TIME": 3600,
 "turbo_clock": false,
 "radio_cfg": {
@@ -68,7 +69,6 @@
         "transmit_power": 23,
         "start_time": 80000
     },
-
 "super_secret_code": "ABCD",
 "repeat_code": "RP",
 "jokereply": [

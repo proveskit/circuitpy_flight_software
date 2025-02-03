@@ -1,0 +1,43 @@
+{
+  "cubesat_name": "Orpheus",
+  "callsign": "KO6AZM",
+  "last_battery_temp": 20.0,
+  "sleep_duration": 30,
+  "detumble_enable_z": true,
+  "detumble_enable_x": true,
+  "detumble_enable_y": true,
+  "jokes": [
+    "Hey it is pretty cold up here, did someone forget to pay the electric bill?"
+  ],
+  "debug": true,
+  "legacy": false,
+  "heating": false,
+  "orpheus": true,
+  "is_licensed": false,
+  "NORMAL_TEMP": 20,
+  "NORMAL_BATT_TEMP": 1,
+  "NORMAL_MICRO_TEMP": 20,
+  "NORMAL_CHARGE_CURRENT": 0.5,
+  "NORMAL_BATTERY_VOLTAGE": 6.9,
+  "CRITICAL_BATTERY_VOLTAGE": 6.6,
+  "vlowbatt": 6.0,
+  "battery_voltage": 3.3,
+  "current_draw": 240.5,
+  "REBOOT_TIME": 3600,
+  "turbo_clock": false,
+  "radio_cfg": {
+    "sender_id": 251,
+    "receiver_id": 250,
+    "transmit_frequency": 437.4,
+    "LoRa_spreading_factor": 8,
+    "transmit_bandwidth": 125,
+    "LoRa_coding_rate": 8,
+    "transmit_power": 23,
+    "start_time": 80000
+  },
+  "super_secret_code": "ABCD",
+  "repeat_code": "RP",
+  "jokereply": [
+    "Your Mom"
+  ]
+}

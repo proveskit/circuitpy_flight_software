@@ -49,9 +49,6 @@ try:
         c.watchdog_pet()
         f.listen()
         c.watchdog_pet()
-        # f.state_of_health()
-        # f.listen()
-        # c.watchdog_pet()
 
     try:
         c.boot_count.increment()
@@ -70,10 +67,10 @@ try:
     finally:
         pass
 
-    def send_imu():
+    def send_imu_data():
         logger.info("Looking to get imu data...")
         IMUData = []
-        c.watchdog_pet("IMU has baton")
+        c.watchdog_pet()
         logger.info("IMU has baton")
         IMUData = f.get_imu_data()
         c.watchdog_pet()
@@ -94,7 +91,7 @@ try:
 
         f.listen_loiter()
 
-        send_imu()
+        send_imu_data()
 
         f.listen_loiter()
 
