@@ -145,4 +145,4 @@ class Config:
     def save_to_config(self) -> None:
         # writes data to the json file
         with open("config.json", "w") as f:
-            json.dump(self._config, f, indent=4)
+            json.dump(self._config, f)
