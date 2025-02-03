@@ -24,7 +24,7 @@ from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.radio import Radio
 
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+    error_counter=Counter(index=register.NVM.ERRORCNT, datastore=microcontroller.nvm)
 )
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
@@ -42,12 +42,17 @@ try:
     c = pysquared.Satellite(logger, config)
     c.watchdog_pet()
 
+    use_fsk = Flag(
+        index=register.NVM.FLAG,
+        bit_index=register.FLAG_01.USE_FSK,
+        datastore=microcontroller.nvm,
+    )
+    if use_fsk.get():
+        logger.debug("Next restart will be in LoRa mode.")
+        use_fsk.toggle(False)
+
     radio: RFMSPI = Radio.create(
-        Flag(
-            index=register.NVM.FLAG,
-            bit_index=register.FLAG_01.USE_FSK,
-            datastore=microcontroller.nvm,
-        ),
+        use_fsk,
         logger,
         c.spi0,
         config.get_dict("radio_cfg")["sender_id"],
@@ -57,7 +62,7 @@ try:
         config.get_dict("radio_cfg")["lora_spreading_factor"],
     )
 
-    f = functions.functions(logger, config, c, radio)
+    f = functions.functions(logger, config, c, radio, use_fsk)
 
     def initial_boot():
         c.watchdog_pet()

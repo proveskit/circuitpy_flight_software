@@ -4,6 +4,7 @@ import time
 from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.pysquared import Satellite
 
 
@@ -12,7 +13,9 @@ class CommandDataHandler:
     Constructor
     """
 
-    def __init__(self, logger: Logger, config: Config, radio: RFMSPI) -> None:
+    def __init__(
+        self, logger: Logger, config: Config, radio: RFMSPI, use_fsk: Flag
+    ) -> None:
         self._log: Logger = logger
         self._radio: RFMSPI = radio
         self._commands: dict = {
@@ -128,8 +131,8 @@ class CommandDataHandler:
         except Exception:
             pass
 
-    def FSK(cubesat: Satellite) -> None:
-        cubesat.f_fsk.toggle(True)
+    def FSK(self) -> None:
+        self.use_fsk.toggle(True)
 
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._jokereply)

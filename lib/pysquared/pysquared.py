@@ -45,7 +45,9 @@ SEND_BUFF: bytearray = bytearray(252)
 
 
 class Satellite:
-    boot_count: Counter = Counter(index=register.BOOTCNT, datastore=microcontroller.nvm)
+    boot_count: Counter = Counter(
+        index=register.NVM.BOOTCNT, datastore=microcontroller.nvm
+    )
 
     # Define NVM flags
     f_softboot: Flag = Flag(
@@ -323,10 +325,6 @@ class Satellite:
         Face Initializations
         """
         self.scan_tca_channels()
-
-        if self.f_fsk.get():
-            self.logger.debug("Next restart will be in LoRa mode.")
-            self.f_fsk.toggle(False)
 
         """
         Prints init State of PySquared Hardware

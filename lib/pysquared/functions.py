@@ -15,6 +15,7 @@ from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
+from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
 from lib.pysquared.pysquared import Satellite
@@ -29,12 +30,18 @@ except Exception:
 
 class functions:
     def __init__(
-        self, logger: Logger, config: Config, cubesat: Satellite, radio: RFMSPI
+        self,
+        logger: Logger,
+        config: Config,
+        cubesat: Satellite,
+        radio: RFMSPI,
+        use_fsk: Flag,
     ) -> None:
         self.logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self._radio: RFMSPI = radio
+        self.use_fsk: Flag = use_fsk
         self.logger.info("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
@@ -197,7 +204,7 @@ class functions:
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{int(self.cubesat.f_fsk.get())}",
+                f"FK:{int(self.use_fsk.get())}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
@@ -239,7 +246,7 @@ class functions:
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.logger, self.config, self._radio)
+        cdh = CommandDataHandler(self.logger, self.config, self._radio, self.use_fsk)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
