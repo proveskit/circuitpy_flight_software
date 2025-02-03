@@ -1,10 +1,10 @@
 import random
 import time
 
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
-from lib.pysquared.radio import Radio
 
 
 class CommandDataHandler:
@@ -12,9 +12,9 @@ class CommandDataHandler:
     Constructor
     """
 
-    def __init__(self, logger: Logger, config: Config, radio: Radio) -> None:
-        self.logger = logger
-        self.radio1: Radio = radio
+    def __init__(self, logger: Logger, config: Config, radio: RFMSPI) -> None:
+        self._log: Logger = logger
+        self._radio: RFMSPI = radio
         self._commands: dict = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
@@ -29,7 +29,7 @@ class CommandDataHandler:
             "utf-8"
         )
         self._repeat_code: str = config.get_str("repeat_code").encode("utf-8")
-        self.logger.info(
+        self._log.info(
             "The satellite has a super secret code!",
             super_secret_code=self._super_secret_code,
         )
@@ -37,19 +37,19 @@ class CommandDataHandler:
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat: Satellite, msg) -> None:
         # check that message is for me
-        if msg[0] == self.radio1.node:
+        if msg[0] == self._radio.node:
             # TODO check for optional radio config
 
             # manually send ACK
-            self.radio1.send("!", identifier=msg[2], flags=0x80)
+            self._radio.send("!", identifier=msg[2], flags=0x80)
             # TODO remove this delay. for testing only!
             time.sleep(0.5)
             self.message_handler(cubesat, msg)
         else:
-            self.logger.info(
+            self._log.info(
                 "Message not for me?",
                 target_id=hex(msg[0]),
-                my_id=hex(self.radio1.node),
+                my_id=hex(self._radio.node),
             )
 
     ############### message handler ###############
@@ -65,42 +65,38 @@ class CommandDataHandler:
                 cmd = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
                 cmd_args = None
                 if len(msg) > 6:
-                    self.logger.info("This is a command with args")
+                    self._log.info("This is a command with args")
                 try:
                     cmd_args = msg[6:]  # arguments are everything after
-                    self.logger.info(
-                        "Here are the command arguments", cmd_args=cmd_args
-                    )
+                    self._log.info("Here are the command arguments", cmd_args=cmd_args)
                 except Exception as e:
-                    self.logger.error(
-                        "There was an error decoding the arguments", err=e
-                    )
+                    self._log.error("There was an error decoding the arguments", err=e)
             if cmd in self._commands:
                 try:
                     if cmd_args is None:
-                        self.logger.info(
+                        self._log.info(
                             "There are no args provided", command=self._commands[cmd]
                         )
                         # eval a string turns it into a func name
                         eval(self._commands[cmd])(cubesat)
                     else:
-                        self.logger.info(
+                        self._log.info(
                             "running command with args",
                             command=self._commands[cmd],
                             cmd_args=cmd_args,
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    self.logger.error("something went wrong!", err=e)
-                    self.radio1.send(str(e).encode())
+                    self._log.error("something went wrong!", err=e)
+                    self._radio.send(str(e).encode())
             else:
-                self.logger.info("invalid command!")
-                self.radio1.send(b"invalid cmd" + msg[4:])
+                self._log.info("invalid command!")
+                self._radio.send(b"invalid cmd" + msg[4:])
                 # check for multi-message mode
                 if multi_msg:
                     # TODO check for optional radio config
-                    self.logger.info("multi-message mode enabled")
-                response = self.radio1.receive(
+                    self._log.info("multi-message mode enabled")
+                response = self._radio.receive(
                     keep_listening=True,
                     with_ack=True,
                     with_header=True,
@@ -111,22 +107,22 @@ class CommandDataHandler:
                     cubesat.c_gs_resp += 1
                     self.message_handler(cubesat, response)
         elif bytes(msg[4:6]) == self._repeat_code:
-            self.logger.info("Repeating last message!")
+            self._log.info("Repeating last message!")
             try:
-                self.radio1.send(msg[6:])
+                self._radio.send(msg[6:])
             except Exception as e:
-                self.logger.error("There was an error repeating the message!", err=e)
+                self._log.error("There was an error repeating the message!", err=e)
         else:
-            self.logger.info("bad code?")
+            self._log.info("bad code?")
 
     ########### commands without arguments ###########
     def noop(self) -> None:
-        self.logger.info("no-op")
+        self._log.info("no-op")
 
     def hreset(self, cubesat: Satellite) -> None:
-        self.logger.info("Resetting")
+        self._log.info("Resetting")
         try:
-            self.radio1.send(data=b"resetting")
+            self._radio.send(data=b"resetting")
             cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
             cubesat.micro.reset()
         except Exception:
@@ -137,17 +133,17 @@ class CommandDataHandler:
 
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._jokereply)
-        self.logger.info("Sending joke reply", joke=joke)
-        self.radio1.send(joke)
+        self._log.info("Sending joke reply", joke=joke)
+        self._radio.send(joke)
 
     ########### commands with arguments ###########
 
     def shutdown(self, cubesat: Satellite, args) -> None:
         # make shutdown require yet another pass-code
         if args == b"\x0b\xfdI\xec":
-            self.logger.info("valid shutdown command received")
+            self._log.info("valid shutdown command received")
             # set shutdown NVM bit flag
-            cubesat.f_shtdwn.toggle(True)
+            cubesat.f_shutdwn.toggle(True)
 
             """
             Exercise for the user:
@@ -158,7 +154,7 @@ class CommandDataHandler:
 
             # deep sleep + listen
             # TODO config radio
-            self.radio1.listen()
+            self._radio.listen()
             if "st" in cubesat.radio_cfg:
                 _t = cubesat.radio_cfg["st"]
             else:
@@ -173,10 +169,10 @@ class CommandDataHandler:
             alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args) -> None:
-        self.logger.info("Sending query with args", args=args)
+        self._log.info("Sending query with args", args=args)
 
-        self.radio1.send(data=str(eval(args)))
+        self._radio.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat: Satellite, args) -> None:
-        self.logger.info("Executing command", args=args)
+        self._log.info("Executing command", args=args)
         exec(args)

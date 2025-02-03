@@ -1,9 +1,10 @@
 import board
-from adafruit_rfm import RFMSPI
 from busio import SPI
 from digitalio import DigitalInOut
 
-from lib.adafruit_rfm import rfm9x, rfm9xfsk
+from lib.adafruit_rfm.rfm9x import RFM9x
+from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.exception import NotInitializedError
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.flag import Flag
@@ -81,7 +82,7 @@ class Radio:
         reset_pin: DigitalInOut,
         transmit_frequency: int,
     ) -> RFMSPI:
-        radio: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
+        radio: RFM9xFSK = RFM9xFSK(
             spi,
             chip_select_pin,
             reset_pin,
@@ -102,7 +103,7 @@ class Radio:
         transmit_power: int,
         lora_spreading_factor: int,
     ) -> RFMSPI:
-        radio: rfm9x.RFM9x = rfm9x.RFM9x(
+        radio: RFM9x = RFM9x(
             spi,
             chip_select_pin,
             reset_pin,

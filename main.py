@@ -12,11 +12,11 @@ import gc
 import time
 
 import microcontroller
-from adafruit_rfm import RFMSPI
 
 import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
@@ -43,7 +43,11 @@ try:
     c.watchdog_pet()
 
     radio: RFMSPI = Radio.create(
-        Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
+        Flag(
+            index=register.NVM.FLAG,
+            bit_index=register.FLAG_01.USE_FSK,
+            datastore=microcontroller.nvm,
+        ),
         logger,
         c.spi0,
         config.get_dict("radio_cfg")["sender_id"],

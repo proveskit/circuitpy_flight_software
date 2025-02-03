@@ -49,16 +49,24 @@ class Satellite:
 
     # Define NVM flags
     f_softboot: Flag = Flag(
-        index=register.FLAG, bit_index=0, datastore=microcontroller.nvm
+        index=register.NVM.FLAG,
+        bit_index=register.FLAG_01.SOFTBOOT,
+        datastore=microcontroller.nvm,
     )
     f_brownout: Flag = Flag(
-        index=register.FLAG, bit_index=3, datastore=microcontroller.nvm
+        index=register.NVM.FLAG,
+        bit_index=register.FLAG_01.BROWNOUT,
+        datastore=microcontroller.nvm,
     )
-    f_shtdwn: Flag = Flag(
-        index=register.FLAG, bit_index=5, datastore=microcontroller.nvm
+    f_shutdwn: Flag = Flag(
+        index=register.NVM.FLAG,
+        bit_index=register.FLAG_01.SHUTDOWN,
+        datastore=microcontroller.nvm,
     )
     f_burned: Flag = Flag(
-        index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
+        index=register.NVM.FLAG,
+        bit_index=register.FLAG_01.BURNED,
+        datastore=microcontroller.nvm,
     )
 
     def safe_init(func: Callable[..., Any]):

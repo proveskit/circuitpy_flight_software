@@ -10,8 +10,8 @@ import random
 import time
 
 import alarm
-from adafruit_rfm import RFMSPI
 
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
@@ -34,12 +34,12 @@ class functions:
         self.logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
-        self.radio1 = radio
+        self._radio: RFMSPI = radio
         self.logger.info("Initializing Functionalities")
 
         self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
         self.ps: PacketSender = PacketSender(
-            self.logger, self.radio1, self.pm, max_retries=3
+            self.logger, self._radio, self.pm, max_retries=3
         )
 
         self.config: Config = config
@@ -82,7 +82,7 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
-        self.radio1.receive_timeout = 10
+        self._radio.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
@@ -103,7 +103,7 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self._radio)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
@@ -145,7 +145,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self._radio)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
@@ -156,7 +156,7 @@ class functions:
 
     def last_radio_temp(self) -> int:
         """Tries to grab former temp from module"""
-        raw_temp = self.radio1.read_u8(0x5B)
+        raw_temp = self._radio.read_u8(0x5B)
         temp = raw_temp & 0x7F
         if (raw_temp & 0x80) == 0x80:
             temp = ~temp + 0x01
@@ -202,7 +202,7 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
-        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self._radio)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -225,7 +225,7 @@ class functions:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self._radio)
         self.logger.debug("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
@@ -239,13 +239,13 @@ class functions:
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.logger, self.config, self.radio1)
+        cdh = CommandDataHandler(self.logger, self.config, self._radio)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.radio1.receive_timeout = 10
-            received = self.radio1.receive_with_ack(keep_listening=True)
+            self._radio.receive_timeout = 10
+            received = self._radio.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -265,8 +265,8 @@ class functions:
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.radio1.receive_timeout = 10
-            received = self.radio1.receive(keep_listening=True)
+            self._radio.receive_timeout = 10
+            received = self._radio.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
                 return True
             else:
