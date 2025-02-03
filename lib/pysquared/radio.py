@@ -1,16 +1,12 @@
 import board
 from adafruit_rfm import RFMSPI
+from busio import SPI
 from digitalio import DigitalInOut
 
 from lib.adafruit_rfm import rfm9x, rfm9xfsk
 from lib.pysquared.exception import NotInitializedError
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.flag import Flag
-
-try:
-    from typing import Literal
-except ImportError:
-    pass
 
 
 class Radio:
@@ -19,6 +15,7 @@ class Radio:
         cls,
         use_fsk: Flag,
         logger: Logger,
+        spi: SPI,
         sender_id: int,
         receiver_id: int,
         transmit_frequency: int,
@@ -28,8 +25,9 @@ class Radio:
         """Factory method to create radio instances.
 
         Args:
-            radio_type: Type of radio to create ("lora" or "fsk")
+            use_fsk: NVM flag telling radio to enter either "fsk" or "lora" modes
             logger: Logger instance
+            spi: SPI interface
             sender_id: Radio sender ID
             receiver_id: Radio receiver ID
             transmit_frequency: Radio frequency
@@ -45,22 +43,20 @@ class Radio:
         reset_pin: DigitalInOut = DigitalInOut(board.RF1_RST)
         reset_pin.switch_to_output(value=True)
 
-        radio_mode: Literal["fsk", "lora"] = "fsk" if use_fsk.get() else "lora"
+        radio_mode: str = "fsk" if use_fsk.get() else "lora"
 
         try:
             logger.debug(message="Initializing radio", mode=radio_mode)
 
-            spi = "blah"  # TODO(nateinaction): fix me
-
             if use_fsk.get():
-                radio: Radio = cls.create_fsk_radio(
+                radio: RFMSPI = cls.create_fsk_radio(
                     spi,
                     chip_select_pin,
                     reset_pin,
                     transmit_frequency,
                 )
             else:
-                radio: Radio = cls.create_lora_radio(
+                radio: RFMSPI = cls.create_lora_radio(
                     spi,
                     chip_select_pin,
                     reset_pin,
@@ -80,7 +76,7 @@ class Radio:
 
     @staticmethod
     def create_fsk_radio(
-        spi: any,  # TODO(nateinaction): fix me
+        spi: SPI,
         chip_select_pin: DigitalInOut,
         reset_pin: DigitalInOut,
         transmit_frequency: int,
@@ -99,7 +95,7 @@ class Radio:
 
     @staticmethod
     def create_lora_radio(
-        spi: any,  # TODO(nateinaction): fix me
+        spi: SPI,
         chip_select_pin: DigitalInOut,
         reset_pin: DigitalInOut,
         transmit_frequency: int,

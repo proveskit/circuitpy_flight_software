@@ -5,12 +5,15 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 from lib.pysquared.logger import Logger
+from lib.pysquared.pysquared import Satellite
+from lib.pysquared.radio import Radio
 
 
 class Field:
-    def __init__(self, cubesat, logger: Logger):
+    def __init__(self, logger: Logger, cubesat: Satellite, radio: Radio):
         self.cubesat = cubesat
         self.logger = logger
+        self.radio1: Radio = radio
 
     def Beacon(self, msg):
         try:
@@ -18,7 +21,7 @@ class Field:
                 self.logger.info(
                     "I am beaconing",
                     beacon=str(msg),
-                    success=str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
+                    success=str(self.radio1.send(bytes(msg, "UTF-8"))),
                 )
             else:
                 self.logger.debug(

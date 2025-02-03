@@ -4,6 +4,7 @@ import time
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
+from lib.pysquared.radio import Radio
 
 
 class CommandDataHandler:
@@ -11,8 +12,9 @@ class CommandDataHandler:
     Constructor
     """
 
-    def __init__(self, config: Config, logger: Logger) -> None:
+    def __init__(self, logger: Logger, config: Config, radio: Radio) -> None:
         self.logger = logger
+        self.radio1: Radio = radio
         self._commands: dict = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
@@ -35,11 +37,11 @@ class CommandDataHandler:
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat: Satellite, msg) -> None:
         # check that message is for me
-        if msg[0] == cubesat.radio1.node:
+        if msg[0] == self.radio1.node:
             # TODO check for optional radio config
 
             # manually send ACK
-            cubesat.radio1.send("!", identifier=msg[2], flags=0x80)
+            self.radio1.send("!", identifier=msg[2], flags=0x80)
             # TODO remove this delay. for testing only!
             time.sleep(0.5)
             self.message_handler(cubesat, msg)
@@ -47,7 +49,7 @@ class CommandDataHandler:
             self.logger.info(
                 "Message not for me?",
                 target_id=hex(msg[0]),
-                my_id=hex(cubesat.radio1.node),
+                my_id=hex(self.radio1.node),
             )
 
     ############### message handler ###############
@@ -90,15 +92,15 @@ class CommandDataHandler:
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
                     self.logger.error("something went wrong!", err=e)
-                    cubesat.radio1.send(str(e).encode())
+                    self.radio1.send(str(e).encode())
             else:
                 self.logger.info("invalid command!")
-                cubesat.radio1.send(b"invalid cmd" + msg[4:])
+                self.radio1.send(b"invalid cmd" + msg[4:])
                 # check for multi-message mode
                 if multi_msg:
                     # TODO check for optional radio config
                     self.logger.info("multi-message mode enabled")
-                response = cubesat.radio1.receive(
+                response = self.radio1.receive(
                     keep_listening=True,
                     with_ack=True,
                     with_header=True,
@@ -111,7 +113,7 @@ class CommandDataHandler:
         elif bytes(msg[4:6]) == self._repeat_code:
             self.logger.info("Repeating last message!")
             try:
-                cubesat.radio1.send(msg[6:])
+                self.radio1.send(msg[6:])
             except Exception as e:
                 self.logger.error("There was an error repeating the message!", err=e)
         else:
@@ -124,7 +126,7 @@ class CommandDataHandler:
     def hreset(self, cubesat: Satellite) -> None:
         self.logger.info("Resetting")
         try:
-            cubesat.radio1.send(data=b"resetting")
+            self.radio1.send(data=b"resetting")
             cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
             cubesat.micro.reset()
         except Exception:
@@ -136,7 +138,7 @@ class CommandDataHandler:
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._jokereply)
         self.logger.info("Sending joke reply", joke=joke)
-        cubesat.radio1.send(joke)
+        self.radio1.send(joke)
 
     ########### commands with arguments ###########
 
@@ -156,7 +158,7 @@ class CommandDataHandler:
 
             # deep sleep + listen
             # TODO config radio
-            cubesat.radio1.listen()
+            self.radio1.listen()
             if "st" in cubesat.radio_cfg:
                 _t = cubesat.radio_cfg["st"]
             else:
@@ -173,7 +175,7 @@ class CommandDataHandler:
     def query(self, cubesat: Satellite, args) -> None:
         self.logger.info("Sending query with args", args=args)
 
-        cubesat.radio1.send(data=str(eval(args)))
+        self.radio1.send(data=str(eval(args)))
 
     def exec_cmd(self, cubesat: Satellite, args) -> None:
         self.logger.info("Executing command", args=args)

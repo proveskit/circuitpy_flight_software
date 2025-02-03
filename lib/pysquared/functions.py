@@ -82,7 +82,7 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
-        self.self.radio1.receive_timeout = 10
+        self.radio1.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
@@ -103,7 +103,7 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
@@ -145,7 +145,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
@@ -156,7 +156,7 @@ class functions:
 
     def last_radio_temp(self) -> int:
         """Tries to grab former temp from module"""
-        raw_temp = self.self.radio1.read_u8(0x5B)
+        raw_temp = self.radio1.read_u8(0x5B)
         temp = raw_temp & 0x7F
         if (raw_temp & 0x80) == 0x80:
             temp = ~temp + 0x01
@@ -202,7 +202,7 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
         if not self.state_bool:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -225,7 +225,7 @@ class functions:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(self.logger, self.cubesat, self.radio1)
         self.logger.debug("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
@@ -235,17 +235,17 @@ class functions:
         gc.collect()
 
     def listen(self) -> bool:
-        # need to instanciate cdh to feed it the config var
+        # need to instantiate cdh to feed it the config var
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.config, self.logger)
+        cdh = CommandDataHandler(self.logger, self.config, self.radio1)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.self.radio1.receive_timeout = 10
-            received = self.self.radio1.receive_with_ack(keep_listening=True)
+            self.radio1.receive_timeout = 10
+            received = self.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -265,8 +265,8 @@ class functions:
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.self.radio1.receive_timeout = 10
-            received = self.self.radio1.receive(keep_listening=True)
+            self.radio1.receive_timeout = 10
+            received = self.radio1.receive(keep_listening=True)
             if received is not None and "HAHAHAHAHA!" in received:
                 return True
             else:

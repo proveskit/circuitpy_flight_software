@@ -45,6 +45,7 @@ try:
     radio: RFMSPI = Radio.create(
         Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         logger,
+        c.spi0,
         config.get_dict("radio_cfg")["sender_id"],
         config.get_dict("radio_cfg")["receiver_id"],
         config.get_dict("radio_cfg")["transmit_frequency"],
