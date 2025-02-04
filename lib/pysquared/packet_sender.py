@@ -89,7 +89,7 @@ class PacketSender:
         )
         return True
 
-    def handle_retransmit_request(self, packets, request_packet, logger: Logger):
+    def handle_retransmit_request(self, packets, request_packet):
         """Handle retransmit request by sending requested packets"""
         import time
 
@@ -115,9 +115,7 @@ class PacketSender:
             self.logger.error("Error handling retransmit request", err=e)
             return False
 
-    def fast_send_data(
-        self, data, logger: Logger, send_delay=0.5, retransmit_wait=15.0
-    ):
+    def fast_send_data(self, data, send_delay=0.5, retransmit_wait=15.0):
         """Send data with improved retransmission handling"""
         import time
 
