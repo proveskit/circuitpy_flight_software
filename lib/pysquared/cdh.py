@@ -142,33 +142,36 @@ class CommandDataHandler:
 
     def shutdown(self, cubesat: Satellite, args) -> None:
         # make shutdown require yet another pass-code
-        if args == b"\x0b\xfdI\xec":
-            self.logger.info("valid shutdown command received")
-            # set shutdown NVM bit flag
-            cubesat.f_shtdwn.toggle(True)
+        if args != b"\x0b\xfdI\xec":
+            return
 
-            """
-            Exercise for the user:
-                Implement a means of waking up from shutdown
-                See beep-sat guide for more details
-                https://pycubed.org/resources
-            """
+        # This means args does = b"\x0b\xfdI\xec"
+        self.logger.info("valid shutdown command received")
+        # set shutdown NVM bit flag
+        cubesat.f_shtdwn.toggle(True)
 
-            # deep sleep + listen
-            # TODO config radio
-            cubesat.radio1.listen()
-            if "st" in cubesat.radio_cfg:
-                _t = cubesat.radio_cfg["st"]
-            else:
-                _t = 5
-            import alarm
+        """
+        Exercise for the user:
+            Implement a means of waking up from shutdown
+            See beep-sat guide for more details
+            https://pycubed.org/resources
+        """
 
-            time_alarm = alarm.time.TimeAlarm(
-                monotonic_time=time.monotonic() + eval("1e" + str(_t))
-            )  # default 1 day
-            # set hot start flag right before sleeping
-            cubesat.f_hotstrt.toggle(True)
-            alarm.exit_and_deep_sleep_until_alarms(time_alarm)
+        # deep sleep + listen
+        # TODO config radio
+        cubesat.radio1.listen()
+        if "st" in cubesat.radio_cfg:
+            _t = cubesat.radio_cfg["st"]
+        else:
+            _t = 5
+        import alarm
+
+        time_alarm = alarm.time.TimeAlarm(
+            monotonic_time=time.monotonic() + eval("1e" + str(_t))
+        )  # default 1 day
+        # set hot start flag right before sleeping
+        cubesat.f_hotstrt.toggle(True)
+        alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args) -> None:
         self.logger.info("Sending query with args", args=args)
