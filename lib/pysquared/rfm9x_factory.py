@@ -5,6 +5,7 @@ from machine import Pin
 from lib.adafruit_rfm.rfm9x import RFM9x
 from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 from lib.adafruit_rfm.rfm_common import RFMSPI
+from lib.pysquared.decorators import with_retries
 from lib.pysquared.exception import HardwareInitializationError
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.flag import Flag
@@ -21,6 +22,7 @@ class RFM9xFactory:
     """Factory class for creating RFM9x radio instances."""
 
     @classmethod
+    @with_retries(max_attempts=3, initial_delay=1)
     def create(
         cls,
         logger: Logger,
