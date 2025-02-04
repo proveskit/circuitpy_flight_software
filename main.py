@@ -52,10 +52,10 @@ try:
         config.get_dict("radio_cfg")["receiver_id"],
         config.get_dict("radio_cfg")["transmit_frequency"],
         config.get_dict("radio_cfg")["transmit_power"],
-        config.get_dict("radio_cfg")["lora_spreading_factor"],
+        config.get_dict("radio_cfg")["LoRa_spreading_factor"],
     )
 
-    f = functions.functions(logger, config, c, radio)
+    f = functions.functions(c, logger, config, radio)
 
     def initial_boot():
         c.watchdog_pet()

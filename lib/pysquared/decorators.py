@@ -1,5 +1,4 @@
 import time
-from functools import wraps
 
 from lib.pysquared.exception import HardwareInitializationError
 
@@ -16,7 +15,6 @@ def with_retries(max_attempts: int = 3, initial_delay: int = 1):
     """
 
     def decorator(func):
-        @wraps(func)
         def wrapper(*args, **kwargs):
             last_exception = None
             delay = initial_delay

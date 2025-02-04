@@ -1,6 +1,6 @@
 from busio import SPI
 from digitalio import DigitalInOut
-from machine import Pin
+from microcontroller import Pin
 
 from lib.adafruit_rfm.rfm9x import RFM9x
 from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
@@ -53,9 +53,9 @@ class RFM9xFactory:
 
         :return An instance of the RFMSPI class, either RFM9xFSK or RFM9x based on the mode.
         """
-        try:
-            logger.debug(message="Initializing radio", mode=cls.radio_mode(use_fsk))
+        logger.debug(message="Initializing radio", mode=cls.radio_mode(use_fsk))
 
+        try:
             cs: DigitalInOut = DigitalInOut(chip_select)
             cs.switch_to_output(value=True)
 
