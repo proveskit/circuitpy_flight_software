@@ -19,7 +19,7 @@ from lib.pysquared.packet_sender import PacketSender
 from lib.pysquared.pysquared import Satellite
 
 try:
-    from typing import List, Literal, OrderedDict, Union
+    from typing import Any, List, Literal, OrderedDict, Union
 
     import circuitpython_typing
 except Exception:
@@ -28,7 +28,7 @@ except Exception:
 
 class functions:
     def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
-        self.logger = logger
+        self.logger: Logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.logger.info("Initializing Functionalities")
@@ -181,7 +181,7 @@ class functions:
         self.state_list: list = []
         # list of state information
         try:
-            self.state_list: list = [
+            self.state_list: list[str] = [
                 f"PM:{self.cubesat.power_mode}",
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
@@ -243,7 +243,7 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
+            received: Any = self.cubesat.radio1.receive_with_ack(keep_listening=True)
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -264,7 +264,7 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive(keep_listening=True)
+            received: Any = self.cubesat.radio1.receive(keep_listening=True)
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
@@ -299,7 +299,7 @@ class functions:
                 bytes_free=gc.mem_free(),
             )
 
-            self.facestring: list = a.Face_Test_All()
+            self.facestring: list[list[float]] = a.Face_Test_All()
 
             del a
             del Big_Data
@@ -322,13 +322,9 @@ class functions:
 
     def get_imu_data(
         self,
-    ) -> List[
-        tuple[float, float, float],
-        tuple[float, float, float],
-        tuple[float, float, float],
-    ]:
+    ) -> List[tuple[float, float, float]]:
         try:
-            data: list = []
+            data: list[tuple[float, float, float]] = []
             data.append(self.cubesat.accel)
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
