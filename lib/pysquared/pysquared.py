@@ -517,17 +517,19 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if self.hardware["NEOPIX"]:
-            try:
-                self.neopixel[0] = value
-            except Exception as e:
-                self.logger.error(
-                    "There was an error trying to set the new RGB value",
-                    err=e,
-                    value=value,
-                )
-        else:
+        if not self.hardware["NEOPIX"]:
             self.logger.warning("The NEOPIXEL device is not initialized")
+            return
+
+        # NEOPIX is initialized
+        try:
+            self.neopixel[0] = value
+        except Exception as e:
+            self.logger.error(
+                "There was an error trying to set the new RGB value",
+                err=e,
+                value=value,
+            )
 
     @property
     def uptime(self) -> int:
@@ -740,63 +742,62 @@ class Satellite:
         directory is created on the SD!
         int padded with zeros will be appended to the last found file
         """
-        if self.hardware["SDcard"]:
+        if not self.hardware["SDcard"]:
+            self.logger.warning("SD Card not initialized")
+
+        # SDCard is initialized
+        try:
+            ff: str = ""
+            n: int = 0
+            _folder: str = substring[: substring.rfind("/") + 1]
+            _file: str = substring[substring.rfind("/") + 1 :]
+            self.logger.debug(
+                "Creating new file in directory: /sd{} with file prefix: {}".format(
+                    _folder, _file
+                ),
+            )
             try:
-                ff: str = ""
-                n: int = 0
-                _folder: str = substring[: substring.rfind("/") + 1]
-                _file: str = substring[substring.rfind("/") + 1 :]
-                self.logger.debug(
-                    "Creating new file in directory: /sd{} with file prefix: {}".format(
-                        _folder, _file
-                    ),
+                chdir("/sd" + _folder)
+            except OSError:
+                self.logger.error(
+                    "The directory was not found. Now Creating...",
+                    directory=_folder,
                 )
                 try:
-                    chdir("/sd" + _folder)
-                except OSError:
+                    mkdir("/sd" + _folder)
+                except Exception as e:
                     self.logger.error(
-                        "The directory was not found. Now Creating...",
-                        directory=_folder,
+                        "Error with creating new file",
+                        err=e,
+                        filedir="/sd" + _folder,
                     )
-                    try:
-                        mkdir("/sd" + _folder)
-                    except Exception as e:
-                        self.logger.error(
-                            "Error with creating new file",
-                            err=e,
-                            filedir="/sd" + _folder,
-                        )
-                        return None
-                for i in range(0xFFFF):
-                    ff: str = "/sd{}{}{:05}.txt".format(
-                        _folder, _file, (n + i) % 0xFFFF
+                    return None
+            for i in range(0xFFFF):
+                ff: str = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
+                try:
+                    if n is not None:
+                        stat(ff)
+                except Exception as e:
+                    self.logger.error(
+                        "There was an error running the stat function on this file",
+                        filedir=ff,
+                        file_num=n,
+                        err=e,
                     )
-                    try:
-                        if n is not None:
-                            stat(ff)
-                    except Exception as e:
-                        self.logger.error(
-                            "There was an error running the stat function on this file",
-                            filedir=ff,
-                            file_num=n,
-                            err=e,
-                        )
-                        n: int = (n + i) % 0xFFFF
-                        # print('file number is',n)
-                        break
-                self.logger.debug("creating a file...", file_dir=str(ff))
-                if binary:
-                    b: str = "ab"
-                else:
-                    b: str = "a"
-                with open(ff, b) as f:
-                    f.tell()
-                chdir("/")
-                return ff
-            except Exception as e:
-                self.logger.error(
-                    "Error creating file", filedir=ff, err=e, binary_mode=binary
-                )
-                return None
-        else:
-            self.logger.warning("SD Card not initialized")
+                    n: int = (n + i) % 0xFFFF
+                    # print('file number is',n)
+                    break
+            self.logger.debug("creating a file...", file_dir=str(ff))
+            if binary:
+                b: str = "ab"
+            else:
+                b: str = "a"
+            with open(ff, b) as f:
+                f.tell()
+            chdir("/")
+            return ff
+        except Exception as e:
+            self.logger.error(
+                "Error creating file", filedir=ff, err=e, binary_mode=binary
+            )
+            return None

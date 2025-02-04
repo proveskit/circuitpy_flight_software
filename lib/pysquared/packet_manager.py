@@ -46,13 +46,11 @@ class PacketManager:
         - remaining bytes: payload
         """
         # Convert data to bytes if it isn't already
-        if isinstance(data, bytes):
-            return
-
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-        else:
-            data = str(data).encode("utf-8")
+        if not isinstance(data, bytes):
+            if isinstance(data, str):
+                data = data.encode("utf-8")
+            else:
+                data = str(data).encode("utf-8")
 
         # Calculate number of packets needed
         total_packets = (len(data) + self.payload_size - 1) // self.payload_size

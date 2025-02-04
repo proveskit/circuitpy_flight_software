@@ -263,13 +263,10 @@ class functions:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive(keep_listening=True)
-            if received is not None and "HAHAHAHAHA!" in received:
-                return True
-            else:
-                return False
+            return received is not None and "HAHAHAHAHA!" in received
+
         except Exception as e:
             self.logger.error("An Error has occured while listening for a joke", err=e)
-            received = None
             return False
 
     """
