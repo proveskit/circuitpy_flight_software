@@ -1,5 +1,5 @@
 .PHONY: all
-all: venv download-libraries pre-commit-install help
+all: .venv download-libraries pre-commit-install help
 
 .PHONY: help
 help: ## Display this help.
@@ -65,7 +65,7 @@ define rsync_to_dest
 		echo "Issue with Make target, rsync destination is not specified. Stopping."; \
 		exit 1; \
 	fi
-	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete
+	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete --times --checksum
 endef
 
 ##@ Build Tools
