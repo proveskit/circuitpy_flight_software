@@ -20,7 +20,7 @@ class CommandDataHandler:
 
     def __init__(self, config: Config, logger: Logger) -> None:
         self.logger: Logger = logger
-        self._commands: dict[str, str] = {
+        self._commands: dict[bytes, str] = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
             b"\x12\x06": "shutdown",
@@ -30,10 +30,10 @@ class CommandDataHandler:
             b"\x56\xc4": "FSK",
         }
         self._jokereply: list[str] = config.get_list("jokereply")
-        self._super_secret_code: str = config.get_str("super_secret_code").encode(
+        self._super_secret_code: bytes = config.get_str("super_secret_code").encode(
             "utf-8"
         )
-        self._repeat_code: str = config.get_str("repeat_code").encode("utf-8")
+        self._repeat_code: bytes = config.get_str("repeat_code").encode("utf-8")
         self.logger.info(
             "The satellite has a super secret code!",
             super_secret_code=self._super_secret_code,
@@ -147,7 +147,7 @@ class CommandDataHandler:
 
     ########### commands with arguments ###########
 
-    def shutdown(self, cubesat: Satellite, args: Any) -> None:
+    def shutdown(self, cubesat: Satellite, args: bytes) -> None:
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
@@ -164,21 +164,21 @@ class CommandDataHandler:
             https://pycubed.org/resources
         """
 
-            # deep sleep + listen
-            # TODO config radio
-            cubesat.radio1.listen()
-            if "st" in cubesat.radio_cfg:
-                _t: float = cubesat.radio_cfg["st"]
-            else:
-                _t = 5
-            import alarm
+        # deep sleep + listen
+        # TODO config radio
+        cubesat.radio1.listen()
+        if "st" in cubesat.radio_cfg:
+            _t: float = cubesat.radio_cfg["st"]
+        else:
+            _t = 5
+        import alarm
 
-            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
-                monotonic_time=time.monotonic() + eval("1e" + str(_t))
-            )  # default 1 day
-            # set hot start flag right before sleeping
-            cubesat.f_hotstrt.toggle(True)
-            alarm.exit_and_deep_sleep_until_alarms(time_alarm)
+        time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+            monotonic_time=time.monotonic() + eval("1e" + str(_t))
+        )  # default 1 day
+        # set hot start flag right before sleeping
+        cubesat.f_hotstrt.toggle(True)
+        alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args: Any) -> None:
         self.logger.info("Sending query with args", args=args)

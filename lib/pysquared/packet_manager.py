@@ -30,11 +30,11 @@ class PacketManager:
         )
         return header + payload
 
-    def is_retransmit_request(self, packet: list[str]) -> bool:
+    def is_retransmit_request(self, packet: bytes) -> bool:
         """Check if packet is a retransmit request"""
         return len(packet) >= 4 and packet[:2] == b"\xff\xff"
 
-    def parse_retransmit_request(self, packet: list[str]) -> list[int]:
+    def parse_retransmit_request(self, packet: bytes) -> list[int]:
         """Extract missing packet numbers from retransmit request"""
         num_missing: int = int.from_bytes(packet[2:4], "big")
         missing: list[int] = []
