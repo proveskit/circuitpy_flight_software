@@ -13,7 +13,7 @@ except Exception:
 class Face:
     def __init__(
         self, Add: int, Pos: str, tca: adafruit_tca9548a.TCA9548A, logger: Logger
-    ):
+    ) -> None:
         self.tca: adafruit_tca9548a.TCA9548A = tca
         self.address: int = Add
         self.position: str = Pos

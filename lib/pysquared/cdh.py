@@ -5,6 +5,13 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
 
+try:
+    from typing import Any, Union
+
+    import circuitpython_typing
+except Exception:
+    pass
+
 
 class CommandDataHandler:
     """
@@ -12,8 +19,8 @@ class CommandDataHandler:
     """
 
     def __init__(self, config: Config, logger: Logger) -> None:
-        self.logger = logger
-        self._commands: dict = {
+        self.logger: Logger = logger
+        self._commands: dict[str, str] = {
             b"\x8eb": "noop",
             b"\xd4\x9f": "hreset",
             b"\x12\x06": "shutdown",
@@ -33,7 +40,7 @@ class CommandDataHandler:
         )
 
     ############### hot start helper ###############
-    def hotstart_handler(self, cubesat: Satellite, msg) -> None:
+    def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
         # check that message is for me
         if msg[0] == cubesat.radio1.node:
             # TODO check for optional radio config
@@ -51,7 +58,7 @@ class CommandDataHandler:
             )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg) -> None:
+    def message_handler(self, cubesat: Satellite, msg: Any) -> None:
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -59,9 +66,9 @@ class CommandDataHandler:
                 if msg[3] & 0x08:
                     multi_msg = True
                 # strip off RH header
-                msg = bytes(msg[4:])
-                cmd = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
-                cmd_args = None
+                msg: bytes = bytes(msg[4:])
+                cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
+                cmd_args: Union[bytes, None] = None
                 if len(msg) > 6:
                     self.logger.info("This is a command with args")
                 try:
@@ -98,7 +105,7 @@ class CommandDataHandler:
                 if multi_msg:
                     # TODO check for optional radio config
                     self.logger.info("multi-message mode enabled")
-                response = cubesat.radio1.receive(
+                response: Any = cubesat.radio1.receive(
                     keep_listening=True,
                     with_ack=True,
                     with_header=True,
@@ -140,7 +147,7 @@ class CommandDataHandler:
 
     ########### commands with arguments ###########
 
-    def shutdown(self, cubesat: Satellite, args) -> None:
+    def shutdown(self, cubesat: Satellite, args: Any) -> None:
         # make shutdown require yet another pass-code
         if args != b"\x0b\xfdI\xec":
             return
@@ -157,27 +164,27 @@ class CommandDataHandler:
             https://pycubed.org/resources
         """
 
-        # deep sleep + listen
-        # TODO config radio
-        cubesat.radio1.listen()
-        if "st" in cubesat.radio_cfg:
-            _t = cubesat.radio_cfg["st"]
-        else:
-            _t = 5
-        import alarm
+            # deep sleep + listen
+            # TODO config radio
+            cubesat.radio1.listen()
+            if "st" in cubesat.radio_cfg:
+                _t: float = cubesat.radio_cfg["st"]
+            else:
+                _t = 5
+            import alarm
 
-        time_alarm = alarm.time.TimeAlarm(
-            monotonic_time=time.monotonic() + eval("1e" + str(_t))
-        )  # default 1 day
-        # set hot start flag right before sleeping
-        cubesat.f_hotstrt.toggle(True)
-        alarm.exit_and_deep_sleep_until_alarms(time_alarm)
+            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
+                monotonic_time=time.monotonic() + eval("1e" + str(_t))
+            )  # default 1 day
+            # set hot start flag right before sleeping
+            cubesat.f_hotstrt.toggle(True)
+            alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat: Satellite, args) -> None:
+    def query(self, cubesat: Satellite, args: Any) -> None:
         self.logger.info("Sending query with args", args=args)
 
         cubesat.radio1.send(data=str(eval(args)))
 
-    def exec_cmd(self, cubesat: Satellite, args) -> None:
+    def exec_cmd(self, cubesat: Satellite, args: Any) -> None:
         self.logger.info("Executing command", args=args)
         exec(args)
