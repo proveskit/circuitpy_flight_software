@@ -1,5 +1,5 @@
 .PHONY: all
-all: venv download-libraries pre-commit-install help
+all: .venv download-libraries pre-commit-install help
 
 .PHONY: help
 help: ## Display this help.
