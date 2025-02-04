@@ -65,7 +65,6 @@ class Satellite:
     f_burned: Flag = Flag(
         index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
     )
-    f_fsk: Flag = Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm)
 
     def safe_init(func: Callable[..., Any]):
         def wrapper(self, *args, **kwargs):
@@ -348,10 +347,6 @@ class Satellite:
         Face Initializations
         """
         self.scan_tca_channels()
-
-        if self.f_fsk.get():
-            self.logger.debug("Next restart will be in LoRa mode.")
-            self.f_fsk.toggle(False)
 
         """
         Prints init State of PySquared Hardware

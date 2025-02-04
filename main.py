@@ -19,12 +19,12 @@ import microcontroller
 import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
-from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
 from lib.pysquared.hardware import initialize_pin
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
-from lib.pysquared.rfm9x_factory import RFM9xFactory
+from lib.pysquared.nvm.flag import Flag
+from lib.pysquared.rfm9x.manager import RFM9xManager
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
@@ -45,12 +45,12 @@ try:
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
-    radio: RFMSPI = RFM9xFactory.create(
+    radio_manager = RFM9xManager(
         logger,
         c.spi0,
         initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
         initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
-        c.f_fsk,
+        Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         config.get_dict("radio_cfg")["sender_id"],
         config.get_dict("radio_cfg")["receiver_id"],
         config.get_dict("radio_cfg")["transmit_frequency"],
@@ -58,7 +58,7 @@ try:
         config.get_dict("radio_cfg")["LoRa_spreading_factor"],
     )
 
-    f = functions.functions(c, logger, config, radio)
+    f = functions.functions(c, logger, config, radio_manager)
 
     def initial_boot():
         c.watchdog_pet()
