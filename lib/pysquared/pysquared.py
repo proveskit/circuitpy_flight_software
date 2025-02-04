@@ -28,7 +28,6 @@ import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.pysquared.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
@@ -121,57 +120,6 @@ class Satellite:
         hardware_instance = init_func(*args, **kwargs)
         self.hardware[hardware_key] = True
         return hardware_instance
-
-    @safe_init
-    def init_radio(self, hardware_key: str) -> None:
-        # Define Radio Ditial IO Pins
-        _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
-        _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
-        self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
-        self.radio1_DIO4: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO4)
-
-        # Configure Radio Pins
-
-        _rf_cs1.switch_to_output(value=True)  # cs1 and rst1 are only used locally
-        _rf_rst1.switch_to_output(value=True)
-        self.radio1_DIO0.switch_to_input()
-        self.radio1_DIO4.switch_to_input()
-
-        if self.f_fsk.get():
-            self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
-                self.spi0,
-                _rf_cs1,
-                _rf_rst1,
-                self.radio_cfg["transmit_frequency"],
-                # code_rate=8, code rate does not exist for RFM9xFSK
-            )
-            self.radio1.fsk_node_address = 1
-            self.radio1.fsk_broadcast_address = 0xFF
-            self.radio1.modulation_type = 0
-        else:
-            # Default LoRa Modulation Settings
-            # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-            self.radio1: rfm9x.RFM9x = rfm9x.RFM9x(
-                self.spi0,
-                _rf_cs1,
-                _rf_rst1,
-                self.radio_cfg["transmit_frequency"],
-                # code_rate=8, code rate does not exist for RFM9xFSK
-            )
-            self.radio1.max_output = True
-            self.radio1.tx_power = self.radio_cfg["transmit_power"]
-            self.radio1.spreading_factor = self.radio_cfg["LoRa_spreading_factor"]
-
-            self.radio1.enable_crc = True
-            self.radio1.ack_delay = 0.2
-            if self.radio1.spreading_factor > 9:
-                self.radio1.preamble_length = self.radio1.spreading_factor
-        self.radio1.node = self.radio_cfg["sender_id"]
-        self.radio1.destination = self.radio_cfg["receiver_id"]
-        self.hardware[hardware_key] = True
-
-        # if self.legacy:
-        #    self.enable_rf.value = False
 
     @safe_init
     def init_RTC(self, hardware_key: str) -> None:
@@ -286,7 +234,6 @@ class Satellite:
                 ("SPI0", False),
                 ("I2C1", False),
                 ("UART", False),
-                ("Radio1", False),
                 ("IMU", False),
                 ("Mag", False),
                 ("SDcard", False),
@@ -386,7 +333,6 @@ class Satellite:
         #                                         #
         ######## Temporary Fix for RF_ENAB ########
 
-        self.init_radio(hardware_key="Radio1")
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
