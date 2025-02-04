@@ -4,13 +4,15 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.logger import Logger
 
 
 class Field:
-    def __init__(self, cubesat, logger: Logger):
+    def __init__(self, cubesat, logger: Logger, radio: RFMSPI):
         self.cubesat = cubesat
         self.logger = logger
+        self.radio = radio
 
     def Beacon(self, msg):
         if not self.cubesat.is_licensed:
@@ -20,7 +22,7 @@ class Field:
             return
 
         try:
-            sent = self.cubesat.radio1.send(bytes(msg, "UTF-8"))
+            sent = self.radio.send(bytes(msg, "UTF-8"))
         except Exception as e:
             self.logger.error("There was an error while Beaconing", err=e)
             return

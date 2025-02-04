@@ -8,15 +8,20 @@ Version: 2.0.0
 Published: Nov 19, 2024
 """
 
+import gc
 import time
 
+import board
 import microcontroller
 
+import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
+from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.rfm9x_factory import RFM9xFactory
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
@@ -37,11 +42,20 @@ try:
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
 
-    import gc  # Garbage collection
+    radio: RFMSPI = RFM9xFactory.create(
+        logger,
+        c.spi0,
+        board.SPI0_CS0,
+        board.RF1_RST,
+        c.f_fsk,
+        config.get_dict("radio_cfg")["sender_id"],
+        config.get_dict("radio_cfg")["receiver_id"],
+        config.get_dict("radio_cfg")["transmit_frequency"],
+        config.get_dict("radio_cfg")["transmit_power"],
+        config.get_dict("radio_cfg")["lora_spreading_factor"],
+    )
 
-    import lib.pysquared.functions as functions
-
-    f = functions.functions(c, logger, config)
+    f = functions.functions(logger, config, c, radio)
 
     def initial_boot():
         c.watchdog_pet()
