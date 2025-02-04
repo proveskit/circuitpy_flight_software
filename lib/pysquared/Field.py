@@ -20,14 +20,12 @@ class Field:
             return
 
         try:
-            self.logger.info(
-                "I am beaconing",
-                beacon=str(msg),
-                success=str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
-            )
-
+            sent = self.cubesat.radio1.send(bytes(msg, "UTF-8"))
         except Exception as e:
             self.logger.error("There was an error while Beaconing", err=e)
+            return
+
+        self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
 
     def troubleshooting(self):
         # this is for troubleshooting comms
