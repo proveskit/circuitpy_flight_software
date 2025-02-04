@@ -1,6 +1,5 @@
 from busio import SPI
 from digitalio import DigitalInOut
-from microcontroller import Pin
 
 from lib.adafruit_rfm.rfm9x import RFM9x
 from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
@@ -27,8 +26,8 @@ class RFM9xFactory:
         cls,
         logger: Logger,
         spi: SPI,
-        chip_select: Pin,
-        reset: Pin,
+        chip_select: DigitalInOut,
+        reset: DigitalInOut,
         use_fsk: Flag,
         sender_id: int,
         receiver_id: int,
@@ -56,24 +55,18 @@ class RFM9xFactory:
         logger.debug(message="Initializing radio", mode=cls.radio_mode(use_fsk))
 
         try:
-            cs: DigitalInOut = DigitalInOut(chip_select)
-            cs.switch_to_output(value=True)
-
-            rst: DigitalInOut = DigitalInOut(reset)
-            rst.switch_to_output(value=True)
-
             if use_fsk.get():
                 radio: RFMSPI = cls.create_fsk_radio(
                     spi,
-                    cs,
-                    rst,
+                    chip_select,
+                    reset,
                     frequency,
                 )
             else:
                 radio: RFMSPI = cls.create_lora_radio(
                     spi,
-                    cs,
-                    rst,
+                    chip_select,
+                    reset,
                     frequency,
                     transmit_power,
                     lora_spreading_factor,
@@ -88,7 +81,7 @@ class RFM9xFactory:
                 "Failed to initialize radio", mode=cls.radio_mode(use_fsk), err=e
             )
 
-            raise HardwareInitializationError("radio", e)
+            raise HardwareInitializationError("radio", e) from e
 
     @staticmethod
     def radio_mode(use_fsk: Flag) -> str:

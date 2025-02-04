@@ -10,8 +10,10 @@ Published: Nov 19, 2024
 
 import gc
 import time
+import traceback
 
 import board
+import digitalio
 import microcontroller
 
 import lib.pysquared.functions as functions
@@ -19,6 +21,7 @@ import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
 from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.config import Config
+from lib.pysquared.hardware import initialize_pin
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.rfm9x_factory import RFM9xFactory
@@ -45,8 +48,8 @@ try:
     radio: RFMSPI = RFM9xFactory.create(
         logger,
         c.spi0,
-        board.SPI0_CS0,
-        board.RF1_RST,
+        initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+        initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
         c.f_fsk,
         config.get_dict("radio_cfg")["sender_id"],
         config.get_dict("radio_cfg")["receiver_id"],
@@ -77,9 +80,6 @@ try:
 
     except Exception as e:
         logger.error("Error in Boot Sequence", err=e)
-
-    finally:
-        pass
 
     def send_imu_data():
         logger.info("Looking to get imu data...")
@@ -162,4 +162,6 @@ try:
         c.hardware["WDT"] = False
 
 except Exception as e:
-    logger.error("An exception occured within main.py", err=e)
+    logger.critical(
+        "An exception occured within main.py", err=traceback.format_exception(e)
+    )

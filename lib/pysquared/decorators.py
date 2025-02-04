@@ -3,7 +3,7 @@ import time
 from lib.pysquared.exception import HardwareInitializationError
 
 
-def with_retries(max_attempts: int = 3, initial_delay: int = 1):
+def with_retries(max_attempts: int = 3, initial_delay: float = 1.0):
     """Decorator that retries hardware initialization with exponential backoff.
 
     :param int max_attempts: Maximum number of attempts to try initialization (default is 3)
