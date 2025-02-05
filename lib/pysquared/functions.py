@@ -36,7 +36,7 @@ class functions:
         self.packet_manager: PacketManager = PacketManager(
             logger=self.logger, max_packet_size=128
         )
-        self.packet_sneder: PacketSender = PacketSender(
+        self.packet_sender: PacketSender = PacketSender(
             self.logger, cubesat.radio1, self.packet_manager, max_retries=3
         )
 
@@ -119,7 +119,7 @@ class functions:
             data (String, Byte Array): Pass the data to be sent.
             delay (float): Delay in seconds between packets
         """
-        self.packet_sneder.send_data(data)
+        self.packet_sender.send_data(data)
 
     def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
