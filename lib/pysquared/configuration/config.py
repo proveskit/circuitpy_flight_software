@@ -10,7 +10,7 @@ saver functions. Following the FPrime model.
 
 import json
 
-from lib.pysquared.configuration import ConfigErrorHandler
+from lib.pysquared.configuration.ceh import ConfigErrorHandlers
 from lib.pysquared.logger import Logger
 
 
@@ -27,12 +27,9 @@ class Config:
                 json_data = f.read()
             self._config: dict = json.loads(json_data)
             self._logger.info("JSON Parsing Successful")
-        except Exception as e:
+        except json.JSONDecodeError as e:
             self._logger.error(f"JSON Parsing Unsuccessful: {e}")
-
-        # exception notes
-        # emit a value type and error from the getter functions
-        # if we want to implement exception handling
+            # self._config: dict = default.load_defaults()
 
     """
     Categorized getter functions
@@ -42,10 +39,12 @@ class Config:
 
     def get_str(self, key: str) -> str:
         """Gets a string value from the config dictionary"""
+        ConfigErrorHandlers.TypeError(key)
         try:
             return self._config[key]
-        except ConfigErrorHandler.EmptyDictionary as e:
+        except TypeError as e:
             self._logger.error(f"Empty Dictionary: {e}")
+            return ConfigErrorHandlers.TypeError(str)
 
     def get_int(self, key: str) -> int:
         """Gets an int value from the config dictionary"""
@@ -161,7 +160,7 @@ class Config:
     Parser function
     """
     # handle errors that might occur:
-    # config file does not exist, parsing failed
+    # parsing failed
 
     def save_to_config(self) -> None:
         # writes data to the json file
