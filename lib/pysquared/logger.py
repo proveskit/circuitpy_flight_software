@@ -5,6 +5,7 @@ Logs can be output to standard output or saved to a file (functionality to be im
 
 import json
 import time
+from collections import OrderedDict
 
 from lib.pysquared.debugcolor import co
 from lib.pysquared.nvm.counter import Counter
@@ -45,14 +46,18 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level  # Store plain level string
-        kwargs["msg"] = message
-
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        kwargs["time"] = asctime
+        
+        # Create ordered dictionary with desired field order
+        ordered_output = OrderedDict()
+        ordered_output["time"] = asctime
+        ordered_output["level"] = level
+        ordered_output["msg"] = message
+        # Add any additional kwargs after the required fields
+        ordered_output.update(kwargs)
 
-        json_output = json.dumps(kwargs)
+        json_output = json.dumps(ordered_output)
 
         if self._can_print_this_level(level_value):
             if self._colorize:
