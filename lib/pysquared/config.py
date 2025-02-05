@@ -12,15 +12,15 @@ import json
 
 
 class RadioConfig:
-    def __init__(self, config_dict: dict) -> None:
-        self.sender_id: int = config_dict["sender_id"]
-        self.receiver_id: int = config_dict["receiver_id"]
-        self.transmit_frequency: float = config_dict["transmit_frequency"]
-        self.LoRa_spreading_factor: int = config_dict["LoRa_spreading_factor"]
-        self.transmit_bandwidth: int = config_dict["transmit_bandwidth"]
-        self.LoRa_coding_rate: int = config_dict["LoRa_coding_rate"]
-        self.transmit_power: int = config_dict["transmit_power"]
-        self.start_time: int = config_dict["start_time"]
+    def __init__(self, radio_dict: dict) -> None:
+        self.sender_id: int = radio_dict["sender_id"]
+        self.receiver_id: int = radio_dict["receiver_id"]
+        self.transmit_frequency: float = radio_dict["transmit_frequency"]
+        self.LoRa_spreading_factor: int = radio_dict["LoRa_spreading_factor"]
+        self.transmit_bandwidth: int = radio_dict["transmit_bandwidth"]
+        self.LoRa_coding_rate: int = radio_dict["LoRa_coding_rate"]
+        self.transmit_power: int = radio_dict["transmit_power"]
+        self.start_time: int = radio_dict["start_time"]
 
 
 class Config:
@@ -33,7 +33,7 @@ class Config:
         with open(config_path, "r") as f:
             json_data = json.loads(f.read())
 
-        self.radio_cfg: RadioConfig = RadioConfig(json_data)
+        self.radio_cfg: RadioConfig = RadioConfig(json_data["radio_cfg"])
         self.cubesat_name: str = json_data["cubesat_name"]
         self.callsign: str = json_data["callsign"]
         self.last_battery_temp: float = json_data["last_battery_temp"]
