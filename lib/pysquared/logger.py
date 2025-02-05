@@ -33,9 +33,11 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
+        colorized: bool = True,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self.colorized: bool = colorized
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -54,8 +56,12 @@ class Logger:
         json_output = json.dumps(kwargs)
 
         if self._can_print_this_level(level_value):
-            colored_json_output = json_output.replace(
-                f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+            colored_json_output = (
+                json_output.replace(
+                    f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+                )
+                if self.colorized
+                else json_output
             )
             print(colored_json_output)
 
