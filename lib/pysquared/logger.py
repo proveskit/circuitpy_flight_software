@@ -19,12 +19,13 @@ class LogLevel:
     ERROR = 4
     CRITICAL = 5
 
+
 LEVEL_COLORS = {
     "DEBUG": "blue",
     "INFO": "white",
-    "WARNING": "orange", 
+    "WARNING": "orange",
     "ERROR": "red",
-    "CRITICAL": "red"
+    "CRITICAL": "red",
 }
 
 
@@ -48,12 +49,13 @@ class Logger:
         """
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        
+
         # Create ordered dictionary with desired field order
         ordered_output = OrderedDict()
         ordered_output["time"] = asctime
         ordered_output["level"] = level
         ordered_output["msg"] = message
+
         # Add any additional kwargs after the required fields
         ordered_output.update(kwargs)
 
@@ -62,7 +64,9 @@ class Logger:
         if self._can_print_this_level(level_value):
             if self._colorize:
                 # Replace the plain level string with colored version after JSON serialization
-                json_output = json_output.replace(f'"{level}"', f'"{co(level, color=LEVEL_COLORS[level])}"')
+                json_output = json_output.replace(
+                    f'"{level}"', f'"{co(level, color=LEVEL_COLORS[level])}"'
+                )
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
