@@ -6,6 +6,7 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
+from lib.pysquared.debugcolor import co
 from lib.pysquared.nvm.counter import Counter
 
 
@@ -17,15 +18,25 @@ class LogLevel:
     ERROR = 4
     CRITICAL = 5
 
+LEVEL_COLORS = {
+    "DEBUG": "blue",
+    "INFO": "white",
+    "WARNING": "orange", 
+    "ERROR": "red",
+    "CRITICAL": "red"
+}
+
 
 class Logger:
     def __init__(
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
+        colorize: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self._colorize: bool = colorize
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -34,7 +45,7 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level
+        kwargs["level"] = level if not self._colorize else co(level, color=LEVEL_COLORS[level])
         kwargs["msg"] = message
 
         now = time.localtime()
