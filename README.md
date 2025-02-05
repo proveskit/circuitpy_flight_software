@@ -10,7 +10,12 @@ If this is your first time using CircuitPython, it is highly recommended that yo
 # Usage
 If you have just received a clean PROVES Board, ensure you have loaded the latest firmware from that board's GitHub Repo. Currently the [latest FC Board firmware](https://github.com/proveskit/flight_controller_board/tree/main/Firmware) is `FC_FIRM_V2.uf2`.
 
-## Updating CircuitPython Code on a PROVES Board
+# Development Getting Started
+We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+
+You can find our Getting Started Guide [here](docs/dev-guide.md).
+
+## Manually Updating CircuitPython Code on a PROVES Board
 You can cleanly load new software by doing the following:
 1. Clone the branch you wish to put on your board to your local machine.
 2. Connect to the target board so it mounts as an external drive.
@@ -21,16 +26,7 @@ You can cleanly load new software by doing the following:
   ```
   > NOTE: If you have only changed one or two files, it is fine to just drag and drop them onto the external drive to overwrite the existing files.
 4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
-5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
-
-__For Flight Controller Board__
-```py
-from pysquared import cubesat as c
-```
-# Development Getting Started
-We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
-
-You can find our Getting Started Guide [here](docs/dev-guide.md).
+5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and entering the REPL after using `ctrl+c` to interupt the code that is currently running.
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
