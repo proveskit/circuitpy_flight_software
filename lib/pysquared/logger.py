@@ -6,7 +6,17 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
+from lib.pysquared.debugcolor import co
 from lib.pysquared.nvm.counter import Counter
+
+LogColors = {
+    "NOTSET": "NOTSET",
+    "DEBUG": co(msg="DEBUG", color="blue"),
+    "INFO": "INFO",
+    "WARNING": co(msg="WARNING", color="orange"),
+    "ERROR": co(msg="ERROR", color="pink"),
+    "CRITICAL": co(msg="CRITICAL", color="red"),
+}
 
 
 class LogLevel:
@@ -44,7 +54,10 @@ class Logger:
         json_output = json.dumps(kwargs)
 
         if self._can_print_this_level(level_value):
-            print(json_output)
+            colored_json_output = json_output.replace(
+                f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+            )
+            print(colored_json_output)
 
     def debug(self, message: str, **kwargs) -> None:
         """
