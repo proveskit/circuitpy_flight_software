@@ -13,19 +13,19 @@ class Field:
         self.logger = logger
 
     def Beacon(self, msg):
+        if not self.cubesat.is_licensed:
+            self.logger.debug(
+                "Please toggle licensed variable in code once you obtain an amateur radio license",
+            )
+            return
+
         try:
-            if self.cubesat.is_licensed:
-                self.logger.info(
-                    "I am beaconing",
-                    beacon=str(msg),
-                    success=str(self.cubesat.radio1.send(bytes(msg, "UTF-8"))),
-                )
-            else:
-                self.logger.debug(
-                    "Please toggle licensed variable in code once you obtain an amateur radio license",
-                )
+            sent = self.cubesat.radio1.send(bytes(msg, "UTF-8"))
         except Exception as e:
             self.logger.error("There was an error while Beaconing", err=e)
+            return
+
+        self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
 
     def troubleshooting(self):
         # this is for troubleshooting comms

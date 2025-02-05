@@ -517,17 +517,19 @@ class Satellite:
 
     @RGB.setter
     def RGB(self, value: tuple[int, int, int]) -> None:
-        if self.hardware["NEOPIX"]:
-            try:
-                self.neopixel[0] = value
-            except Exception as e:
-                self.logger.error(
-                    "There was an error trying to set the new RGB value",
-                    err=e,
-                    value=value,
-                )
-        else:
+        if not self.hardware["NEOPIX"]:
             self.logger.warning("The NEOPIXEL device is not initialized")
+            return
+
+        # NEOPIX is initialized
+        try:
+            self.neopixel[0] = value
+        except Exception as e:
+            self.logger.error(
+                "There was an error trying to set the new RGB value",
+                err=e,
+                value=value,
+            )
 
     @property
     def uptime(self) -> int:
@@ -597,20 +599,21 @@ class Satellite:
         hms: A 3-tuple of ints containing data for the hours, minutes, and seconds respectively.
         """
         hours, minutes, seconds = hms
-        if self.hardware["RTC"]:
-            try:
-                self.rtc.set_time(hours, minutes, seconds)
-            except Exception as e:
-                self.logger.error(
-                    "There was an error setting the RTC time",
-                    err=e,
-                    hms=hms,
-                    hour=hms[0],
-                    minutes=hms[1],
-                    seconds=hms[2],
-                )
-        else:
+        if not self.hardware["RTC"]:
             self.logger.warning("The RTC is not initialized")
+            return
+
+        try:
+            self.rtc.set_time(hours, minutes, seconds)
+        except Exception as e:
+            self.logger.error(
+                "There was an error setting the RTC time",
+                err=e,
+                hms=hms,
+                hour=hms[0],
+                minutes=hms[1],
+                seconds=hms[2],
+            )
 
     @property
     def date(self) -> Union[tuple[int, int, int, int], None]:
@@ -625,21 +628,22 @@ class Satellite:
         ymdw: A 4-tuple of ints containing data for the year, month, date, and weekday respectively.
         """
         year, month, date, weekday = ymdw
-        if self.hardware["RTC"]:
-            try:
-                self.rtc.set_date(year, month, date, weekday)
-            except Exception as e:
-                self.logger.error(
-                    "There was an error setting the RTC date",
-                    err=e,
-                    ymdw=ymdw,
-                    year=ymdw[0],
-                    month=ymdw[1],
-                    date=ymdw[2],
-                    weekday=ymdw[3],
-                )
-        else:
+        if not self.hardware["RTC"]:
             self.logger.warning("RTC not initialized")
+            return
+
+        try:
+            self.rtc.set_date(year, month, date, weekday)
+        except Exception as e:
+            self.logger.error(
+                "There was an error setting the RTC date",
+                err=e,
+                ymdw=ymdw,
+                year=ymdw[0],
+                month=ymdw[1],
+                date=ymdw[2],
+                weekday=ymdw[3],
+            )
 
     """
     Maintenence Functions
@@ -738,63 +742,62 @@ class Satellite:
         directory is created on the SD!
         int padded with zeros will be appended to the last found file
         """
-        if self.hardware["SDcard"]:
+        if not self.hardware["SDcard"]:
+            self.logger.warning("SD Card not initialized")
+
+        # SDCard is initialized
+        try:
+            ff: str = ""
+            n: int = 0
+            _folder: str = substring[: substring.rfind("/") + 1]
+            _file: str = substring[substring.rfind("/") + 1 :]
+            self.logger.debug(
+                "Creating new file in directory: /sd{} with file prefix: {}".format(
+                    _folder, _file
+                ),
+            )
             try:
-                ff: str = ""
-                n: int = 0
-                _folder: str = substring[: substring.rfind("/") + 1]
-                _file: str = substring[substring.rfind("/") + 1 :]
-                self.logger.debug(
-                    "Creating new file in directory: /sd{} with file prefix: {}".format(
-                        _folder, _file
-                    ),
+                chdir("/sd" + _folder)
+            except OSError:
+                self.logger.error(
+                    "The directory was not found. Now Creating...",
+                    directory=_folder,
                 )
                 try:
-                    chdir("/sd" + _folder)
-                except OSError:
+                    mkdir("/sd" + _folder)
+                except Exception as e:
                     self.logger.error(
-                        "The directory was not found. Now Creating...",
-                        directory=_folder,
+                        "Error with creating new file",
+                        err=e,
+                        filedir="/sd" + _folder,
                     )
-                    try:
-                        mkdir("/sd" + _folder)
-                    except Exception as e:
-                        self.logger.error(
-                            "Error with creating new file",
-                            err=e,
-                            filedir="/sd" + _folder,
-                        )
-                        return None
-                for i in range(0xFFFF):
-                    ff: str = "/sd{}{}{:05}.txt".format(
-                        _folder, _file, (n + i) % 0xFFFF
+                    return None
+            for i in range(0xFFFF):
+                ff: str = "/sd{}{}{:05}.txt".format(_folder, _file, (n + i) % 0xFFFF)
+                try:
+                    if n is not None:
+                        stat(ff)
+                except Exception as e:
+                    self.logger.error(
+                        "There was an error running the stat function on this file",
+                        filedir=ff,
+                        file_num=n,
+                        err=e,
                     )
-                    try:
-                        if n is not None:
-                            stat(ff)
-                    except Exception as e:
-                        self.logger.error(
-                            "There was an error running the stat function on this file",
-                            filedir=ff,
-                            file_num=n,
-                            err=e,
-                        )
-                        n: int = (n + i) % 0xFFFF
-                        # print('file number is',n)
-                        break
-                self.logger.debug("creating a file...", file_dir=str(ff))
-                if binary:
-                    b: str = "ab"
-                else:
-                    b: str = "a"
-                with open(ff, b) as f:
-                    f.tell()
-                chdir("/")
-                return ff
-            except Exception as e:
-                self.logger.error(
-                    "Error creating file", filedir=ff, err=e, binary_mode=binary
-                )
-                return None
-        else:
-            self.logger.warning("SD Card not initialized")
+                    n: int = (n + i) % 0xFFFF
+                    # print('file number is',n)
+                    break
+            self.logger.debug("creating a file...", file_dir=str(ff))
+            if binary:
+                b: str = "ab"
+            else:
+                b: str = "a"
+            with open(ff, b) as f:
+                f.tell()
+            chdir("/")
+            return ff
+        except Exception as e:
+            self.logger.error(
+                "Error creating file", filedir=ff, err=e, binary_mode=binary
+            )
+            return None

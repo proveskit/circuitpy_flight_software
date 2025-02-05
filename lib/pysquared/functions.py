@@ -265,13 +265,10 @@ class functions:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
             received = self.cubesat.radio1.receive(keep_listening=True)
-            if received is not None and "HAHAHAHAHA!" in received:
-                return True
-            else:
-                return False
+            return received is not None and "HAHAHAHAHA!" in received
+
         except Exception as e:
             self.logger.error("An Error has occured while listening for a joke", err=e)
-            received = None
             return False
 
     """
@@ -351,7 +348,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur: int = 7, margin: float = 0.2, seq: int = 118) -> None:
+    def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
         self.cubesat.RGB = (255, 255, 255)
 
