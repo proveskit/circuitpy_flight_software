@@ -45,7 +45,7 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level if not self._colorize else co(level, color=LEVEL_COLORS[level])
+        kwargs["level"] = level  # Store plain level string
         kwargs["msg"] = message
 
         now = time.localtime()
@@ -55,6 +55,9 @@ class Logger:
         json_output = json.dumps(kwargs)
 
         if self._can_print_this_level(level_value):
+            if self._colorize:
+                # Replace the plain level string with colored version after JSON serialization
+                json_output = json_output.replace(f'"{level}"', f'"{co(level, color=LEVEL_COLORS[level])}"')
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:
