@@ -20,7 +20,9 @@ class PacketManager:
         - Remaining bytes: Missing packet sequence numbers
         """
         header = b"\xff\xff" + len(missing_packets).to_bytes(2, "big")
-        payload = b"".join(seq.to_bytes(2, "big") for seq in missing_packets)
+        payload = b"".join(
+            sequence_number.to_bytes(2, "big") for sequence_number in missing_packets
+        )
         return header + payload
 
     def is_retransmit_request(self, packet):
@@ -33,8 +35,8 @@ class PacketManager:
         missing = []
         for i in range(num_missing):
             start_idx = 4 + (i * 2)
-            seq = int.from_bytes(packet[start_idx : start_idx + 2], "big")
-            missing.append(seq)
+            sequence_number = int.from_bytes(packet[start_idx : start_idx + 2], "big")
+            missing.append(sequence_number)
         return missing
 
     def pack_data(self, data):
@@ -61,13 +63,15 @@ class PacketManager:
         )
 
         packets = []
-        for seq in range(total_packets):
+        for sequence_number in range(total_packets):
             # Create header
-            header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
+            header = sequence_number.to_bytes(2, "big") + total_packets.to_bytes(
+                2, "big"
+            )
             self.logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
-            start = seq * self.payload_size
+            start = sequence_number * self.payload_size
             end = start + self.payload_size
             payload = data[start:end]
 
@@ -75,7 +79,7 @@ class PacketManager:
             packet = header + payload
             self.logger.info(
                 "Combining the header and payload to form a Packet",
-                packet=seq,
+                packet=sequence_number,
                 packet_length=len(packet),
                 header=[hex(b) for b in header],
             )
@@ -111,9 +115,9 @@ class PacketManager:
         data = b"".join(packet[self.header_size :] for packet in packets)
         return data
 
-    def create_ack_packet(self, seq_num):
+    def create_ack_packet(self, sequence_number):
         """Creates an acknowledgment packet for a given sequence number"""
-        return b"ACK" + seq_num.to_bytes(2, "big")
+        return b"ACK" + sequence_number.to_bytes(2, "big")
 
     def is_ack_packet(self, packet):
         """Checks if a packet is an acknowledgment packet"""
