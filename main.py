@@ -8,6 +8,7 @@ Version: 2.0.0
 Published: Nov 19, 2024
 """
 
+import asyncio
 import time
 
 import microcontroller
@@ -43,109 +44,83 @@ try:
 
     f = functions.functions(c, logger, config)
 
-    def initial_boot():
-        c.watchdog_pet()
-        f.beacon()
-        c.watchdog_pet()
-        f.listen()
-        c.watchdog_pet()
+    async def initial_boot(c, f):
+        await f.beacon()
+        await f.listen()
 
-    try:
-        c.boot_count.increment()
-
-        logger.info(
-            "FC Board Stats",
-            bytes_remaining=gc.mem_free(),
-            boot_number=c.boot_count.get(),
-        )
-
-        initial_boot()
-
-    except Exception as e:
-        logger.error("Error in Boot Sequence", err=e)
-
-    finally:
-        pass
-
-    def send_imu_data():
+    async def send_imu_data(c, f):
         logger.info("Looking to get imu data...")
         IMUData = []
-        c.watchdog_pet()
         logger.info("IMU has baton")
-        IMUData = f.get_imu_data()
-        c.watchdog_pet()
-        f.send(IMUData)
+        IMUData = await f.get_imu_data()
+        await f.send(IMUData)
 
-    def main():
-        f.beacon()
+    async def main_loop(c, f):
+        await f.beacon()
+        await f.listen_loiter()
+        await f.state_of_health()
+        await f.listen_loiter()
+        await f.all_face_data()
+        await f.send_face()
+        await f.listen_loiter()
+        await send_imu_data(c, f)
+        await f.listen_loiter()
+        await f.joke()
+        await f.listen_loiter()
 
-        f.listen_loiter()
+    async def critical_power_operations(c, f):
+        await initial_boot(c, f)
+        await f.Long_Hybernate()
 
-        f.state_of_health()
+    async def minimum_power_operations(c, f):
+        await initial_boot(c, f)
+        await f.Short_Hybernate()
 
-        f.listen_loiter()
+    async def main():
+        try:
+            c.boot_count.increment()
 
-        f.all_face_data()
-        c.watchdog_pet()
-        f.send_face()
+            logger.info(
+                "FC Board Stats",
+                bytes_remaining=gc.mem_free(),
+                boot_number=c.boot_count.get(),
+            )
 
-        f.listen_loiter()
+            await initial_boot(c, f)
 
-        send_imu_data()
+            # Main operation loop with watchdog running in background
+            async with c.start_watchdog():
+                while True:
+                    c.check_reboot()
 
-        f.listen_loiter()
+                    if c.power_mode == "critical":
+                        c.RGB = (0, 0, 0)
+                        await critical_power_operations(c, f)
+                    elif c.power_mode == "minimum":
+                        c.RGB = (255, 0, 0)
+                        await minimum_power_operations(c, f)
+                    elif c.power_mode == "normal":
+                        c.RGB = (255, 255, 0)
+                        await main_loop(c, f)
+                    elif c.power_mode == "maximum":
+                        c.RGB = (0, 255, 0)
+                        await main_loop(c, f)
+                    else:
+                        await f.listen()
 
-        f.joke()
+        except Exception as e:
+            logger.critical("Critical in Main Loop", err=e)
+            await asyncio.sleep(10)
+            microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
+            microcontroller.reset()
+        finally:
+            logger.info("Going Neutral!")
 
-        f.listen_loiter()
+            c.RGB = (0, 0, 0)
+            c.hardware["WDT"] = False
 
-    def critical_power_operations():
-        initial_boot()
-        c.watchdog_pet()
-
-        f.Long_Hybernate()
-
-    def minimum_power_operations():
-        initial_boot()
-        c.watchdog_pet()
-
-        f.Short_Hybernate()
-
-    ######################### MAIN LOOP ##############################
-    try:
-        while True:
-            # L0 automatic tasks no matter the battery level
-            c.check_reboot()
-
-            if c.power_mode == "critical":
-                c.RGB = (0, 0, 0)
-                critical_power_operations()
-
-            elif c.power_mode == "minimum":
-                c.RGB = (255, 0, 0)
-                minimum_power_operations()
-
-            elif c.power_mode == "normal":
-                c.RGB = (255, 255, 0)
-                main()
-
-            elif c.power_mode == "maximum":
-                c.RGB = (0, 255, 0)
-                main()
-
-            else:
-                f.listen()
-
-    except Exception as e:
-        logger.critical("Critical in Main Loop", err=e)
-        time.sleep(10)
-        microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
-        microcontroller.reset()
-    finally:
-        logger.info("Going Neutral!")
-
-        c.RGB = (0, 0, 0)
-        c.hardware["WDT"] = False
+    # Run the async main function
+    asyncio.run(main())
 
 except Exception as e:
     logger.error("An exception occured within main.py", err=e)

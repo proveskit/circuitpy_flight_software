@@ -40,6 +40,9 @@ try:
 except Exception:
     pass
 
+import asyncio
+from contextlib import asynccontextmanager
+
 from lib.pysquared.logger import Logger
 
 SEND_BUFF: bytearray = bytearray(252)
@@ -649,10 +652,26 @@ class Satellite:
     Maintenence Functions
     """
 
-    def watchdog_pet(self) -> None:
-        self.watchdog_pin.value = True
-        time.sleep(0.01)
-        self.watchdog_pin.value = False
+    async def watchdog_task(self) -> None:
+        """Background task to continuously pet the watchdog"""
+        while True:
+            self.watchdog_pin.value = True
+            await asyncio.sleep(0.01)
+            self.watchdog_pin.value = False
+            await asyncio.sleep(0.99)  # Pet watchdog every ~1 second
+
+    @asynccontextmanager
+    async def start_watchdog(self):
+        """Context manager to handle watchdog task lifecycle"""
+        task = asyncio.create_task(self.watchdog_task())
+        try:
+            yield
+        finally:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
