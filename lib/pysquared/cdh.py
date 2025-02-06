@@ -180,7 +180,7 @@ class CommandDataHandler:
         cubesat.f_hotstrt.toggle(True)
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat: Satellite, args: Any) -> None:
+    def query(self, cubesat: Satellite, args: str) -> None:
         self.logger.info("Sending query with args", args=args)
 
         cubesat.radio1.send(data=str(eval(args)))
