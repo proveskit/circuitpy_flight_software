@@ -39,7 +39,7 @@ class Face:
         self.veml = None
         self.drv = None
 
-    def Sensorinit(self, senlist, address):
+    def Sensorinit(self, senlist, address) -> None:
         gc.collect()  # Force garbage collection before initializing sensors
 
         if "MCP" in senlist:
@@ -79,7 +79,7 @@ class Face:
 
 
 class AllFaces:
-    def __init__(self, tca: adafruit_tca9548a.TCA9548A, logger: Logger):
+    def __init__(self, tca: adafruit_tca9548a.TCA9548A, logger: Logger) -> None:
         self.tca: adafruit_tca9548a.TCA9548A = tca
         self.faces: list[Face] = []
         self.logger: Logger = logger
@@ -98,7 +98,7 @@ class AllFaces:
             self.faces.append(face)
             gc.collect()  # Clean up after each face initialization
 
-    def Face_Test_All(self):
+    def Face_Test_All(self) -> list[list[float]]:
         results: list[list[float]] = []
         for face in self.faces:
             if face:
