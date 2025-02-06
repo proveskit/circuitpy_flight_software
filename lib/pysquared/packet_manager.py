@@ -40,7 +40,9 @@ class PacketManager:
         missing: list[int] = []
         for i in range(num_missing):
             start_idx: int = 4 + (i * 2)
-            sequence_number: int = int.from_bytes(packet[start_idx : start_idx + 2], "big")
+            sequence_number: int = int.from_bytes(
+                packet[start_idx : start_idx + 2], "big"
+            )
             missing.append(sequence_number)
         return missing
 
