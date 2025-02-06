@@ -324,9 +324,17 @@ class functions:
 
     def get_imu_data(
         self,
-    ) -> List[tuple[float, float, float]]:
+    ) -> List[
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[float, float, float],
+    ]:
         try:
-            data: list[tuple[float, float, float]] = []
+            data: List[
+                tuple[float, float, float],
+                tuple[float, float, float],
+                tuple[float, float, float],
+            ] = []
             data.append(self.cubesat.accel)
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
