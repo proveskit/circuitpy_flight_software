@@ -19,7 +19,7 @@ from lib.pysquared.packet_sender import PacketSender
 from lib.pysquared.pysquared import Satellite
 
 try:
-    from typing import Any, List, Literal, OrderedDict, Union
+    from typing import List, Literal, OrderedDict, Union
 
     import circuitpython_typing
 except Exception:
@@ -243,7 +243,9 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received: Any = self.cubesat.radio1.receive_with_ack(keep_listening=True)
+            received: bytearray = self.cubesat.radio1.receive_with_ack(
+                keep_listening=True
+            )
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -264,7 +266,7 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received: Any = self.cubesat.radio1.receive(keep_listening=True)
+            received: bytearray = self.cubesat.radio1.receive(keep_listening=True)
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:

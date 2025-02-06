@@ -58,7 +58,7 @@ class CommandDataHandler:
             )
 
     ############### message handler ###############
-    def message_handler(self, cubesat: Satellite, msg: Any) -> None:
+    def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
         multi_msg: bool = False
         if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
             if bytes(msg[4:8]) == self._super_secret_code:
@@ -105,7 +105,7 @@ class CommandDataHandler:
                 if multi_msg:
                     # TODO check for optional radio config
                     self.logger.info("multi-message mode enabled")
-                response: Any = cubesat.radio1.receive(
+                response: bytearray = cubesat.radio1.receive(
                     keep_listening=True,
                     with_ack=True,
                     with_header=True,
