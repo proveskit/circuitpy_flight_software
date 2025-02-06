@@ -3,9 +3,8 @@ Class for encapsulating config.json. The goal is to
 distribute these values across the files & variables
 that use them. Instantiation happens in main.
 
-Also it allow values to be set temporarily using setter
-function, and values can be set permanently using the
-saver functions. Following the FPrime model.
+Also it allow values to be set temporarily or permanently using the
+Attempting to follow the FPrime model.
 """
 
 import json
@@ -24,10 +23,6 @@ class RadioConfig:
 
 
 class Config:
-    """
-    Constructor
-    """
-
     def __init__(self, config_path: str) -> None:
         # parses json & assigns data to variables
         with open(config_path, "r") as f:
