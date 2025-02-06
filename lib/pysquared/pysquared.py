@@ -253,7 +253,7 @@ class Satellite:
         self.data_cache: dict = {}
         self.filenumbers: dict = {}
         self.image_packets: int = 0
-        self.urate: int = 9600
+        self.uart_baudrate: int = 9600
         self.buffer: bytearray = None
         self.buffer_size: int = 1
         self.send_buff: memoryview = memoryview(SEND_BUFF)
@@ -335,7 +335,7 @@ class Satellite:
 
         def orpheus_init_UART(hardware_key: str):
             uart: circuitpython_typing.ByteStream = busio.UART(
-                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.urate
+                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.uart_baudrate
             )
             self.hardware[hardware_key] = True
             return uart
@@ -368,7 +368,7 @@ class Satellite:
             busio.UART,
             board.TX,
             board.RX,
-            baud_rate=self.urate,
+            baud_rate=self.uart_baudrate,
             hardware_key="UART",
             orpheus_func=orpheus_init_UART,
         )

@@ -16,7 +16,7 @@ class PacketSender:
         """
         self.logger = logger
         self.radio = radio
-        self.pm = packet_manager
+        self.packet_manager = packet_manager
         self.ack_timeout = ack_timeout
         self.max_retries = max_retries
         self.send_delay = send_delay
@@ -35,8 +35,8 @@ class PacketSender:
         while (time.monotonic() - start_time) < self.ack_timeout:
             packet = self.radio.receive()
 
-            if packet and self.pm.is_ack_packet(packet):
-                ack_seq = self.pm.get_ack_seq_num(packet)
+            if packet and self.packet_manager.is_ack_packet(packet):
+                ack_seq = self.packet_manager.get_ack_seq_num(packet)
                 if ack_seq == expected_seq:
                     # Got our ACK - only wait briefly for a duplicate then continue
                     time.sleep(0.2)
@@ -66,7 +66,7 @@ class PacketSender:
 
     def send_data(self, data, progress_interval=10):
         """Send data with minimal progress updates"""
-        packets = self.pm.pack_data(data)
+        packets = self.packet_manager.pack_data(data)
         total_packets = len(packets)
         self.logger.info("Sending packets...", num_packets=total_packets)
 
@@ -94,7 +94,9 @@ class PacketSender:
         import time
 
         try:
-            missing_packets = self.pm.parse_retransmit_request(request_packet)
+            missing_packets = self.packet_manager.parse_retransmit_request(
+                request_packet
+            )
             self.logger.info(
                 "Retransmit request received for missing packets",
                 num_missing_packets=len(missing_packets),
@@ -119,7 +121,7 @@ class PacketSender:
         """Send data with improved retransmission handling"""
         import time
 
-        packets = self.pm.pack_data(data)
+        packets = self.packet_manager.pack_data(data)
         total_packets = len(packets)
         self.logger.info("Sending packets..", num_packets=total_packets)
 
@@ -164,11 +166,11 @@ class PacketSender:
                 packet=[hex(b) for b in packet],
             )
 
-            if not self.pm.is_retransmit_request(packet):
+            if not self.packet_manager.is_retransmit_request(packet):
                 break
 
             self.logger.info("Valid retransmit request received!")
-            missing_packets = self.pm.parse_retransmit_request(packet)
+            missing_packets = self.packet_manager.parse_retransmit_request(packet)
             self.logger.info("Retransmitting packets", missing_packets=missing_packets)
 
             # Add delay before retransmission to let receiver get ready
