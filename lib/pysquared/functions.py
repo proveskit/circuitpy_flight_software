@@ -15,6 +15,7 @@ from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
 from lib.pysquared.pysquared import Satellite
+from lib.pysquared.sleep_helper import SleepHelper
 
 try:
     from typing import List, OrderedDict, Union
@@ -24,12 +25,18 @@ except Exception:
 
 
 class functions:
-    def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
+    def __init__(
+        self,
+        cubesat: Satellite,
+        logger: Logger,
+        config: Config,
+        sleep_helper: SleepHelper,
+    ) -> None:
         self.logger: Logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.logger.info("Initializing Functionalities")
-
+        self.sleep_helper = sleep_helper
         self.packet_manager: PacketManager = PacketManager(
             logger=self.logger, max_packet_size=128
         )
@@ -57,6 +64,18 @@ class functions:
 
     def current_check(self) -> float:
         return self.cubesat.current_draw
+
+    def listen_loiter(self) -> None:
+        self.logger.debug("Listening for 10 seconds")
+        self.cubesat.watchdog_pet()
+        self.cubesat.radio1.receive_timeout = 10
+        self.listen()
+        self.cubesat.watchdog_pet()
+
+        self.logger.debug("Sleeping for 20 seconds")
+        self.cubesat.watchdog_pet()
+        self.sleep_helper.safe_sleep(self.sleep_duration)
+        self.cubesat.watchdog_pet()
 
     """
     Radio Functions

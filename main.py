@@ -37,13 +37,13 @@ try:
 
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
-    sleep_helper = SleepHelper()
+    sleep_helper = SleepHelper(c, logger, config)
 
     import gc  # Garbage collection
 
     import lib.pysquared.functions as functions
 
-    f = functions.functions(c, logger, config)
+    f = functions.functions(c, logger, config, sleep_helper)
 
     def initial_boot():
         c.watchdog_pet()
@@ -81,25 +81,25 @@ try:
     def main():
         f.beacon()
 
-        sleep_helper.listen_loiter()
+        f.listen_loiter()
 
         f.state_of_health()
 
-        sleep_helper.listen_loiter()
+        f.listen_loiter()
 
         f.all_face_data()
         c.watchdog_pet()
         f.send_face()
 
-        sleep_helper.listen_loiter()
+        f.listen_loiter()
 
         send_imu_data()
 
-        sleep_helper.listen_loiter()
+        f.listen_loiter()
 
         f.joke()
 
-        sleep_helper.listen_loiter()
+        f.listen_loiter()
 
     def critical_power_operations():
         initial_boot()

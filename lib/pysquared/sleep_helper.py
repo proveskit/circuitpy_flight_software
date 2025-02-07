@@ -20,7 +20,6 @@ class SleepHelper:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
-        self.sleep_duration: int = self.config.get_int("sleep_duration")
 
     def safe_sleep(self, duration: int = 15) -> None:
         self.logger.info("Setting Safe Sleep Mode")
@@ -61,15 +60,3 @@ class SleepHelper:
 
         self.cubesat.enable_rf.value = True
         return True
-
-    def listen_loiter(self) -> None:
-        self.logger.debug("Listening for 10 seconds")
-        self.cubesat.watchdog_pet()
-        self.cubesat.radio1.receive_timeout = 10
-        self.listen()
-        self.cubesat.watchdog_pet()
-
-        self.logger.debug("Sleeping for 20 seconds")
-        self.cubesat.watchdog_pet()
-        self.safe_sleep(self.sleep_duration)
-        self.cubesat.watchdog_pet()
