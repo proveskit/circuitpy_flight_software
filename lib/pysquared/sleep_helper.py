@@ -38,7 +38,7 @@ class SleepHelper:
             self.cubesat.watchdog_pet()
 
     def short_hibernate(self) -> Literal[True]:
-        self.logger.debug("Short Hybernation Coming UP")
+        self.logger.debug("Short Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
@@ -51,7 +51,7 @@ class SleepHelper:
         return True
 
     def long_hibernate(self) -> Literal[True]:
-        self.logger.debug("LONG Hybernation Coming UP")
+        self.logger.debug("LONG Hibernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
 
