@@ -57,7 +57,7 @@
 "vlowbatt": 6.0,
 "battery_voltage": 5.2,
 "current_draw": 240.5,
-"REBOOT_TIME": 3600,
+"reboot_time": 3600,
 "turbo_clock": false,
 "radio_cfg": {
         "sender_id": 251,

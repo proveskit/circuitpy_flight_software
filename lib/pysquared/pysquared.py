@@ -230,16 +230,16 @@ class Satellite:
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = config.NORMAL_TEMP
-        self.NORMAL_BATT_TEMP: int = config.NORMAL_BATT_TEMP
-        self.NORMAL_MICRO_TEMP: int = config.NORMAL_MICRO_TEMP
-        self.NORMAL_CHARGE_CURRENT: float = config.NORMAL_CHARGE_CURRENT
-        self.NORMAL_BATTERY_VOLTAGE: float = config.NORMAL_BATTERY_VOLTAGE
-        self.CRITICAL_BATTERY_VOLTAGE: float = config.CRITICAL_BATTERY_VOLTAGE
+        self.normal_temp: int = config.normal_temp
+        self.normal_battery_temp: int = config.normal_battery_temp
+        self.normal_micro_temp: int = config.normal_micro_temp
+        self.normal_charge_current: float = config.normal_charge_current
+        self.normal_battery_voltage: float = config.normal_battery_voltage
+        self.critical_battery_voltage: float = config.critical_battery_voltage
         self.vlowbatt: float = config.vlowbatt
         self.battery_voltage: float = config.battery_voltage
         self.current_draw: float = config.current_draw
-        self.REBOOT_TIME: int = config.REBOOT_TIME
+        self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
 
         """
@@ -653,7 +653,7 @@ class Satellite:
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
-        if self.UPTIME > self.REBOOT_TIME:
+        if self.UPTIME > self.reboot_time:
             self.micro.reset()
 
     def powermode(self, mode: str) -> None:
