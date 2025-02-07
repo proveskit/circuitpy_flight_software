@@ -37,7 +37,7 @@ class SleepHelper:
 
             self.cubesat.watchdog_pet()
 
-    def Short_Hybernate(self) -> Literal[True]:
+    def short_hibernate(self) -> Literal[True]:
         self.logger.debug("Short Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode
@@ -50,7 +50,7 @@ class SleepHelper:
         self.cubesat.enable_rf.value = True
         return True
 
-    def Long_Hybernate(self) -> Literal[True]:
+    def long_hibernate(self) -> Literal[True]:
         self.logger.debug("LONG Hybernation Coming UP")
         gc.collect()
         # all should be off from cubesat powermode

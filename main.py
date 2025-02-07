@@ -105,13 +105,13 @@ try:
         initial_boot()
         c.watchdog_pet()
 
-        sleep_helper.Long_Hybernate()
+        sleep_helper.long_hibernate()
 
     def minimum_power_operations():
         initial_boot()
         c.watchdog_pet()
 
-        sleep_helper.Short_Hybernate()
+        sleep_helper.short_hibernate()
 
     ######################### MAIN LOOP ##############################
     try:
