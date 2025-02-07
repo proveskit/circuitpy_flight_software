@@ -9,8 +9,6 @@ import gc
 import random
 import time
 
-import alarm
-
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
@@ -19,9 +17,8 @@ from lib.pysquared.packet_sender import PacketSender
 from lib.pysquared.pysquared import Satellite
 
 try:
-    from typing import List, Literal, OrderedDict, Union
+    from typing import List, OrderedDict, Union
 
-    import circuitpython_typing
 except Exception:
     pass
 
@@ -60,34 +57,6 @@ class functions:
 
     def current_check(self) -> float:
         return self.cubesat.current_draw
-
-    def safe_sleep(self, duration: int = 15) -> None:
-        self.logger.info("Setting Safe Sleep Mode")
-
-        iterations: int = 0
-
-        while duration > 15 and iterations < 12:
-            time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
-                monotonic_time=time.monotonic() + 15
-            )
-
-            alarm.light_sleep_until_alarms(time_alarm)
-            duration -= 15
-            iterations += 1
-
-            self.cubesat.watchdog_pet()
-
-    def listen_loiter(self) -> None:
-        self.logger.debug("Listening for 10 seconds")
-        self.cubesat.watchdog_pet()
-        self.cubesat.radio1.receive_timeout = 10
-        self.listen()
-        self.cubesat.watchdog_pet()
-
-        self.logger.debug("Sleeping for 20 seconds")
-        self.cubesat.watchdog_pet()
-        self.safe_sleep(self.sleep_duration)
-        self.cubesat.watchdog_pet()
 
     """
     Radio Functions
@@ -407,27 +376,3 @@ class functions:
         except Exception as e:
             self.logger.error("Detumble error", err=e)
         self.cubesat.RGB = (100, 100, 50)
-
-    def Short_Hybernate(self) -> Literal[True]:
-        self.logger.debug("Short Hybernation Coming UP")
-        gc.collect()
-        # all should be off from cubesat powermode
-
-        self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot.toggle(True)
-        self.safe_sleep(120)
-
-        self.cubesat.enable_rf.value = True
-        return True
-
-    def Long_Hybernate(self) -> Literal[True]:
-        self.logger.debug("LONG Hybernation Coming UP")
-        gc.collect()
-        # all should be off from cubesat powermode
-
-        self.cubesat.enable_rf.value = False
-        self.cubesat.f_softboot.toggle(True)
-        self.safe_sleep(600)
-
-        self.cubesat.enable_rf.value = True
-        return True
