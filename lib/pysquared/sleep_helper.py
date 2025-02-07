@@ -44,6 +44,7 @@ class SleepHelper:
 
         self.cubesat.enable_rf.value = False
         self.cubesat.f_softboot.toggle(True)
+        self.cubesat.watchdog_pet()
         self.safe_sleep(120)
 
         self.cubesat.enable_rf.value = True
@@ -56,6 +57,7 @@ class SleepHelper:
 
         self.cubesat.enable_rf.value = False
         self.cubesat.f_softboot.toggle(True)
+        self.cubesat.watchdog_pet()
         self.safe_sleep(600)
 
         self.cubesat.enable_rf.value = True
