@@ -28,26 +28,28 @@ except Exception:
 
 class functions:
     def __init__(self, cubesat: Satellite, logger: Logger, config: Config) -> None:
-        self.logger = logger
+        self.logger: Logger = logger
         self.cubesat: Satellite = cubesat
         self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.logger.info("Initializing Functionalities")
 
-        self.pm: PacketManager = PacketManager(logger=self.logger, max_packet_size=128)
-        self.ps: PacketSender = PacketSender(
-            self.logger, cubesat.radio1, self.pm, max_retries=3
+        self.packet_manager: PacketManager = PacketManager(
+            logger=self.logger, max_packet_size=128
+        )
+        self.packet_sender: PacketSender = PacketSender(
+            self.logger, cubesat.radio1, self.packet_manager, max_retries=3
         )
 
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
-        self.Errorcount: int = 0
+        self.error_count: int = 0
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
         self.sleep_duration: int = config.sleep_duration
         self.callsign: str = config.callsign
-        self.state_bool: bool = False
-        self.face_data_baton: bool = False
+        self.state_of_health_part1: bool = False
+
         self.detumble_enable_z: bool = config.detumble_enable_z
         self.detumble_enable_x: bool = config.detumble_enable_x
         self.detumble_enable_y: bool = config.detumble_enable_y
@@ -117,7 +119,7 @@ class functions:
             data (String, Byte Array): Pass the data to be sent.
             delay (float): Delay in seconds between packets
         """
-        self.ps.send_data(data)
+        self.packet_sender.send_data(data)
 
     def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
@@ -179,7 +181,7 @@ class functions:
         self.state_list: list = []
         # list of state information
         try:
-            self.state_list: list = [
+            self.state_list: list[str] = [
                 f"PM:{self.cubesat.power_mode}",
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
@@ -199,20 +201,20 @@ class functions:
             self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
-        if not self.state_bool:
+        if not self.state_of_health_part1:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
-            self.state_bool: bool = True
+            self.state_of_health_part1: bool = True
         else:
             self.field.Beacon(
                 f"{self.callsign} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
-            self.state_bool: bool = False
+            self.state_of_health_part1: bool = False
         del self.field
         del Field
         gc.collect()
@@ -241,7 +243,9 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive_with_ack(keep_listening=True)
+            received: bytearray = self.cubesat.radio1.receive_with_ack(
+                keep_listening=True
+            )
         except Exception as e:
             self.logger.error("An Error has occured while listening: ", err=e)
             received = None
@@ -262,7 +266,7 @@ class functions:
         try:
             self.logger.debug("Listening")
             self.cubesat.radio1.receive_timeout = 10
-            received = self.cubesat.radio1.receive(keep_listening=True)
+            received: bytearray = self.cubesat.radio1.receive(keep_listening=True)
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
@@ -297,7 +301,7 @@ class functions:
                 bytes_free=gc.mem_free(),
             )
 
-            self.facestring: list = a.Face_Test_All()
+            self.facestring: list[list[float]] = a.Face_Test_All()
 
             del a
             del Big_Data
@@ -326,7 +330,11 @@ class functions:
         tuple[float, float, float],
     ]:
         try:
-            data: list = []
+            data: List[
+                tuple[float, float, float],
+                tuple[float, float, float],
+                tuple[float, float, float],
+            ] = []
             data.append(self.cubesat.accel)
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)

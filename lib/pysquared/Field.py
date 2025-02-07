@@ -5,14 +5,21 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
 from lib.pysquared.logger import Logger
+from lib.pysquared.pysquared import Satellite
+
+try:
+    from typing import Any
+
+except Exception:
+    pass
 
 
 class Field:
-    def __init__(self, cubesat, logger: Logger):
-        self.cubesat = cubesat
-        self.logger = logger
+    def __init__(self, cubesat: Satellite, logger: Logger) -> None:
+        self.cubesat: Satellite = cubesat
+        self.logger: Logger = logger
 
-    def Beacon(self, msg):
+    def Beacon(self, msg: Any):
         if not self.cubesat.is_licensed:
             self.logger.debug(
                 "Please toggle licensed variable in code once you obtain an amateur radio license",
@@ -27,9 +34,9 @@ class Field:
 
         self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
 
-    def troubleshooting(self):
+    def troubleshooting(self) -> None:
         # this is for troubleshooting comms
         pass
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.logger.debug("Object Destroyed!")

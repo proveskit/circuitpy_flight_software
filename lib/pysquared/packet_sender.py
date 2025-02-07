@@ -1,42 +1,49 @@
+from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.logger import Logger
+from lib.pysquared.packet_manager import PacketManager
+
+try:
+    from typing import Union
+except Exception:
+    pass
 
 
 class PacketSender:
     def __init__(
         self,
         logger: Logger,
-        radio,
-        packet_manager,
-        ack_timeout=2.0,
-        max_retries=3,
-        send_delay=0.2,
-    ):
+        radio: Union[rfm9x.RFM9x, rfm9xfsk.RFM9xFSK],
+        packet_manager: PacketManager,
+        ack_timeout: float = 2.0,
+        max_retries: int = 3,
+        send_delay: float = 0.2,
+    ) -> None:
         """
         Initialize the packet sender with optimized timing
         """
-        self.logger = logger
-        self.radio = radio
-        self.pm = packet_manager
-        self.ack_timeout = ack_timeout
-        self.max_retries = max_retries
-        self.send_delay = send_delay
+        self.logger: Logger = logger
+        self.radio: Union[rfm9x.RFM9x, rfm9xfsk.RFM9xFSK] = radio
+        self.packet_manager: PacketManager = packet_manager
+        self.ack_timeout: float = ack_timeout
+        self.max_retries: int = max_retries
+        self.send_delay: float = send_delay
 
-    def wait_for_ack(self, expected_seq):
+    def wait_for_ack(self, expected_seq: int) -> bool:
         """
         Optimized ACK wait with early return
         """
         import time
 
-        start_time = time.monotonic()
+        start_time: float = time.monotonic()
 
         # Minimal delay after sending
         time.sleep(self.send_delay)
 
         while (time.monotonic() - start_time) < self.ack_timeout:
-            packet = self.radio.receive()
+            packet: bytearray = self.radio.receive()
 
-            if packet and self.pm.is_ack_packet(packet):
-                ack_seq = self.pm.get_ack_seq_num(packet)
+            if packet and self.packet_manager.is_ack_packet(packet):
+                ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(packet)
                 if ack_seq == expected_seq:
                     # Got our ACK - only wait briefly for a duplicate then continue
                     time.sleep(0.2)
@@ -46,7 +53,7 @@ class PacketSender:
 
         return False
 
-    def send_packet_with_retry(self, packet, seq_num):
+    def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
         """Optimized packet sending with minimal delays"""
         import time
 
@@ -64,10 +71,12 @@ class PacketSender:
 
         return False
 
-    def send_data(self, data, progress_interval=10):
+    def send_data(
+        self, data: Union[str, bytearray], progress_interval: int = 10
+    ) -> bool:
         """Send data with minimal progress updates"""
-        packets = self.pm.pack_data(data)
-        total_packets = len(packets)
+        packets: list[bytes] = self.packet_manager.pack_data(data)
+        total_packets: int = len(packets)
         self.logger.info("Sending packets...", num_packets=total_packets)
 
         for i, packet in enumerate(packets):
@@ -89,12 +98,16 @@ class PacketSender:
         )
         return True
 
-    def handle_retransmit_request(self, packets, request_packet):
+    def handle_retransmit_request(
+        self, packets: list[bytes], request_packet: list[str]
+    ) -> bool:
         """Handle retransmit request by sending requested packets"""
         import time
 
         try:
-            missing_packets = self.pm.parse_retransmit_request(request_packet)
+            missing_packets: list[int] = self.packet_manager.parse_retransmit_request(
+                request_packet
+            )
             self.logger.info(
                 "Retransmit request received for missing packets",
                 num_missing_packets=len(missing_packets),
@@ -115,12 +128,17 @@ class PacketSender:
             self.logger.error("Error handling retransmit request", err=e)
             return False
 
-    def fast_send_data(self, data, send_delay=0.5, retransmit_wait=15.0):
+    def fast_send_data(
+        self,
+        data: Union[str, bytearray],
+        send_delay: float = 0.5,
+        retransmit_wait: float = 15.0,
+    ) -> bool:
         """Send data with improved retransmission handling"""
         import time
 
-        packets = self.pm.pack_data(data)
-        total_packets = len(packets)
+        packets: list[bytes] = self.packet_manager.pack_data(data)
+        total_packets: int = len(packets)
         self.logger.info("Sending packets..", num_packets=total_packets)
 
         # Send first packet with retry until ACKed
@@ -152,10 +170,10 @@ class PacketSender:
             time.sleep(send_delay)
 
         self.logger.info("Waiting for retransmit requests...")
-        retransmit_end_time = time.monotonic() + retransmit_wait
+        retransmit_end_time: float = time.monotonic() + retransmit_wait
 
         while time.monotonic() < retransmit_end_time:
-            packet = self.radio.receive()
+            packet: bytearray = self.radio.receive()
             if not packet:
                 break
 
@@ -164,11 +182,11 @@ class PacketSender:
                 packet=[hex(b) for b in packet],
             )
 
-            if not self.pm.is_retransmit_request(packet):
+            if not self.packet_manager.is_retransmit_request(packet):
                 break
 
             self.logger.info("Valid retransmit request received!")
-            missing_packets = self.pm.parse_retransmit_request(packet)
+            missing_packets = self.packet_manager.parse_retransmit_request(packet)
             self.logger.info("Retransmitting packets", missing_packets=missing_packets)
 
             # Add delay before retransmission to let receiver get ready
@@ -187,7 +205,7 @@ class PacketSender:
 
             # Reset timeout and add extra delay after retransmission
             time.sleep(1.0)
-            retransmit_end_time = time.monotonic() + retransmit_wait
+            retransmit_end_time: float = time.monotonic() + retransmit_wait
 
             time.sleep(0.1)
 
