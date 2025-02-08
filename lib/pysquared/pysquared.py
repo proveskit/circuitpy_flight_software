@@ -217,6 +217,9 @@ class Satellite:
             return
 
     def __init__(self, config: Config, logger: Logger) -> None:
+        # here assiging config to a var so 'init_radio' function can
+        # access 'radio_cfg' inside config
+        self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
         """
         Big init routine as the whole board is brought up. Starting with config variables.
