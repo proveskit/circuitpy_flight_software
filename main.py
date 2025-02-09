@@ -19,7 +19,8 @@ from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
+    colorized=True,
 )
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 

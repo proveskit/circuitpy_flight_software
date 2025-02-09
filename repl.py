@@ -7,7 +7,8 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.pysquared import Satellite
 
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
+    colorized=True,
 )
 config: Config = Config()
 logger.info("Initializing a cubesat object as `c` in the REPL...")
