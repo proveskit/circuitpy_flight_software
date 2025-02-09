@@ -33,7 +33,7 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
-        colorized: bool = True,
+        colorized: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
