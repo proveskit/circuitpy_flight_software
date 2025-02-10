@@ -25,7 +25,6 @@ CONFIG_SCHEMA = {
     "normal_charge_current": float,
     "normal_battery_voltage": float,
     "critical_battery_voltage": float,
-    "vlowbatt": float,
     "battery_voltage": float,
     "current_draw": float,
     "reboot_time": int,
@@ -64,7 +63,6 @@ def validate_config(config: Dict[str, Any]) -> None:
         "battery_voltage",
         "normal_battery_voltage",
         "critical_battery_voltage",
-        "vlowbatt",
     ]
     for field in voltage_fields:
         value = config[field]
@@ -87,9 +85,9 @@ def validate_config(config: Dict[str, Any]) -> None:
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
+        "lora_spreading_factor": int,
         "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
+        "lora_coding_rate": int,
         "transmit_power": int,
         "start_time": int,
     }
@@ -164,7 +162,6 @@ def test_field_types(config_data):
         "normal_charge_current",
         "normal_battery_voltage",
         "critical_battery_voltage",
-        "vlowbatt",
         "current_draw",
         "battery_voltage",
     ]
@@ -210,9 +207,9 @@ def test_field_types(config_data):
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
+        "lora_spreading_factor": int,
         "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
+        "lora_coding_rate": int,
         "transmit_power": int,
         "start_time": int,
     }
@@ -228,7 +225,6 @@ def test_voltage_ranges(config_data):
         "battery_voltage",
         "normal_battery_voltage",
         "critical_battery_voltage",
-        "vlowbatt",
     ]
     for field in voltage_fields:
         value = config_data[field]

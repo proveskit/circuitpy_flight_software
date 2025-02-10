@@ -160,7 +160,7 @@ class Satellite:
             )
             self.radio1.max_output = True
             self.radio1.tx_power = self.config.radio_cfg.transmit_power
-            self.radio1.spreading_factor = self.config.radio_cfg.LoRa_spreading_factor
+            self.radio1.spreading_factor = self.config.radio_cfg.lora_spreading_factor
 
             self.radio1.enable_crc = True
             self.radio1.ack_delay = 0.2
@@ -239,7 +239,6 @@ class Satellite:
         self.normal_charge_current: float = config.normal_charge_current
         self.normal_battery_voltage: float = config.normal_battery_voltage
         self.critical_battery_voltage: float = config.critical_battery_voltage
-        self.vlowbatt: float = config.vlowbatt
         self.battery_voltage: float = config.battery_voltage
         self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
