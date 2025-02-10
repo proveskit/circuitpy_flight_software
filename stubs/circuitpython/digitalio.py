@@ -12,10 +12,10 @@ from typing_extensions import Protocol
 
 
 class DriveMode(Protocol):
-    def __init__(self) -> None: ...
+    PUSH_PULL: 'DriveMode'
+    OPEN_DRAIN: 'DriveMode'
     
-    PUSH_PULL: DriveMode
-    OPEN_DRAIN: DriveMode
+    def __init__(self) -> None: ...
 
 class DigitalInOut(Protocol):
     def __init__(self, pin: microcontroller.Pin) -> None: ...
