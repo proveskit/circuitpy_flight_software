@@ -80,8 +80,8 @@ class Satellite:
             except Exception as e:
                 self.logger.error(
                     "There was an error initializing this hardware component",
+                    e,
                     hardware_key=hardware_key,
-                    err=e,
                 )
             return None
 
@@ -394,8 +394,8 @@ class Satellite:
             except Exception as e:
                 self.logger.error(
                     "There was an Exception during the scan_tca_channels function call",
+                    e,
                     face=channel_to_face[channel],
-                    err=e,
                 )
 
     def _scan_single_channel(
@@ -425,8 +425,8 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an Exception during the _scan_single_channel function call",
+                e,
                 face=channel_to_face[channel],
-                err=e,
             )
         finally:
             self.tca[channel].unlock()
@@ -450,7 +450,7 @@ class Satellite:
                 machine.set_clock(62500000)  # 62.5Mhz
 
         except Exception as e:
-            self.logger.error("There was an error trying to set the clock", err=e)
+            self.logger.error("There was an error trying to set the clock", e)
 
     @property
     def RGB(self) -> tuple[int, int, int]:
@@ -468,7 +468,7 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an error trying to set the new RGB value",
-                err=e,
+                e,
                 value=value,
             )
 
@@ -485,20 +485,20 @@ class Satellite:
                 umount("/sd")
                 time.sleep(3)
             except Exception as e:
-                self.logger.error("There was an error unmounting the SD card", err=e)
+                self.logger.error("There was an error unmounting the SD card", e)
         try:
             self.logger.debug(
                 "Resetting VBUS [IMPLEMENT NEW FUNCTION HERE]",
             )
         except Exception as e:
-            self.logger.error("There was a vbus reset error", err=e)
+            self.logger.error("There was a vbus reset error", e)
 
     @property
     def gyro(self) -> Union[tuple[float, float, float], None]:
         try:
             return self.imu.gyro
         except Exception as e:
-            self.logger.error("There was an error retrieving the gyro values", err=e)
+            self.logger.error("There was an error retrieving the gyro values", e)
 
     @property
     def accel(self) -> Union[tuple[float, float, float], None]:
@@ -506,7 +506,7 @@ class Satellite:
             return self.imu.acceleration
         except Exception as e:
             self.logger.error(
-                "There was an error retrieving the accelerometer values", err=e
+                "There was an error retrieving the accelerometer values", e
             )
 
     @property
@@ -515,7 +515,7 @@ class Satellite:
             return self.imu.temperature
         except Exception as e:
             self.logger.error(
-                "There was an error retrieving the internal temperature value", err=e
+                "There was an error retrieving the internal temperature value", e
             )
 
     @property
@@ -524,7 +524,7 @@ class Satellite:
             return self.mangetometer.magnetic
         except Exception as e:
             self.logger.error(
-                "There was an error retrieving the magnetometer sensor values", err=e
+                "There was an error retrieving the magnetometer sensor values", e
             )
 
     @property
@@ -532,7 +532,7 @@ class Satellite:
         try:
             return self.rtc.get_time()
         except Exception as e:
-            self.logger.error("There was an error retrieving the RTC time", err=e)
+            self.logger.error("There was an error retrieving the RTC time", e)
 
     @time.setter
     def time(self, hms: tuple[int, int, int]) -> None:
@@ -549,7 +549,7 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an error setting the RTC time",
-                err=e,
+                e,
                 hms=hms,
                 hour=hms[0],
                 minutes=hms[1],
@@ -561,7 +561,7 @@ class Satellite:
         try:
             return self.rtc.get_date()
         except Exception as e:
-            self.logger.error("There was an error retrieving RTC date", err=e)
+            self.logger.error("There was an error retrieving RTC date", e)
 
     @date.setter
     def date(self, ymdw: tuple[int, int, int, int]) -> None:
@@ -578,7 +578,7 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an error setting the RTC date",
-                err=e,
+                e,
                 ymdw=ymdw,
                 year=ymdw[0],
                 month=ymdw[1],
@@ -629,7 +629,7 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an Error in changing operations of powermode",
-                err=e,
+                e,
                 mode=mode,
             )
 
@@ -640,7 +640,7 @@ class Satellite:
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise ValueError("file directory is empty")
             self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
@@ -653,7 +653,7 @@ class Satellite:
                         self.logger.info(line.strip())
         except Exception as e:
             self.logger.error(
-                "Can't print file", filedir=filedir, err=e, binary_mode=binary
+                "Can't print file", e, filedir=filedir, binary_mode=binary
             )
 
     def read_file(
@@ -661,7 +661,7 @@ class Satellite:
     ) -> Union[bytes, TextIO, None]:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise ValueError("file directory is empty")
             self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
@@ -673,9 +673,7 @@ class Satellite:
                         self.logger.debug(str(line.strip()))
                     return file
         except Exception as e:
-            self.logger.error(
-                "Can't read file", filedir=filedir, err=e, binary_mode=binary
-            )
+            self.logger.error("Can't read file", e, filedir=filedir, binary_mode=binary)
 
     def new_file(self, substring: str, binary: bool = False) -> Union[str, None]:
         """
@@ -709,7 +707,7 @@ class Satellite:
                 except Exception as e:
                     self.logger.error(
                         "Error with creating new file",
-                        err=e,
+                        e,
                         filedir="/sd" + _folder,
                     )
                     return None
@@ -721,9 +719,9 @@ class Satellite:
                 except Exception as e:
                     self.logger.error(
                         "There was an error running the stat function on this file",
+                        e,
                         filedir=ff,
                         file_num=n,
-                        err=e,
                     )
                     n: int = (n + i) % 0xFFFF
                     # print('file number is',n)
@@ -738,7 +736,5 @@ class Satellite:
             chdir("/")
             return ff
         except Exception as e:
-            self.logger.error(
-                "Error creating file", filedir=ff, err=e, binary_mode=binary
-            )
+            self.logger.error("Error creating file", e, filedir=ff, binary_mode=binary)
             return None

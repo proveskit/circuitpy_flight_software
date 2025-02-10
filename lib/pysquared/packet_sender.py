@@ -112,7 +112,7 @@ class PacketSender:
             return True
 
         except Exception as e:
-            self.logger.error("Error handling retransmit request", err=e)
+            self.logger.error("Error handling retransmit request", e)
             return False
 
     def fast_send_data(self, data, send_delay=0.5, retransmit_wait=15.0):

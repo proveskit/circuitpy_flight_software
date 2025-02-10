@@ -7,14 +7,7 @@ from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.decorators import with_retries
 from lib.pysquared.exception import HardwareInitializationError
 from lib.pysquared.logger import Logger
-from lib.pysquared.nvm.flag import Flag
-
-
-class RFM9xMode:
-    """Enumeration for the RFM9x radio mode."""
-
-    FSK = "fsk"
-    LORA = "lora"
+from lib.pysquared.rfm9x.modulation import RFM9xModulation
 
 
 class RFM9xFactory:
@@ -28,7 +21,7 @@ class RFM9xFactory:
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
-        use_fsk: Flag,
+        modulation: RFM9xModulation,
         sender_id: int,
         receiver_id: int,
         frequency: int,
@@ -41,7 +34,7 @@ class RFM9xFactory:
         :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
         :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
         :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
-        :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
+        :param RFM9xModulation modulation: Either FSK or LoRa.
         :param int sender_id: ID of the sender radio.
         :param int receiver_id: ID of the receiver radio.
         :param int frequency: Frequency at which the radio will transmit.
@@ -52,10 +45,10 @@ class RFM9xFactory:
 
         :return An instance of the RFMSPI class, either RFM9xFSK or RFM9x based on the mode.
         """
-        logger.debug(message="Initializing radio", mode=cls.radio_mode(use_fsk))
+        logger.debug(message="Initializing radio", modulation=modulation)
 
         try:
-            if use_fsk.get():
+            if modulation == RFM9xModulation.FSK:
                 radio: RFMSPI = cls.create_fsk_radio(
                     spi,
                     chip_select,
@@ -77,21 +70,9 @@ class RFM9xFactory:
 
             return radio
         except Exception as e:
-            logger.critical(
-                "Failed to initialize radio", mode=cls.radio_mode(use_fsk), err=e
-            )
+            logger.critical("Failed to initialize radio", e, modulation=modulation)
 
             raise HardwareInitializationError("radio", e) from e
-
-    @staticmethod
-    def radio_mode(use_fsk: Flag) -> str:
-        """Get the radio mode based on the flag.
-
-        :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-
-        :return The radio mode.
-        """
-        return RFM9xMode.FSK if use_fsk.get() else RFM9xMode.LORA
 
     @staticmethod
     def create_fsk_radio(

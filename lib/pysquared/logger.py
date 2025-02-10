@@ -5,6 +5,7 @@ Logs can be output to standard output or saved to a file (functionality to be im
 
 import json
 import time
+import traceback
 
 from lib.pysquared.nvm.counter import Counter
 
@@ -19,6 +20,8 @@ class LogLevel:
 
 
 class Logger:
+    _err = None
+
     def __init__(
         self,
         error_counter: Counter,
@@ -40,6 +43,13 @@ class Logger:
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
+
+        if self._err is not None:
+            kwargs["err"] = {
+                "type": type(self._err).__name__,
+                "message": str(self._err),
+                "traceback": traceback.format_exception(self._err),
+            }
 
         json_output = json.dumps(kwargs)
 
@@ -64,18 +74,20 @@ class Logger:
         """
         self._log("WARNING", 3, message, **kwargs)
 
-    def error(self, message: str, **kwargs) -> None:
+    def error(self, message: str, err: Exception, **kwargs) -> None:
         """
         Log a message with severity level ERROR.
         """
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
+        self._err = err
 
-    def critical(self, message: str, **kwargs) -> None:
+    def critical(self, message: str, err: Exception, **kwargs) -> None:
         """
         Log a message with severity level CRITICAL.
         """
         self._log("CRITICAL", 5, message, **kwargs)
+        self._err = err
 
     def get_error_count(self) -> int:
         return self._error_counter.get()

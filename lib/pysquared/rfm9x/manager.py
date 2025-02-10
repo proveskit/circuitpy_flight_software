@@ -1,12 +1,16 @@
-import gc
+try:
+    from stubs.circuitpython.busio import SPI
+    from stubs.circuitpython.digitalio import DigitalInOut
+except ImportError:
+    from busio import SPI
+    from digitalio import DigitalInOut
 
-from busio import SPI
-from digitalio import DigitalInOut
-
+from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.rfm9x.factory import RFM9xFactory
+from lib.pysquared.rfm9x.modulation import RFM9xModulation
 
 
 class RFM9xManager:
@@ -44,16 +48,16 @@ class RFM9xManager:
 
         :raises HardwareInitializationError: If the radio fails to initialize.
         """
-        self.logger = logger
-        self.spi = spi
-        self.chip_select = chip_select
-        self.reset = reset
-        self.use_fsk = use_fsk
-        self.sender_id = sender_id
-        self.receiver_id = receiver_id
-        self.frequency = frequency
-        self.transmit_power = transmit_power
-        self.lora_spreading_factor = lora_spreading_factor
+        self._log = logger
+        self._spi = spi
+        self._chip_select = chip_select
+        self._reset = reset
+        self._use_fsk = use_fsk
+        self._sender_id = sender_id
+        self._receiver_id = receiver_id
+        self._frequency = frequency
+        self._transmit_power = transmit_power
+        self._lora_spreading_factor = lora_spreading_factor
 
         self._radio = self.radio
 
@@ -63,39 +67,46 @@ class RFM9xManager:
         :return ~lib.adafruit_rfm.rfm_common.RFMSPI: The RFM9x radio instance.
         """
         if self._radio is None:
-            self.current_mode = RFM9xFactory.radio_mode(self.use_fsk)
             self._radio = RFM9xFactory.create(
-                self.logger,
-                self.spi,
-                self.chip_select,
-                self.reset,
-                self.use_fsk,
-                self.sender_id,
-                self.receiver_id,
-                self.frequency,
-                self.transmit_power,
-                self.lora_spreading_factor,
+                self._log,
+                self._spi,
+                self._chip_select,
+                self._reset,
+                self.get_modulation(),
+                self._sender_id,
+                self._receiver_id,
+                self._frequency,
+                self._transmit_power,
+                self._lora_spreading_factor,
             )
 
-            if self.use_fsk.get():
-                self.logger.info("Next restart will be in LoRa mode.")
-                self.use_fsk.toggle(False)
+            # TODO: We should use some default modulation value set in the config file
+            # instead of always toggling back to LoRa
+            self.set_modulation(RFM9xModulation.LORA)
 
         return self._radio
 
-    def switch_mode(self, use_fsk: bool) -> None:
+    def get_modulation(self) -> str:
+        """Get the current radio modulation.
+        :return str: The current radio modulation.
         """
-        Switch the radio between FSK and LoRa modes.
-        :param bool use_fsk: True to switch to FSK mode, False for LoRa mode
+        if self._radio is None:
+            return RFM9xModulation.FSK if self._use_fsk.get() else RFM9xModulation.LORA
+
+        if isinstance(self._radio, RFM9xFSK):
+            return RFM9xModulation.FSK
+
+        return RFM9xModulation.LORA
+
+    def set_modulation(self, req_modulation: RFM9xModulation) -> None:
+        """
+        Set the radio modulation.
+        Takes effect on the next reboot.
+        :param lib.radio.RFM9xModulation req_modulation: The modulation to switch to.
         :return: None
         """
-        self.use_fsk.toggle(use_fsk)
-
-        if self.current_mode != RFM9xFactory.radio_mode(self.use_fsk):
-            self.logger.info(
-                "Radio mode change requested, deinitializing radio",
-                requested_mode=RFM9xFactory.radio_mode(self.use_fsk),
+        if self.get_modulation() != req_modulation:
+            self._use_fsk.toggle(req_modulation == RFM9xModulation.FSK)
+            self._log.info(
+                "Radio modulation change requested", modulation=req_modulation
             )
-            self._radio = None
-            gc.collect()
-            self._radio = self.radio

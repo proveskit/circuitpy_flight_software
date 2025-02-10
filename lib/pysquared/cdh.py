@@ -5,6 +5,7 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
 from lib.pysquared.rfm9x.manager import RFM9xManager
+from lib.pysquared.rfm9x.modulation import RFM9xModulation
 
 
 class CommandDataHandler:
@@ -75,9 +76,7 @@ class CommandDataHandler:
                         "Here are the command arguments", cmd_args=cmd_args
                     )
                 except Exception as e:
-                    self.logger.error(
-                        "There was an error decoding the arguments", err=e
-                    )
+                    self.logger.error("There was an error decoding the arguments", e)
             if cmd in self._commands:
                 try:
                     if cmd_args is None:
@@ -94,7 +93,7 @@ class CommandDataHandler:
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    self.logger.error("something went wrong!", err=e)
+                    self.logger.error("something went wrong!", e)
                     self.radio_manager.radio.send(str(e).encode())
             else:
                 self.logger.info("invalid command!")
@@ -118,7 +117,7 @@ class CommandDataHandler:
             try:
                 self.radio_manager.radio.send(msg[6:])
             except Exception as e:
-                self.logger.error("There was an error repeating the message!", err=e)
+                self.logger.error("There was an error repeating the message!", e)
         else:
             self.logger.info("bad code?")
 
@@ -136,7 +135,7 @@ class CommandDataHandler:
             pass
 
     def FSK(self) -> None:
-        self.radio_manager.switch_mode(True)
+        self.radio_manager.set_modulation(RFM9xModulation.FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._jokereply)

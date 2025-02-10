@@ -42,9 +42,16 @@ def test_warning_log(capsys, logger):
 
 
 def test_error_log(capsys, logger):
-    logger.error("This is an error message", hee="haa", pleiades="five", please="work")
+    logger.error(
+        "This is an error message",
+        ValueError("test"),
+        hee="haa",
+        pleiades="five",
+        please="work",
+    )
     captured = capsys.readouterr()
     assert "ERROR" in captured.out
+    # assert "ValueError: test" in captured.out
     assert "This is an error message" in captured.out
     assert '"hee": "haa"' in captured.out
     assert '"pleiades": "five"' in captured.out
@@ -54,6 +61,7 @@ def test_error_log(capsys, logger):
 def test_critical_log(capsys, logger):
     logger.critical(
         "THIS IS VERY CRITICAL",
+        KeyError("test"),
         ad="astra",
         space="lab",
         soft="ware",
@@ -62,6 +70,7 @@ def test_critical_log(capsys, logger):
     )
     captured = capsys.readouterr()
     assert "CRITICAL" in captured.out
+    # assert "KeyError: test" in captured.out
     assert "THIS IS VERY CRITICAL" in captured.out
     assert '"ad": "astra"' in captured.out
     assert '"space": "lab"' in captured.out

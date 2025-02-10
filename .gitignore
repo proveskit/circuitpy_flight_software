@@ -13,3 +13,4 @@ venv
 lib/adafruit*
 lib/asyncio*
 lib/neopixel.py
+.aider*

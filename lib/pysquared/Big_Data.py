@@ -40,7 +40,7 @@ class Face:
                 self.mcp = adafruit_mcp9808.MCP9808(self.tca[address], address=27)
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Temperature Sensor", err=e)
+                self.logger.error("Error Initializing Temperature Sensor", e)
 
         if "VEML" in senlist:
             try:
@@ -49,7 +49,7 @@ class Face:
                 self.veml = adafruit_veml7700.VEML7700(self.tca[address])
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Light Sensor", err=e)
+                self.logger.error("Error Initializing Light Sensor", e)
 
         if "DRV" in senlist:
             try:
@@ -58,7 +58,7 @@ class Face:
                 self.drv = adafruit_drv2605.DRV2605(self.tca[address])
                 self.sensors["DRV"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Motor Driver", err=e)
+                self.logger.error("Error Initializing Motor Driver", e)
 
         gc.collect()  # Clean up after initialization
 

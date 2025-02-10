@@ -141,7 +141,7 @@ class functions:
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
-            self.logger.error("Error with obtaining power data: ", err=e)
+            self.logger.error("Error with obtaining power data: ", e)
 
             lora_beacon: str = (
                 f"{self.callsign} Hello I am Yearling^2! I am in: "
@@ -205,10 +205,10 @@ class functions:
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{self.radio_manager.current_mode}",
+                f"FK:{self.radio_manager._current_mode}",
             ]
         except Exception as e:
-            self.logger.error("Couldn't aquire data for the state of health: ", err=e)
+            self.logger.error("Couldn't aquire data for the state of health: ", e)
 
         self.field: Field.Field = Field.Field(
             self.cubesat, self.logger, self.radio_manager
@@ -259,7 +259,7 @@ class functions:
             self.radio_manager.receive_timeout = 10
             received = self.radio_manager.radio.receive_with_ack(keep_listening=True)
         except Exception as e:
-            self.logger.error("An Error has occured while listening: ", err=e)
+            self.logger.error("An Error has occured while listening: ", e)
             received = None
 
         try:
@@ -268,7 +268,7 @@ class functions:
                 cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
-            self.logger.error("An Error has occured while handling a command: ", err=e)
+            self.logger.error("An Error has occured while handling a command: ", e)
         finally:
             del cdh
 
@@ -282,7 +282,7 @@ class functions:
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
-            self.logger.error("An Error has occured while listening for a joke", err=e)
+            self.logger.error("An Error has occured while listening for a joke", e)
             return False
 
     """
@@ -320,7 +320,7 @@ class functions:
             gc.collect()
 
         except Exception as e:
-            self.logger.error("Big_Data error", err=e)
+            self.logger.error("Big_Data error", e)
 
         return self.facestring
 
@@ -331,7 +331,7 @@ class functions:
             return self.battery.get_power_metrics()
 
         except Exception as e:
-            self.logger.error("Error retrieving battery data", err=e)
+            self.logger.error("Error retrieving battery data", e)
             return None
 
     def get_imu_data(
@@ -347,7 +347,7 @@ class functions:
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
         except Exception as e:
-            self.logger.error("Error retrieving IMU data", err=e)
+            self.logger.error("Error retrieving IMU data", e)
 
         return data
 
@@ -371,12 +371,12 @@ class functions:
 
             a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
         except Exception as e:
-            self.logger.error("Error Importing Big Data", err=e)
+            self.logger.error("Error Importing Big Data", e)
 
         try:
             a.sequence = 52
         except Exception as e:
-            self.logger.error("Error setting motor driver sequences", err=e)
+            self.logger.error("Error setting motor driver sequences", e)
 
         def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
@@ -407,13 +407,13 @@ class functions:
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
-                self.logger.error("Detumble error", err=e)
+                self.logger.error("Detumble error", e)
 
         try:
             self.logger.debug("Attempting")
             do_detumble()
         except Exception as e:
-            self.logger.error("Detumble error", err=e)
+            self.logger.error("Detumble error", e)
         self.cubesat.RGB = (100, 100, 50)
 
     def Short_Hybernate(self) -> Literal[True]:

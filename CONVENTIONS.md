@@ -1,0 +1,4 @@
+- Use types everywhere possible.
+- Target CircuitPython on an embedded RP2040 board.
+- Since we're using CircuitPython it's safer to target Python 3.4.
+- Use Sphinx reStructuredText (reST) syntax for documentation.
