@@ -37,7 +37,7 @@ try:
 
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
-    sleep_helper = SleepHelper(c, logger, config)
+    sleep_helper = SleepHelper(c, logger)
 
     import gc  # Garbage collection
 
