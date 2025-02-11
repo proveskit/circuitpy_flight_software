@@ -17,6 +17,7 @@ import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.sleep_helper import SleepHelper
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
@@ -36,12 +37,13 @@ try:
 
     c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
+    sleep_helper = SleepHelper(c, logger)
 
     import gc  # Garbage collection
 
     import lib.pysquared.functions as functions
 
-    f = functions.functions(c, logger, config)
+    f = functions.functions(c, logger, config, sleep_helper)
 
     def initial_boot():
         c.watchdog_pet()
@@ -103,13 +105,13 @@ try:
         initial_boot()
         c.watchdog_pet()
 
-        f.Long_Hybernate()
+        sleep_helper.long_hibernate()
 
     def minimum_power_operations():
         initial_boot()
         c.watchdog_pet()
 
-        f.Short_Hybernate()
+        sleep_helper.short_hibernate()
 
     ######################### MAIN LOOP ##############################
     try:
