@@ -5,7 +5,6 @@ except ImportError:
     from busio import SPI
     from digitalio import DigitalInOut
 
-from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 from lib.adafruit_rfm.rfm_common import RFMSPI
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.flag import Flag
@@ -21,10 +20,11 @@ class RFM9xManager:
     def __init__(
         self,
         logger: Logger,
+        use_fsk: Flag,
+        radio_factory: RFM9xFactory,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
-        use_fsk: Flag,
         sender_id: int,
         receiver_id: int,
         frequency: int,
@@ -49,10 +49,11 @@ class RFM9xManager:
         :raises HardwareInitializationError: If the radio fails to initialize.
         """
         self._log = logger
+        self._use_fsk = use_fsk
+        self._radio_factory = radio_factory
         self._spi = spi
         self._chip_select = chip_select
         self._reset = reset
-        self._use_fsk = use_fsk
         self._sender_id = sender_id
         self._receiver_id = receiver_id
         self._frequency = frequency
@@ -67,12 +68,12 @@ class RFM9xManager:
         :return ~lib.adafruit_rfm.rfm_common.RFMSPI: The RFM9x radio instance.
         """
         if self._radio is None:
-            self._radio = RFM9xFactory.create(
+            self._radio = self._radio_factory.create(
                 self._log,
+                self.get_modulation(),
                 self._spi,
                 self._chip_select,
                 self._reset,
-                self.get_modulation(),
                 self._sender_id,
                 self._receiver_id,
                 self._frequency,
@@ -93,10 +94,7 @@ class RFM9xManager:
         if self._radio is None:
             return RFM9xModulation.FSK if self._use_fsk.get() else RFM9xModulation.LORA
 
-        if isinstance(self._radio, RFM9xFSK):
-            return RFM9xModulation.FSK
-
-        return RFM9xModulation.LORA
+        return self._radio_factory.get_instance_modulation(self._radio)
 
     def set_modulation(self, req_modulation: RFM9xModulation) -> None:
         """

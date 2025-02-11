@@ -23,6 +23,7 @@ from lib.pysquared.hardware import initialize_pin
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
+from lib.pysquared.rfm9x.factory import RFM9xFactory
 from lib.pysquared.rfm9x.manager import RFM9xManager
 
 logger: Logger = Logger(
@@ -46,10 +47,11 @@ try:
 
     radio_manager = RFM9xManager(
         logger,
+        Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
+        RFM9xFactory(),
         c.spi0,
         initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
         initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
-        Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         config.get_dict("radio_cfg")["sender_id"],
         config.get_dict("radio_cfg")["receiver_id"],
         config.get_dict("radio_cfg")["transmit_frequency"],

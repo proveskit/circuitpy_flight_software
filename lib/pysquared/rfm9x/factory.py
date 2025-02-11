@@ -1,9 +1,15 @@
 from busio import SPI
 from digitalio import DigitalInOut
 
-from lib.adafruit_rfm.rfm9x import RFM9x
-from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
-from lib.adafruit_rfm.rfm_common import RFMSPI
+try:
+    from lib.adafruit_rfm.rfm9x import RFM9x
+    from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
+    from lib.adafruit_rfm.rfm_common import RFMSPI
+except ImportError:
+    from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
+    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from mocks.circuitpython.adafruit_rfm.rfm_common import RFMSPI  # type: ignore
+
 from lib.pysquared.decorators import with_retries
 from lib.pysquared.exception import HardwareInitializationError
 from lib.pysquared.logger import Logger
@@ -11,17 +17,20 @@ from lib.pysquared.rfm9x.modulation import RFM9xModulation
 
 
 class RFM9xFactory:
-    """Factory class for creating RFM9x radio instances."""
+    """Factory class for creating RFM9x radio instances.
+    The purpose of the factory class is to hide the complexity of radio initialization from the caller.
+    Specifically we should try to keep adafruit_rfm to only this factory class with the exception of the RFMSPI class.
+    """
 
     @classmethod
     @with_retries(max_attempts=3, initial_delay=1)
     def create(
         cls,
         logger: Logger,
+        modulation: RFM9xModulation,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
-        modulation: RFM9xModulation,
         sender_id: int,
         receiver_id: int,
         frequency: int,
@@ -140,3 +149,16 @@ class RFM9xFactory:
             radio.preamble_length = radio.spreading_factor
 
         return radio
+
+    @staticmethod
+    def get_instance_modulation(radio: RFMSPI) -> RFM9xModulation:
+        """Determine the radio modulation in use.
+
+        :param RFMSPI radio: The radio instance to check.
+
+        :return The modulation in use.
+        """
+        if isinstance(radio, RFM9xFSK):
+            return RFM9xModulation.FSK
+
+        return RFM9xModulation.LORA
