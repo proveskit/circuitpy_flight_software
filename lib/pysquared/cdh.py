@@ -29,11 +29,9 @@ class CommandDataHandler:
             b"\xa5\xb4": "joke_reply",
             b"\x56\xc4": "FSK",
         }
-        self._jokereply: list[str] = config.get_list("jokereply")
-        self._super_secret_code: bytes = config.get_str("super_secret_code").encode(
-            "utf-8"
-        )
-        self._repeat_code: bytes = config.get_str("repeat_code").encode("utf-8")
+        self._joke_reply: list[str] = config.joke_reply
+        self._super_secret_code: bytes = config.super_secret_code.encode("utf-8")
+        self._repeat_code: bytes = config.repeat_code.encode("utf-8")
         self.logger.info(
             "The satellite has a super secret code!",
             super_secret_code=self._super_secret_code,
@@ -141,7 +139,7 @@ class CommandDataHandler:
         cubesat.f_fsk.toggle(True)
 
     def joke_reply(self, cubesat: Satellite) -> None:
-        joke: str = random.choice(self._jokereply)
+        joke: str = random.choice(self._joke_reply)
         self.logger.info("Sending joke reply", joke=joke)
         cubesat.radio1.send(joke)
 

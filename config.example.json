@@ -14,30 +14,29 @@
   "heating": false,
   "orpheus": true,
   "is_licensed": false,
-  "NORMAL_TEMP": 20,
-  "NORMAL_BATT_TEMP": 1,
-  "NORMAL_MICRO_TEMP": 20,
-  "NORMAL_CHARGE_CURRENT": 0.5,
-  "NORMAL_BATTERY_VOLTAGE": 6.9,
-  "CRITICAL_BATTERY_VOLTAGE": 6.6,
-  "vlowbatt": 6.0,
+  "normal_temp": 20,
+  "normal_battery_temp": 1,
+  "normal_micro_temp": 20,
+  "normal_charge_current": 0.5,
+  "normal_battery_voltage": 6.9,
+  "critical_battery_voltage": 6.6,
   "battery_voltage": 3.3,
   "current_draw": 240.5,
-  "REBOOT_TIME": 3600,
+  "reboot_time": 3600,
   "turbo_clock": false,
   "radio_cfg": {
     "sender_id": 251,
     "receiver_id": 250,
     "transmit_frequency": 437.4,
-    "LoRa_spreading_factor": 8,
+    "lora_spreading_factor": 8,
     "transmit_bandwidth": 125,
-    "LoRa_coding_rate": 8,
+    "lora_coding_rate": 8,
     "transmit_power": 23,
     "start_time": 80000
   },
   "super_secret_code": "ABCD",
   "repeat_code": "RP",
-  "jokereply": [
+  "joke_reply": [
     "Your Mom"
   ]
 }

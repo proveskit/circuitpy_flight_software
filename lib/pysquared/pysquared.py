@@ -142,7 +142,7 @@ class Satellite:
                 self.spi0,
                 _rf_cs1,
                 _rf_rst1,
-                self.radio_cfg["transmit_frequency"],
+                self.config.radio_cfg.transmit_frequency,
                 # code_rate=8, code rate does not exist for RFM9xFSK
             )
             self.radio1.fsk_node_address = 1
@@ -155,19 +155,19 @@ class Satellite:
                 self.spi0,
                 _rf_cs1,
                 _rf_rst1,
-                self.radio_cfg["transmit_frequency"],
+                self.config.radio_cfg.transmit_frequency,
                 # code_rate=8, code rate does not exist for RFM9xFSK
             )
             self.radio1.max_output = True
-            self.radio1.tx_power = self.radio_cfg["transmit_power"]
-            self.radio1.spreading_factor = self.radio_cfg["LoRa_spreading_factor"]
+            self.radio1.tx_power = self.config.radio_cfg.transmit_power
+            self.radio1.spreading_factor = self.config.radio_cfg.lora_spreading_factor
 
             self.radio1.enable_crc = True
             self.radio1.ack_delay = 0.2
             if self.radio1.spreading_factor > 9:
                 self.radio1.preamble_length = self.radio1.spreading_factor
-        self.radio1.node = self.radio_cfg["sender_id"]
-        self.radio1.destination = self.radio_cfg["receiver_id"]
+        self.radio1.node = self.config.radio_cfg.sender_id
+        self.radio1.destination = self.config.radio_cfg.receiver_id
         self.hardware[hardware_key] = True
 
         # if self.legacy:
@@ -217,32 +217,32 @@ class Satellite:
             return
 
     def __init__(self, config: Config, logger: Logger) -> None:
-        self.cubesat_name: str = config.get_str("cubesat_name")
+        # here assiging config to a var so 'init_radio' function can
+        # access 'radio_cfg' inside config
+        self.config: Config = config
+        self.cubesat_name: str = config.cubesat_name
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
-        self.legacy: bool = config.get_bool("legacy")
-        self.heating: bool = config.get_bool("heating")
-        self.orpheus: bool = config.get_bool("orpheus")  # maybe change var name
-        self.is_licensed: bool = config.get_bool("is_licensed")
+        self.legacy: bool = config.legacy
+        self.heating: bool = config.heating
+        self.orpheus: bool = config.orpheus  # maybe change var name
+        self.is_licensed: bool = config.is_licensed
         self.logger = logger
 
         """
         Define the normal power modes
         """
-        self.NORMAL_TEMP: int = config.get_int("NORMAL_TEMP")
-        self.NORMAL_BATT_TEMP: int = config.get_int("NORMAL_BATT_TEMP")
-        self.NORMAL_MICRO_TEMP: int = config.get_int("NORMAL_MICRO_TEMP")
-        self.NORMAL_CHARGE_CURRENT: float = config.get_float("NORMAL_CHARGE_CURRENT")
-        self.NORMAL_BATTERY_VOLTAGE: float = config.get_float("NORMAL_BATTERY_VOLTAGE")
-        self.CRITICAL_BATTERY_VOLTAGE: float = config.get_float(
-            "CRITICAL_BATTERY_VOLTAGE"
-        )
-        self.vlowbatt: float = config.get_float("vlowbatt")
-        self.battery_voltage: float = config.get_float("battery_voltage")
-        self.current_draw: float = config.get_float("current_draw")
-        self.REBOOT_TIME: int = config.get_int("REBOOT_TIME")
-        self.turbo_clock: bool = config.get_bool("turbo_clock")
+        self.normal_temp: int = config.normal_temp
+        self.normal_battery_temp: int = config.normal_battery_temp
+        self.normal_micro_temp: int = config.normal_micro_temp
+        self.normal_charge_current: float = config.normal_charge_current
+        self.normal_battery_voltage: float = config.normal_battery_voltage
+        self.critical_battery_voltage: float = config.critical_battery_voltage
+        self.battery_voltage: float = config.battery_voltage
+        self.current_draw: float = config.current_draw
+        self.reboot_time: int = config.reboot_time
+        self.turbo_clock: bool = config.turbo_clock
 
         """
         Setting up data buffers
@@ -277,8 +277,6 @@ class Satellite:
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
-
-        self.radio_cfg: dict[str, float] = config.get_dict("radio_cfg")
 
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
@@ -657,7 +655,7 @@ class Satellite:
     def check_reboot(self) -> None:
         self.UPTIME: int = self.uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
-        if self.UPTIME > self.REBOOT_TIME:
+        if self.UPTIME > self.reboot_time:
             self.micro.reset()
 
     def powermode(self, mode: str) -> None:
