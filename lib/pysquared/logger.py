@@ -46,12 +46,13 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level
-        kwargs["msg"] = message
-
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
+
+        kwargs["level"] = level
+
+        kwargs["msg"] = message
 
         json_output = json.dumps(kwargs)
 
