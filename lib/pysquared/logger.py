@@ -6,7 +6,17 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 
+from lib.pysquared.debugcolor import co
 from lib.pysquared.nvm.counter import Counter
+
+LogColors = {
+    "NOTSET": "NOTSET",
+    "DEBUG": co(msg="DEBUG", color="blue"),
+    "INFO": "INFO",
+    "WARNING": co(msg="WARNING", color="orange"),
+    "ERROR": co(msg="ERROR", color="pink"),
+    "CRITICAL": co(msg="CRITICAL", color="red"),
+}
 
 
 class LogLevel:
@@ -23,9 +33,11 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
+        colorized: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self.colorized: bool = colorized
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -34,17 +46,25 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level
-        kwargs["msg"] = message
-
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
 
+        kwargs["level"] = level
+
+        kwargs["msg"] = message
+
         json_output = json.dumps(kwargs)
 
         if self._can_print_this_level(level_value):
-            print(json_output)
+            colored_json_output = (
+                json_output.replace(
+                    f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+                )
+                if self.colorized
+                else json_output
+            )
+            print(colored_json_output)
 
     def debug(self, message: str, **kwargs) -> None:
         """

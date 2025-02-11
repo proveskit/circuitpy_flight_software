@@ -20,7 +20,8 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.sleep_helper import SleepHelper
 
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
+    colorized=True,
 )
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
