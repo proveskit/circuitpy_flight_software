@@ -78,7 +78,6 @@ class Logger:
         Log a message with severity level CRITICAL.
         """
         kwargs["err"] = traceback.format_exception(err)
-        traceback.f
         self._error_counter.increment()
         self._log("CRITICAL", 5, message, **kwargs)
 
