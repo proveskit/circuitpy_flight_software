@@ -1,4 +1,5 @@
 import gc
+import traceback
 
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 from lib.pysquared.logger import Logger
@@ -51,7 +52,10 @@ class Face:
                 )
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Temperature Sensor", err=e)
+                self.logger.error(
+                    "Error Initializing Temperature Sensor",
+                    err=traceback.format_exception(e),
+                )
 
         if "VEML" in senlist:
             try:
@@ -62,7 +66,9 @@ class Face:
                 )
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Light Sensor", err=e)
+                self.logger.error(
+                    "Error Initializing Light Sensor", err=traceback.format_exception(e)
+                )
 
         if "DRV" in senlist:
             try:
@@ -73,7 +79,9 @@ class Face:
                 )
                 self.sensors["DRV"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Motor Driver", err=e)
+                self.logger.error(
+                    "Error Initializing Motor Driver", err=traceback.format_exception(e)
+                )
 
         gc.collect()  # Clean up after initialization
 

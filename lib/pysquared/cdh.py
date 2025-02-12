@@ -1,5 +1,6 @@
 import random
 import time
+import traceback
 
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
@@ -76,7 +77,8 @@ class CommandDataHandler:
                     )
                 except Exception as e:
                     self.logger.error(
-                        "There was an error decoding the arguments", err=e
+                        "There was an error decoding the arguments",
+                        err=traceback.format_exception(e),
                     )
             if cmd in self._commands:
                 try:
@@ -94,7 +96,9 @@ class CommandDataHandler:
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    self.logger.error("something went wrong!", err=e)
+                    self.logger.error(
+                        "something went wrong!", err=traceback.format_exception(e)
+                    )
                     cubesat.radio1.send(str(e).encode())
             else:
                 self.logger.info("invalid command!")
@@ -118,7 +122,10 @@ class CommandDataHandler:
             try:
                 cubesat.radio1.send(msg[6:])
             except Exception as e:
-                self.logger.error("There was an error repeating the message!", err=e)
+                self.logger.error(
+                    "There was an error repeating the message!",
+                    err=traceback.format_exception(e),
+                )
         else:
             self.logger.info("bad code?")
 
