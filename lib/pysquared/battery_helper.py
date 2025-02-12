@@ -1,5 +1,4 @@
 import time
-import traceback
 
 from lib.pysquared.logger import Logger
 
@@ -90,9 +89,7 @@ class BatteryHelper:
                 if start_idx < end_idx:
                     return text[start_idx + 1 : end_idx]
         except Exception as e:
-            self.logger.error(
-                "Error decoding message", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error decoding message", err=e)
 
         return ""
 
@@ -111,7 +108,7 @@ class BatteryHelper:
             return self._read_message()
 
         except Exception as e:
-            self.logger.error("UART error", err=traceback.format_exception(e))
+            self.logger.error("UART error", err=e)
             return ""
 
     def _is_valid_message(self, msg):
@@ -156,9 +153,7 @@ class BatteryHelper:
                     )
 
             except Exception as e:
-                self.logger.error(
-                    "Error parsing metrics", err=traceback.format_exception(e)
-                )
+                self.logger.error("Error parsing metrics", err=e)
 
         self.logger.warning("Failed to get valid power metrics")
         return (0.0, 0.0, 0.0, 0.0, False, 0.0)
@@ -275,7 +270,7 @@ class BatteryHelper:
                 values = [float(x) for x in parts[:4]]
                 values.append(bool(int(parts[4])))
             except Exception as e:
-                self.logger.error("Parse error", err=traceback.format_exception(e))
+                self.logger.error("Parse error", err=e)
         parse_time = (time.monotonic() - parse_start) * 1000
 
         # Total time

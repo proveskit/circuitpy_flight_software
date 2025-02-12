@@ -9,7 +9,6 @@ Published: Nov 19, 2024
 """
 
 import time
-import traceback
 
 import microcontroller
 
@@ -65,7 +64,7 @@ try:
         initial_boot()
 
     except Exception as e:
-        logger.error("Error in Boot Sequence", err=traceback.format_exception(e))
+        logger.error("Error in Boot Sequence", err=e)
 
     finally:
         pass
@@ -140,7 +139,7 @@ try:
                 f.listen()
 
     except Exception as e:
-        logger.critical("Critical in Main Loop", err=traceback.format_exception(e))
+        logger.critical("Critical in Main Loop", err=e)
         time.sleep(10)
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
@@ -151,6 +150,4 @@ try:
         c.hardware["WDT"] = False
 
 except Exception as e:
-    logger.critical(
-        "An exception occured within main.py", err=traceback.format_exception(e)
-    )
+    logger.error("An exception occured within main.py", err=e)

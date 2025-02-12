@@ -8,7 +8,6 @@ Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 import gc
 import random
 import time
-import traceback
 
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
@@ -122,9 +121,7 @@ class functions:
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
-            self.logger.error(
-                "Error with obtaining power data: ", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error with obtaining power data: ", err=e)
 
             lora_beacon: str = (
                 f"{self.callsign} Hello I am Yearling^2! I am in: "
@@ -189,10 +186,7 @@ class functions:
                 f"FK:{int(self.cubesat.f_fsk.get())}",
             ]
         except Exception as e:
-            self.logger.error(
-                "Couldn't aquire data for the state of health: ",
-                err=traceback.format_exception(e),
-            )
+            self.logger.error("Couldn't aquire data for the state of health: ", err=e)
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         if not self.state_of_health_part1:
@@ -241,10 +235,7 @@ class functions:
                 keep_listening=True
             )
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while listening: ",
-                err=traceback.format_exception(e),
-            )
+            self.logger.error("An Error has occured while listening: ", err=e)
             received = None
 
         try:
@@ -253,10 +244,7 @@ class functions:
                 cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while handling a command: ",
-                err=traceback.format_exception(e),
-            )
+            self.logger.error("An Error has occured while handling a command: ", err=e)
         finally:
             del cdh
 
@@ -270,10 +258,7 @@ class functions:
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
-            self.logger.error(
-                "An Error has occured while listening for a joke",
-                err=traceback.format_exception(e),
-            )
+            self.logger.error("An Error has occured while listening for a joke", err=e)
             return False
 
     """
@@ -311,7 +296,7 @@ class functions:
             gc.collect()
 
         except Exception as e:
-            self.logger.error("Big_Data error", err=traceback.format_exception(e))
+            self.logger.error("Big_Data error", err=e)
 
         return self.facestring
 
@@ -322,9 +307,7 @@ class functions:
             return self.battery.get_power_metrics()
 
         except Exception as e:
-            self.logger.error(
-                "Error retrieving battery data", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error retrieving battery data", err=e)
             return None
 
     def get_imu_data(
@@ -344,9 +327,7 @@ class functions:
             data.append(self.cubesat.gyro)
             data.append(self.cubesat.mag)
         except Exception as e:
-            self.logger.error(
-                "Error retrieving IMU data", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error retrieving IMU data", err=e)
 
         return data
 
@@ -370,17 +351,12 @@ class functions:
 
             a: Big_Data.AllFaces = Big_Data.AllFaces(self.cubesat.tca, self.logger)
         except Exception as e:
-            self.logger.error(
-                "Error Importing Big Data", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error Importing Big Data", err=e)
 
         try:
             a.sequence = 52
         except Exception as e:
-            self.logger.error(
-                "Error setting motor driver sequences",
-                err=traceback.format_exception(e),
-            )
+            self.logger.error("Error setting motor driver sequences", err=e)
 
         def actuate(dipole: list[float], duration) -> None:
             # TODO figure out if there is a way to reverse direction of sequence
@@ -411,11 +387,11 @@ class functions:
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
-                self.logger.error("Detumble error", err=traceback.format_exception(e))
+                self.logger.error("Detumble error", err=e)
 
         try:
             self.logger.debug("Attempting")
             do_detumble()
         except Exception as e:
-            self.logger.error("Detumble error", err=traceback.format_exception(e))
+            self.logger.error("Detumble error", err=e)
         self.cubesat.RGB = (100, 100, 50)

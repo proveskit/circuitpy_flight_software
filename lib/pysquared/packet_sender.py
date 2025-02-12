@@ -1,5 +1,3 @@
-import traceback
-
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
@@ -127,9 +125,7 @@ class PacketSender:
             return True
 
         except Exception as e:
-            self.logger.error(
-                "Error handling retransmit request", err=traceback.format_exception(e)
-            )
+            self.logger.error("Error handling retransmit request", err=e)
             return False
 
     def fast_send_data(
