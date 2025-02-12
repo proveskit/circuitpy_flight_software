@@ -42,18 +42,26 @@ def test_warning_log(capsys, logger):
 
 
 def test_error_log(capsys, logger):
-    logger.error("This is an error message", hee="haa", pleiades="five", please="work")
+    logger.error(
+        "This is an error message",
+        err=OSError("Manually creating an OS Error for testing"),
+        hee="haa",
+        pleiades="five",
+        please="work",
+    )
     captured = capsys.readouterr()
     assert "ERROR" in captured.out
     assert "This is an error message" in captured.out
     assert '"hee": "haa"' in captured.out
     assert '"pleiades": "five"' in captured.out
+    assert "OSError: Manually creating an OS Error for testing" in captured.out
     assert '"please": "work"' in captured.out
 
 
 def test_critical_log(capsys, logger):
     logger.critical(
         "THIS IS VERY CRITICAL",
+        err=OSError("Manually creating an OS Error"),
         ad="astra",
         space="lab",
         soft="ware",
@@ -68,3 +76,4 @@ def test_critical_log(capsys, logger):
     assert '"soft": "ware"' in captured.out
     assert '"j": "20"' in captured.out
     assert '"config": "king"' in captured.out
+    assert "OSError: Manually creating an OS Error" in captured.out
