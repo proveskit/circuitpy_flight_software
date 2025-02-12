@@ -75,9 +75,7 @@ class CommandDataHandler:
                         "Here are the command arguments", cmd_args=cmd_args
                     )
                 except Exception as e:
-                    self.logger.error(
-                        "There was an error decoding the arguments", err=e
-                    )
+                    self.logger.error("There was an error decoding the arguments", e)
             if cmd in self._commands:
                 try:
                     if cmd_args is None:
@@ -94,7 +92,7 @@ class CommandDataHandler:
                         )
                     eval(self._commands[cmd])(cubesat, cmd_args)
                 except Exception as e:
-                    self.logger.error("something went wrong!", err=e)
+                    self.logger.error("something went wrong!", e)
                     cubesat.radio1.send(str(e).encode())
             else:
                 self.logger.info("invalid command!")
@@ -118,7 +116,7 @@ class CommandDataHandler:
             try:
                 cubesat.radio1.send(msg[6:])
             except Exception as e:
-                self.logger.error("There was an error repeating the message!", err=e)
+                self.logger.error("There was an error repeating the message!", e)
         else:
             self.logger.info("bad code?")
 

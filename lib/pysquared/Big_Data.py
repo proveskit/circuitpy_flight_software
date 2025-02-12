@@ -51,7 +51,7 @@ class Face:
                 )
                 self.sensors["MCP"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Temperature Sensor", err=e)
+                self.logger.error("Error Initializing Temperature Sensor", e)
 
         if "VEML" in senlist:
             try:
@@ -62,7 +62,7 @@ class Face:
                 )
                 self.sensors["VEML"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Light Sensor", err=e)
+                self.logger.error("Error Initializing Light Sensor", e)
 
         if "DRV" in senlist:
             try:
@@ -73,7 +73,7 @@ class Face:
                 )
                 self.sensors["DRV"] = True
             except Exception as e:
-                self.logger.error("Error Initializing Motor Driver", err=e)
+                self.logger.error("Error Initializing Motor Driver", e)
 
         gc.collect()  # Clean up after initialization
 
