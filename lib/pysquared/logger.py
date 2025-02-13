@@ -69,7 +69,11 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
-        kwargs["err"] = traceback.format_exception(err)
+        kwargs["err"] = {
+            "type": type(err).__name__,
+            "message": str(err),
+            "traceback": traceback.format_exception(err),
+        }
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
@@ -77,7 +81,11 @@ class Logger:
         """
         Log a message with severity level CRITICAL.
         """
-        kwargs["err"] = traceback.format_exception(err)
+        kwargs["err"] = {
+            "type": type(err).__name__,
+            "message": str(err),
+            "traceback": traceback.format_exception(err),
+        }
         self._error_counter.increment()
         self._log("CRITICAL", 5, message, **kwargs)
 

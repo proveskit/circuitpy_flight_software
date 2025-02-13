@@ -54,8 +54,13 @@ def test_error_log(capsys, logger):
     assert "This is an error message" in captured.out
     assert '"hee": "haa"' in captured.out
     assert '"pleiades": "five"' in captured.out
-    assert "OSError: Manually creating an OS Error for testing" in captured.out
     assert '"please": "work"' in captured.out
+    assert "OSError: Manually creating an OS Error for testing" in captured.out
+    # assert '{"type": "OS Error"' in captured.out
+    assert (
+        '"err": {"type": "OSError", "message": "Manually creating an OS Error for testing'
+        in captured.out
+    )
 
 
 def test_critical_log(capsys, logger):
@@ -77,3 +82,7 @@ def test_critical_log(capsys, logger):
     assert '"j": "20"' in captured.out
     assert '"config": "king"' in captured.out
     assert "OSError: Manually creating an OS Error" in captured.out
+    assert (
+        '"err": {"type": "OSError", "message": "Manually creating an OS Error'
+        in captured.out
+    )
