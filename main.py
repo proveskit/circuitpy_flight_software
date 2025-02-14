@@ -150,4 +150,4 @@ try:
         c.hardware["WDT"] = False
 
 except Exception as e:
-    logger.error("An exception occured within main.py", e)
+    logger.critical("An exception occured within main.py", e)
