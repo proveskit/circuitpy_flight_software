@@ -446,7 +446,7 @@ class Satellite:
                 self._scan_single_channel(channel, channel_to_face)
             except OSError as os_error:
                 self.logger.error(
-                    "TCA try_lock failed. TCA may be malfunctioning.", err=os_error
+                    "TCA try_lock failed. TCA may be malfunctioning.", os_error
                 )
                 self.hardware["TCA"] = False
                 return

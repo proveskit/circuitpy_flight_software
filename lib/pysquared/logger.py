@@ -42,6 +42,10 @@ class Logger:
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
 
+        # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
+        if "err" in kwargs and isinstance(kwargs["err"], Exception):
+            kwargs["err"] = traceback.format_exception(kwargs["err"])
+
         json_output = json.dumps(kwargs)
 
         if self._can_print_this_level(level_value):
@@ -69,11 +73,7 @@ class Logger:
         """
         Log a message with severity level ERROR.
         """
-        kwargs["err"] = {
-            "type": type(err).__name__,
-            "message": str(err),
-            "traceback": traceback.format_exception(err),
-        }
+        kwargs["err"] = traceback.format_exception(err)
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
@@ -81,11 +81,7 @@ class Logger:
         """
         Log a message with severity level CRITICAL.
         """
-        kwargs["err"] = {
-            "type": type(err).__name__,
-            "message": str(err),
-            "traceback": traceback.format_exception(err),
-        }
+        kwargs["err"] = traceback.format_exception(err)
         self._error_counter.increment()
         self._log("CRITICAL", 5, message, **kwargs)
 
