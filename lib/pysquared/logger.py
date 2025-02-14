@@ -43,7 +43,11 @@ class Logger:
         kwargs["time"] = asctime
 
         # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
-        if "err" in kwargs and isinstance(kwargs["err"], Exception):
+        if (
+            "err" in kwargs
+            and level not in ("ERROR", "CRITICAL")
+            and isinstance(kwargs["err"], Exception)
+        ):
             kwargs["err"] = traceback.format_exception(kwargs["err"])
 
         json_output = json.dumps(kwargs)
