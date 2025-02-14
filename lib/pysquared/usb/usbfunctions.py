@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+from typing import Union
 
 import board
 import busio
@@ -91,7 +92,7 @@ class USBFunctions:
         """Creates a file on the SD card."""
         self.make_file("/data/temperature.txt")
 
-    def make_file(self, file_name: str, binary: bool = False) -> str:
+    def make_file(self, file_name: str, binary: bool = False) -> Union[str, None]:
         """Creates a new file in the specified directory.
 
         Args:
@@ -158,7 +159,7 @@ class USBFunctions:
             print("Error creating file: " + "".join(traceback.format_exception(e)))
             return None
 
-    def readfile(self, path: str, type: str = "string") -> str:
+    def readfile(self, path: str, type: str = "string") -> Union[str, list]:
         """Reads a file and returns its contents.
 
         Args:
@@ -221,6 +222,16 @@ class USBFunctions:
             str: The updated file contents.
         """
         lines = self.readfile(path, "list")  # Reads the file as a list of lines
+        if not isinstance(lines, list):  # Type check to make sure lines is a list
+            raise TypeError(
+                "Expected lines to be a list, but got {}".format(type(lines))
+            )
+
+        if line < 1 or line > len(
+            lines
+        ):  # Checks if line number is in range within the file
+            raise IndexError("Line number {} is out of range".format(line))
+
         lines[line - 1] = contents  # Replaces the specified line with the new contents
         _stringify = "".join(
             map(str, lines)
@@ -242,6 +253,11 @@ class USBFunctions:
             str: The updated file contents.
         """
         lines = self.readfile(path, type="list")  # Reads the file as a list of lines
+        if not isinstance(lines, list):  # Type check to make sure lines is a list
+            raise TypeError(
+                "Expected lines to be a list, but got {}".format(type(lines))
+            )
+
         _intermediate = lines[
             line - 1 :
         ]  # Stores the lines from the specified position onward
