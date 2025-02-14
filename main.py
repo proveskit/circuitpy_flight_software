@@ -31,9 +31,7 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.rtc.rtc_common import RTC
 from lib.pysquared.sleep_helper import SleepHelper
-from version import __version__
-
-RTC.init()
+from lib.pysquared.state_of_health import StateOfHealth
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
@@ -70,7 +68,8 @@ try:
         ),
     )
 
-    f = functions.functions(c, logger, config, sleep_helper, radio_manager)
+    f = functions.functions(c, logger, config, sleep_helper)
+    state_of_health = StateOfHealth(c, logger, f)
 
     async def initial_boot():
         f.beacon()
@@ -101,7 +100,10 @@ try:
     async def main():
         f.beacon()
         f.listen_loiter()
-        f.state_of_health()
+
+        # f.state_of_health()
+        state_of_health.update_state_of_health()
+        logger.debug("finished updating state of health")
         f.listen_loiter()
         f.all_face_data()
         f.send_face()
