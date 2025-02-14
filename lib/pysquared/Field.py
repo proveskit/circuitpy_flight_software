@@ -29,7 +29,7 @@ class Field:
         try:
             sent = self.cubesat.radio1.send(bytes(msg, "UTF-8"))
         except Exception as e:
-            self.logger.error("There was an error while Beaconing", err=e)
+            self.logger.error("There was an error while Beaconing", e)
             return
 
         self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
