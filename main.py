@@ -18,6 +18,7 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.sleep_helper import SleepHelper
+from lib.pysquared.state_of_health import StateOfHealth
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
@@ -44,6 +45,7 @@ try:
     import lib.pysquared.functions as functions
 
     f = functions.functions(c, logger, config, sleep_helper)
+    state_of_health = StateOfHealth(c, logger, f)
 
     def initial_boot():
         c.watchdog_pet()
@@ -83,8 +85,9 @@ try:
 
         f.listen_loiter()
 
-        f.state_of_health()
-
+        # f.state_of_health()
+        state_of_health.update_state_of_health()
+        logger.debug("finished updating state of health")
         f.listen_loiter()
 
         f.all_face_data()
