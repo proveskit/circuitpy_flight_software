@@ -5,12 +5,4 @@ https://github.com/adafruit/Adafruit_CircuitPython_RFM/blob/8a55e345501e038996b2
 
 
 class RFM9x:
-    def __init__(self, spi, cs, reset, frequency):
-        self.node = None
-        self.destination = None
-        self.ack_delay = None
-        self.enable_crc = None
-        self.max_output = None
-        self.spreading_factor = None
-        self.tx_power = None
-        self.preamble_length = None
+    def __init__(self, spi, cs, reset, frequency) -> None: ...
