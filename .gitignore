@@ -1,6 +1,7 @@
 __pycache__/
 .pytest_cache
 .coverage
+.coverage-reports/
 .DS_Store
 .venv
 artifacts/
