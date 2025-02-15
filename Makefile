@@ -30,7 +30,7 @@ fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
 .PHONY: test
-test: .venv ## Run tests
+test: .venv download-libraries ## Run tests
 	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
 	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
