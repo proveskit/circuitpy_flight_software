@@ -27,7 +27,7 @@ jobs:
       - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report.xml
+          name: coverage-report
           path: .coverage-reports/coverage.xml
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4.2.1
@@ -43,5 +43,5 @@ jobs:
       - name: Archive
         uses: actions/upload-artifact@v4
         with:
-          name: proves.zip
+          name: proves
           path: artifacts/proves.zip
