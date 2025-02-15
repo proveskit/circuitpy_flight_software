@@ -22,7 +22,7 @@ class StateOfHealth:
             "solar_current": None,
             "radio_temperature": self.f.last_radio_temp(),
             "microcontroller_temperature": self.c.micro.cpu.temperature,
-            "internal_temperature": self.c.internal_temperature,
+            "internal_temperature": None, # self.c.internal_temperature doesn't seem to work
             "error_count": self.logger.get_error_count(),
         }
         self.logger.info("State of Health", state=self.state)
