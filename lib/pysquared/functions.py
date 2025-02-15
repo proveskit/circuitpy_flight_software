@@ -11,6 +11,7 @@ import time
 
 from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
+from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
@@ -19,7 +20,6 @@ from lib.pysquared.sleep_helper import SleepHelper
 
 try:
     from typing import List, OrderedDict, Union
-
 except Exception:
     pass
 
@@ -31,20 +31,23 @@ class functions:
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
+        radio_manager: RFM9xManager,
     ) -> None:
-        self.logger: Logger = logger
         self.cubesat: Satellite = cubesat
-        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
-        self.logger.info("Initializing Functionalities")
+        self.logger: Logger = logger
+        self.config: Config = config
         self.sleep_helper = sleep_helper
+        self.radio_manager: RFM9xManager = radio_manager
+
+        self.logger.info("Initializing Functionalities")
+        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.packet_manager: PacketManager = PacketManager(
             logger=self.logger, max_packet_size=128
         )
         self.packet_sender: PacketSender = PacketSender(
-            self.logger, cubesat.radio1, self.packet_manager, max_retries=3
+            self.logger, radio_manager, self.packet_manager, max_retries=3
         )
 
-        self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
         self.error_count: int = 0
         self.facestring: list = [None, None, None, None, None]
@@ -68,7 +71,7 @@ class functions:
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
-        self.cubesat.radio1.receive_timeout = 10
+        self.radio_manager.radio.receive_timeout = 10
         self.listen()
         self.cubesat.watchdog_pet()
 
@@ -89,7 +92,9 @@ class functions:
         """
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(
+            self.cubesat, self.logger, self.radio_manager
+        )
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
         self.field.Beacon(message)
         if self.cubesat.is_licensed:
@@ -131,7 +136,9 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(
+            self.cubesat, self.logger, self.radio_manager
+        )
         self.field.Beacon(lora_beacon)
         del self.field
         del Field
@@ -139,15 +146,6 @@ class functions:
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
-
-    def last_radio_temp(self) -> int:
-        """Tries to grab former temp from module"""
-        raw_temp = self.cubesat.radio1.read_u8(0x5B)
-        temp = raw_temp & 0x7F
-        if (raw_temp & 0x80) == 0x80:
-            temp = ~temp + 0x01
-
-        return temp + 143  # Added prescalar for temp
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
@@ -177,18 +175,20 @@ class functions:
                 f"UT:{self.cubesat.uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.last_radio_temp()}",
+                f"RT:{self.radio_manager.get_temperature()}",
                 f"AT:{self.cubesat.internal_temperature}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{int(self.cubesat.f_fsk.get())}",
+                f"FK:{int(self.radio_manager.get_modulation())}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(
+            self.cubesat, self.logger, self.radio_manager
+        )
         if not self.state_of_health_part1:
             self.field.Beacon(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
@@ -211,7 +211,9 @@ class functions:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field
 
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
+        self.field: Field.Field = Field.Field(
+            self.cubesat, self.logger, self.radio_manager
+        )
         self.logger.debug("Sending Face Data")
         self.field.Beacon(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
@@ -225,13 +227,13 @@ class functions:
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
 
-        cdh = CommandDataHandler(self.config, self.logger)
+        cdh = CommandDataHandler(self.config, self.logger, self.radio_manager)
 
         # This just passes the message through. Maybe add more functionality later.
         try:
             self.logger.debug("Listening")
-            self.cubesat.radio1.receive_timeout = 10
-            received: bytearray = self.cubesat.radio1.receive_with_ack(
+            self.radio_manager.radio.receive_timeout = 10
+            received: bytearray = self.radio_manager.radio.receive_with_ack(
                 keep_listening=True
             )
         except Exception as e:
@@ -253,8 +255,8 @@ class functions:
     def listen_joke(self) -> bool:
         try:
             self.logger.debug("Listening")
-            self.cubesat.radio1.receive_timeout = 10
-            received: bytearray = self.cubesat.radio1.receive(keep_listening=True)
+            self.radio_manager.radio.receive_timeout = 10
+            received: bytearray = self.radio_manager.radio.receive(keep_listening=True)
             return received is not None and "HAHAHAHAHA!" in received
 
         except Exception as e:
