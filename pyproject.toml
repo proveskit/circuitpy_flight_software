@@ -39,8 +39,5 @@ omit = [
     "lib/neopixel.py",
     ]
 
-[tool.coverage.html]
-directory = "coverage-reports/html"
-
 [tool.coverage.xml]
-output = "coverage-reports/coverage.xml"
+output = ".coverage-reports/coverage.xml"
