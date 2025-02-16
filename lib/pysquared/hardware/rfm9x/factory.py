@@ -83,9 +83,9 @@ class RFM9xFactory:
 
             return radio
         except Exception as e:
-            logger.critical("Failed to initialize radio", e, modulation=modulation)
-
-            raise HardwareInitializationError("radio", e) from e
+            raise HardwareInitializationError(
+                "Failed to initialize radio with modulation {modulation}"
+            ) from e
 
     @staticmethod
     def create_fsk_radio(

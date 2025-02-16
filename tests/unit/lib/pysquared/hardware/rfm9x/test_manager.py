@@ -80,6 +80,7 @@ def test_set_modulation(mock_rfm9x_factory: MagicMock):
     mock_radio = MagicMock(spec=RFMSPI)
     mock_rfm9x_factory.create.return_value = mock_radio
 
+    mock_radio.read_u8 = MagicMock()
     manager = RFM9xManager(
         Logger(Counter(0, ByteArray(size=8))),
         Flag(0, 0, ByteArray(size=8)),
@@ -103,3 +104,37 @@ def test_set_modulation(mock_rfm9x_factory: MagicMock):
     mock_rfm9x_factory.get_instance_modulation.return_value = RFM9xModulation.FSK
     manager.set_modulation(RFM9xModulation.FSK)
     assert manager._use_fsk.get() is True
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_temperature",
+    [
+        (0b00110010, 193),  # Example raw value (50)
+        (0b10110010, 93),  # Example raw value (178)
+    ],
+)
+def test_get_temperature(
+    mock_rfm9x_factory: MagicMock, raw_value: int, expected_temperature: int
+):
+    mock_radio = MagicMock(spec=RFMSPI)
+    mock_radio.read_u8 = MagicMock()
+    mock_radio.read_u8.return_value = raw_value
+    mock_rfm9x_factory.create.return_value = mock_radio
+
+    manager = RFM9xManager(
+        Logger(Counter(0, ByteArray(size=8))),
+        Flag(0, 0, ByteArray(size=8)),
+        mock_rfm9x_factory,
+        SPI(Pin()),
+        DigitalInOut(Pin()),
+        DigitalInOut(Pin()),
+        0,
+        1,
+        2,
+        3,
+        4,
+    )
+
+    actual_temperature = manager.get_temperature()
+    assert actual_temperature == expected_temperature
+    mock_radio.read_u8.assert_called_once_with(0x5B)

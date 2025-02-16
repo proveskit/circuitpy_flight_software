@@ -154,9 +154,7 @@ class TestRFM9xFactory:
         )
         assert isinstance(radio, RFM9x)
 
-    @pytest.mark.skip(
-        reason="This test is slow because it uses an exponential backoff during retry"
-    )
+    @pytest.mark.slow
     @patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_fsk_radio")
     def test_create_with_retries_fsk(
         self,
@@ -183,9 +181,7 @@ class TestRFM9xFactory:
             )
         assert mock_create_fsk_radio.call_count == 3
 
-    @pytest.mark.skip(
-        reason="This test is slow because it uses an exponential backoff during retry"
-    )
+    @pytest.mark.slow
     @patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_lora_radio")
     def test_create_with_retries_lora(
         self,

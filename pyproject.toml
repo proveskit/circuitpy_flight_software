@@ -17,6 +17,9 @@ line-ending = "lf"
 
 [tool.pytest.ini_options]
 pythonpath = "."
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 
 [tool.coverage.run]
 branch = true
@@ -38,6 +41,9 @@ omit = [
     "lib/rv3028*/**",
     "lib/neopixel.py",
     ]
+
+[tool.coverage.html]
+directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"

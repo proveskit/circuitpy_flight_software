@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
       - name: Test
         run: |
-          make test
+          TEST_SELECT=ALL make test
       - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
