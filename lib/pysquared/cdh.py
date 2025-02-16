@@ -142,7 +142,7 @@ class CommandDataHandler:
         except Exception:
             pass
 
-    def FSK(self) -> None:
+    def fsk(self) -> None:
         self.radio_manager.set_modulation(RFM9xModulation.FSK)
 
     def joke_reply(self, cubesat: Satellite) -> None:
