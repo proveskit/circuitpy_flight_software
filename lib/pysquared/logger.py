@@ -79,14 +79,10 @@ class Logger:
         json_output = json.dumps(json_order)
 
         if self._can_print_this_level(level_value):
-            colored_json_output = (
-                json_output.replace(
-                    f'"level": "{level}"', f'"level": "{LogColors[level]}"'
-                )
-                if self.colorized
-                else json_output
+            colored_json_output = json_output.replace(
+                f'"level": "{level}"', f'"level": "{LogColors[level]}"'
             )
-            print(colored_json_output)
+            print(colored_json_output if self.colorized else json_output)
 
     def debug(self, message: str, **kwargs) -> None:
         """
