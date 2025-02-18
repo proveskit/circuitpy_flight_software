@@ -12,11 +12,11 @@ except Exception:
 
 class Face:
     def __init__(
-        self, Add: int, Pos: str, tca: adafruit_tca9548a.TCA9548A, logger: Logger
+        self, add: int, pos: str, tca: adafruit_tca9548a.TCA9548A, logger: Logger
     ) -> None:
         self.tca: adafruit_tca9548a.TCA9548A = tca
-        self.address: int = Add
-        self.position: str = Pos
+        self.address: int = add
+        self.position: str = pos
         self.logger: Logger = logger
 
         # Use tuple instead of list for immutable data
@@ -29,7 +29,7 @@ class Face:
             "y-": ("MCP", "VEML"),
             "z-": ("MCP", "VEML", "DRV"),
         }
-        self.senlist: tuple[str, ...] = sensor_map.get(Pos, ())
+        self.senlist: tuple[str, ...] = sensor_map.get(pos, ())
 
         # Initialize sensor states dict only with needed sensors
         self.sensors: dict[str, bool] = {sensor: False for sensor in self.senlist}
@@ -39,7 +39,7 @@ class Face:
         self.veml = None
         self.drv = None
 
-    def Sensorinit(self, senlist, address) -> None:
+    def sensor_init(self, senlist, address) -> None:
         gc.collect()  # Force garbage collection before initializing sensors
 
         if "MCP" in senlist:
@@ -94,11 +94,11 @@ class AllFaces:
         ]
         for pos, addr in positions:
             face: Face = Face(addr, pos, tca, self.logger)
-            face.Sensorinit(face.senlist, face.address)
+            face.sensor_init(face.senlist, face.address)
             self.faces.append(face)
             gc.collect()  # Clean up after each face initialization
 
-    def Face_Test_All(self) -> list[list[float]]:
+    def face_test_all(self) -> list[list[float]]:
         results: list[list[float]] = []
         for face in self.faces:
             if face:
