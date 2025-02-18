@@ -7,6 +7,8 @@ import json
 import time
 
 # from lib.pysquared.debugcolor import color
+from collections import OrderedDict
+
 from lib.pysquared.nvm.counter import Counter
 
 
@@ -68,13 +70,13 @@ class Logger:
         """
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        kwargs["time"] = asctime
 
-        kwargs["level"] = level
+        json_order: OrderedDict[str, str] = OrderedDict(
+            [("time", asctime), ("level", level), ("msg", message)]
+        )
+        json_order.update(kwargs)
 
-        kwargs["msg"] = message
-
-        json_output = json.dumps(kwargs)
+        json_output = json.dumps(json_order)
 
         if self._can_print_this_level(level_value):
             colored_json_output = (
