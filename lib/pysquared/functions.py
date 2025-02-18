@@ -117,7 +117,7 @@ class functions:
             lora_beacon: str = (
                 f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
-                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
+                + f" UT:{self.cubesat.get_system_uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
@@ -174,7 +174,7 @@ class functions:
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
-                f"UT:{self.cubesat.uptime}",
+                f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.last_radio_temp()}",
