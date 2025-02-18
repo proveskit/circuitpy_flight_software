@@ -289,7 +289,7 @@ class functions:
                 bytes_free=gc.mem_free(),
             )
 
-            self.facestring: list[list[float]] = a.Face_Test_All()
+            self.facestring: list[list[float]] = a.face_test_all()
 
             del a
             del Big_Data
