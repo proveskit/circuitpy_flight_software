@@ -12,6 +12,7 @@ import sys
 import time
 from collections import OrderedDict
 from os import chdir, mkdir, stat
+from typing import Optional
 
 import board
 import busio
@@ -170,9 +171,6 @@ class Satellite:
         self.radio1.destination = self.config.radio_cfg.receiver_id
         self.hardware[hardware_key] = True
 
-        # if self.legacy:
-        #    self.enable_rf.value = False
-
     @safe_init
     def init_RTC(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
@@ -254,7 +252,7 @@ class Satellite:
         self.filenumbers: dict = {}
         self.image_packets: int = 0
         self.uart_baudrate: int = 9600
-        self.buffer: bytearray = None
+        self.buffer: Optional[bytearray] = None
         self.buffer_size: int = 1
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
@@ -263,12 +261,12 @@ class Satellite:
         # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
         # None as a state instead of the values to better manage some conditions with Orpheus.
         # I need to get a better understanding for the values and flow before potentially refactoring code here.
-        self.battery_voltage: float = None
-        self.draw_current: float = None
-        self.charge_voltage: float = None
-        self.charge_current: float = None
-        self.is_charging: bool = None
-        self.battery_percentage: float = None
+        self.battery_voltage: Optional[float] = None
+        self.draw_current: Optional[float] = None
+        self.charge_voltage: Optional[float] = None
+        self.charge_current: Optional[float] = None
+        self.is_charging: Optional[bool] = None
+        self.battery_percentage: Optional[float] = None
 
         """
         Define the boot time and current time
@@ -323,7 +321,7 @@ class Satellite:
         """
 
         # Alternative Implementations of hardware initialization specific for orpheus
-        def orpheus_skip_I2C(hardware_key: str) -> None:
+        def orpheus_skip_i2c(hardware_key: str) -> None:
             self.logger.debug(
                 "Hardware component not initialized",
                 cubesat=self.cubesat_name,
@@ -331,7 +329,7 @@ class Satellite:
             )
             return None
 
-        def orpheus_init_UART(hardware_key: str):
+        def orpheus_init_uart(hardware_key: str):
             uart: circuitpython_typing.ByteStream = busio.UART(
                 board.I2C0_SDA, board.I2C0_SCL, baudrate=self.uart_baudrate
             )
@@ -343,7 +341,7 @@ class Satellite:
             board.I2C0_SCL,
             board.I2C0_SDA,
             hardware_key="I2C0",
-            orpheus_func=orpheus_skip_I2C,
+            orpheus_func=orpheus_skip_i2c,
         )
 
         self.spi0: busio.SPI = self.init_general_hardware(
@@ -368,7 +366,7 @@ class Satellite:
             board.RX,
             baud_rate=self.uart_baudrate,
             hardware_key="UART",
-            orpheus_func=orpheus_init_UART,
+            orpheus_func=orpheus_init_uart,
         )
 
         ######## Temporary Fix for RF_ENAB ########
