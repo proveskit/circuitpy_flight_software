@@ -32,6 +32,15 @@ include = [
     "repl.py",
     "safemode.py",
     ]
+omit = [
+    "lib/adafruit_*/**",
+    "lib/asyncio_*/**",
+    "lib/rv3028*/**",
+    "lib/neopixel.py",
+    ]
+
+[tool.coverage.html]
+directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
 output = ".coverage-reports/coverage.xml"
