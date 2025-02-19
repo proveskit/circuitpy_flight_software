@@ -529,7 +529,7 @@ class Satellite:
             )
 
     @property
-    def uptime(self) -> int:
+    def get_system_uptime(self) -> int:
         self.CURRENTTIME: int = const(time.time())
         return self.CURRENTTIME - self.BOOTTIME
 
@@ -652,7 +652,7 @@ class Satellite:
         self.watchdog_pin.value = False
 
     def check_reboot(self) -> None:
-        self.UPTIME: int = self.uptime
+        self.UPTIME: int = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
             self.micro.reset()
