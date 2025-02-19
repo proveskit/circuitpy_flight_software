@@ -12,7 +12,6 @@ import sys
 import time
 from collections import OrderedDict
 from os import chdir, mkdir, stat
-from typing import Optional
 
 import board
 import busio
@@ -35,7 +34,7 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 
 try:
-    from typing import Any, Callable, OrderedDict, TextIO, Union
+    from typing import Any, Callable, Optional, OrderedDict, TextIO, Union
 
     import circuitpython_typing
 except Exception:
