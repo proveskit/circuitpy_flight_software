@@ -34,7 +34,7 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 
 try:
-    from typing import Any, Callable, OrderedDict, TextIO, Union
+    from typing import Any, Callable, Optional, OrderedDict, TextIO, Union
 
     import circuitpython_typing
 except Exception:
@@ -170,11 +170,8 @@ class Satellite:
         self.radio1.destination = self.config.radio_cfg.receiver_id
         self.hardware[hardware_key] = True
 
-        # if self.legacy:
-        #    self.enable_rf.value = False
-
     @safe_init
-    def init_RTC(self, hardware_key: str) -> None:
+    def init_rtc(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
         # Still need to test these configs
@@ -182,7 +179,7 @@ class Satellite:
         self.hardware[hardware_key] = True
 
     @safe_init
-    def init_SDCard(self, hardware_key: str) -> None:
+    def init_sd_card(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
         _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
         _vfs = VfsFat(_sd)
@@ -202,7 +199,7 @@ class Satellite:
         self.hardware[hardware_key] = True
 
     @safe_init
-    def init_TCA_multiplexer(self, hardware_key: str) -> None:
+    def init_tca_multiplexer(self, hardware_key: str) -> None:
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
                 self.i2c1, address=int(0x77)
@@ -254,7 +251,7 @@ class Satellite:
         self.filenumbers: dict = {}
         self.image_packets: int = 0
         self.uart_baudrate: int = 9600
-        self.buffer: bytearray = None
+        self.buffer: Optional[bytearray] = None
         self.buffer_size: int = 1
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
@@ -263,12 +260,12 @@ class Satellite:
         # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
         # None as a state instead of the values to better manage some conditions with Orpheus.
         # I need to get a better understanding for the values and flow before potentially refactoring code here.
-        self.battery_voltage: float = None
-        self.draw_current: float = None
-        self.charge_voltage: float = None
-        self.charge_current: float = None
-        self.is_charging: bool = None
-        self.battery_percentage: float = None
+        self.battery_voltage: Optional[float] = None
+        self.draw_current: Optional[float] = None
+        self.charge_voltage: Optional[float] = None
+        self.charge_current: Optional[float] = None
+        self.is_charging: Optional[bool] = None
+        self.battery_percentage: Optional[float] = None
 
         """
         Define the boot time and current time
@@ -323,7 +320,7 @@ class Satellite:
         """
 
         # Alternative Implementations of hardware initialization specific for orpheus
-        def orpheus_skip_I2C(hardware_key: str) -> None:
+        def orpheus_skip_i2c(hardware_key: str) -> None:
             self.logger.debug(
                 "Hardware component not initialized",
                 cubesat=self.cubesat_name,
@@ -331,7 +328,7 @@ class Satellite:
             )
             return None
 
-        def orpheus_init_UART(hardware_key: str):
+        def orpheus_init_uart(hardware_key: str):
             uart: circuitpython_typing.ByteStream = busio.UART(
                 board.I2C0_SDA, board.I2C0_SCL, baudrate=self.uart_baudrate
             )
@@ -343,7 +340,7 @@ class Satellite:
             board.I2C0_SCL,
             board.I2C0_SDA,
             hardware_key="I2C0",
-            orpheus_func=orpheus_skip_I2C,
+            orpheus_func=orpheus_skip_i2c,
         )
 
         self.spi0: busio.SPI = self.init_general_hardware(
@@ -368,7 +365,7 @@ class Satellite:
             board.RX,
             baud_rate=self.uart_baudrate,
             hardware_key="UART",
-            orpheus_func=orpheus_init_UART,
+            orpheus_func=orpheus_init_uart,
         )
 
         ######## Temporary Fix for RF_ENAB ########
@@ -391,10 +388,10 @@ class Satellite:
         self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
-        self.init_RTC(hardware_key="RTC")
-        self.init_SDCard(hardware_key="SD Card")
+        self.init_rtc(hardware_key="RTC")
+        self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
-        self.init_TCA_multiplexer(hardware_key="TCA")
+        self.init_tca_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
@@ -512,11 +509,11 @@ class Satellite:
             self.logger.error("There was an error trying to set the clock", e)
 
     @property
-    def RGB(self) -> tuple[int, int, int]:
+    def rgb(self) -> tuple[int, int, int]:
         return self.neopixel[0]
 
-    @RGB.setter
-    def RGB(self, value: tuple[int, int, int]) -> None:
+    @rgb.setter
+    def rgb(self, value: tuple[int, int, int]) -> None:
         if not self.hardware["NEOPIX"]:
             self.logger.warning("The NEOPIXEL device is not initialized")
             return
@@ -699,7 +696,7 @@ class Satellite:
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise FileNotFoundError("file directory is empty")
             self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
@@ -720,7 +717,7 @@ class Satellite:
     ) -> Union[bytes, TextIO, None]:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise FileNotFoundError("file directory is empty")
             self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:

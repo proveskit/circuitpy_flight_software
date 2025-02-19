@@ -120,19 +120,19 @@ try:
             c.check_reboot()
 
             if c.power_mode == "critical":
-                c.RGB = (0, 0, 0)
+                c.rgb = (0, 0, 0)
                 critical_power_operations()
 
             elif c.power_mode == "minimum":
-                c.RGB = (255, 0, 0)
+                c.rgb = (255, 0, 0)
                 minimum_power_operations()
 
             elif c.power_mode == "normal":
-                c.RGB = (255, 255, 0)
+                c.rgb = (255, 255, 0)
                 main()
 
             elif c.power_mode == "maximum":
-                c.RGB = (0, 255, 0)
+                c.rgb = (0, 255, 0)
                 main()
 
             else:
@@ -146,7 +146,7 @@ try:
     finally:
         logger.info("Going Neutral!")
 
-        c.RGB = (0, 0, 0)
+        c.rgb = (0, 0, 0)
         c.hardware["WDT"] = False
 
 except Exception as e:
