@@ -172,7 +172,7 @@ class Satellite:
         self.hardware[hardware_key] = True
 
     @safe_init
-    def init_RTC(self, hardware_key: str) -> None:
+    def init_rtc(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
         # Still need to test these configs
@@ -180,7 +180,7 @@ class Satellite:
         self.hardware[hardware_key] = True
 
     @safe_init
-    def init_SDCard(self, hardware_key: str) -> None:
+    def init_sd_card(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
         _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
         _vfs = VfsFat(_sd)
@@ -200,7 +200,7 @@ class Satellite:
         self.hardware[hardware_key] = True
 
     @safe_init
-    def init_TCA_multiplexer(self, hardware_key: str) -> None:
+    def init_tca_multiplexer(self, hardware_key: str) -> None:
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
                 self.i2c1, address=int(0x77)
@@ -389,10 +389,10 @@ class Satellite:
         self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
-        self.init_RTC(hardware_key="RTC")
-        self.init_SDCard(hardware_key="SD Card")
+        self.init_rtc(hardware_key="RTC")
+        self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
-        self.init_TCA_multiplexer(hardware_key="TCA")
+        self.init_tca_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
@@ -510,11 +510,11 @@ class Satellite:
             self.logger.error("There was an error trying to set the clock", e)
 
     @property
-    def RGB(self) -> tuple[int, int, int]:
+    def rgb(self) -> tuple[int, int, int]:
         return self.neopixel[0]
 
-    @RGB.setter
-    def RGB(self, value: tuple[int, int, int]) -> None:
+    @rgb.setter
+    def rgb(self, value: tuple[int, int, int]) -> None:
         if not self.hardware["NEOPIX"]:
             self.logger.warning("The NEOPIXEL device is not initialized")
             return
@@ -697,7 +697,7 @@ class Satellite:
     def print_file(self, filedir: str = None, binary: bool = False) -> None:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise FileNotFoundError("file directory is empty")
             self.logger.debug("Printing File", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
@@ -718,7 +718,7 @@ class Satellite:
     ) -> Union[bytes, TextIO, None]:
         try:
             if filedir is None:
-                raise Exception("file directory is empty")
+                raise FileNotFoundError("file directory is empty")
             self.logger.debug("Reading a file", file_dir=filedir)
             if binary:
                 with open(filedir, "rb") as file:
