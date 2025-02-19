@@ -56,69 +56,90 @@ class CommandDataHandler:
             )
 
     ############### message handler ###############
+    def parse_message(self, msg: bytearray) -> tuple[bool, bytes, Union[bytes, None]]:
+        # check if multi-message flag is set
+        if msg[3] & 0x08:
+            multi_msg = True
+        # strip off RH header
+        msg: bytes = bytes(msg[4:])
+        cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
+        cmd_args: Union[bytes, None] = None
+        if len(msg) > 6:
+            self.logger.info("This is a command with args")
+        try:
+            cmd_args = msg[6:]  # arguments are everything after
+            self.logger.info("Here are the command arguments", cmd_args=cmd_args)
+        except Exception as e:
+            self.logger.error("There was an error decoding the arguments", e)
+
+        return multi_msg, cmd, cmd_args
+
+    def handle_command(
+        self,
+        cubesat: Satellite,
+        msg: bytearray,
+        multi_msg: bool,
+        cmd: bytes,
+        cmd_args: Union[bytes, None],
+    ) -> None:
+        if cmd not in self._commands:
+            self.logger.info("invalid command!")
+            cubesat.radio1.send(b"invalid cmd" + msg[4:])
+            # check for multi-message mode
+            if multi_msg:
+                # TODO check for optional radio config
+                self.logger.info("multi-message mode enabled")
+
+            response: bytearray = cubesat.radio1.receive(
+                keep_listening=True,
+                with_ack=True,
+                with_header=True,
+                view=True,
+                timeout=10,
+            )
+
+            if response is not None:
+                cubesat.c_gs_resp += 1
+                self.message_handler(cubesat, response)
+            return
+
+        try:
+            if cmd_args is None:
+                self.logger.info(
+                    "There are no args provided", command=self._commands[cmd]
+                )
+                # eval a string turns it into a func name
+                eval(self._commands[cmd])(cubesat)
+            else:
+                self.logger.info(
+                    "running command with args",
+                    command=self._commands[cmd],
+                    cmd_args=cmd_args,
+                )
+                eval(self._commands[cmd])(cubesat, cmd_args)
+        except Exception as e:
+            self.logger.error("something went wrong!", e)
+            cubesat.radio1.send(str(e).encode())
+
     def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
         multi_msg: bool = False
-        if len(msg) >= 10:  # [RH header 4 bytes] [pass-code(4 bytes)] [cmd 2 bytes]
-            if bytes(msg[4:8]) == self._super_secret_code:
-                # check if multi-message flag is set
-                if msg[3] & 0x08:
-                    multi_msg = True
-                # strip off RH header
-                msg: bytes = bytes(msg[4:])
-                cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
-                cmd_args: Union[bytes, None] = None
-                if len(msg) > 6:
-                    self.logger.info("This is a command with args")
-                try:
-                    cmd_args = msg[6:]  # arguments are everything after
-                    self.logger.info(
-                        "Here are the command arguments", cmd_args=cmd_args
-                    )
-                except Exception as e:
-                    self.logger.error("There was an error decoding the arguments", e)
-            if cmd in self._commands:
-                try:
-                    if cmd_args is None:
-                        self.logger.info(
-                            "There are no args provided", command=self._commands[cmd]
-                        )
-                        # eval a string turns it into a func name
-                        eval(self._commands[cmd])(cubesat)
-                    else:
-                        self.logger.info(
-                            "running command with args",
-                            command=self._commands[cmd],
-                            cmd_args=cmd_args,
-                        )
-                    eval(self._commands[cmd])(cubesat, cmd_args)
-                except Exception as e:
-                    self.logger.error("something went wrong!", e)
-                    cubesat.radio1.send(str(e).encode())
-            else:
-                self.logger.info("invalid command!")
-                cubesat.radio1.send(b"invalid cmd" + msg[4:])
-                # check for multi-message mode
-                if multi_msg:
-                    # TODO check for optional radio config
-                    self.logger.info("multi-message mode enabled")
-                response: bytearray = cubesat.radio1.receive(
-                    keep_listening=True,
-                    with_ack=True,
-                    with_header=True,
-                    view=True,
-                    timeout=10,
-                )
-                if response is not None:
-                    cubesat.c_gs_resp += 1
-                    self.message_handler(cubesat, response)
-        elif bytes(msg[4:6]) == self._repeat_code:
+
+        if not (len(msg) >= 10 or bytes(msg[4:6]) == self._repeat_code):
+            self.logger.info("bad code?")
+            return
+
+        if bytes(msg[4:6]) == self._repeat_code:
             self.logger.info("Repeating last message!")
             try:
                 cubesat.radio1.send(msg[6:])
             except Exception as e:
                 self.logger.error("There was an error repeating the message!", e)
-        else:
-            self.logger.info("bad code?")
+            return
+
+        if bytes(msg[4:8]) == self._super_secret_code:
+            multi_msg, cmd, cmd_args = self.parse_message(msg)
+
+        self.handle_command(cubesat, msg, multi_msg, cmd, cmd_args)
 
     ########### commands without arguments ###########
     def noop(self) -> None:
