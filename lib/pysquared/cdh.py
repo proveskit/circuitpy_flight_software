@@ -154,7 +154,8 @@ class CommandDataHandler:
         except Exception:
             pass
 
-    def FSK(cubesat: Satellite) -> None:
+    @staticmethod
+    def toggle_fsk_signal(cubesat: Satellite) -> None:
         cubesat.f_fsk.toggle(True)
 
     def joke_reply(self, cubesat: Satellite) -> None:
