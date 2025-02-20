@@ -185,8 +185,10 @@ class CommandDataHandler:
         # deep sleep + listen
         # TODO config radio
         cubesat.radio1.listen()
-        if "st" in cubesat.radio_cfg:
-            _t: float = cubesat.radio_cfg["st"]
+        _t: float
+
+        if cubesat.config.radio_cfg.start_time is not None:
+            _t = cubesat.config.radio_cfg.start_time
         else:
             _t = 5
         import alarm
