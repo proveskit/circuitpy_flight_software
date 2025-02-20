@@ -40,7 +40,7 @@ class StateOfHealth:
                 "battery_voltage": self.c.battery_voltage
                 if self.c.hardware["I2C0"]
                 else None,
-                "uptime": self.c.uptime,
+                "uptime": self.c.get_system_uptime,
                 "boot_count": self.c.boot_count.get(),
                 "battery_temperature": self.f.last_battery_temp
                 if self.c.hardware["I2C0"]
