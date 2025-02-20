@@ -8,6 +8,7 @@ Attempting to follow the FPrime model.
 """
 
 import json
+from typing import Union
 
 
 class RadioConfig:
@@ -19,7 +20,8 @@ class RadioConfig:
         self.transmit_bandwidth: int = radio_dict["transmit_bandwidth"]
         self.lora_coding_rate: int = radio_dict["lora_coding_rate"]
         self.transmit_power: int = radio_dict["transmit_power"]
-        self.start_time: int = radio_dict["start_time"]
+        # start_time might not exist
+        self.start_time: Union[int, None] = radio_dict.get("start_time")
 
 
 class Config:
