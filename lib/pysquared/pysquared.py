@@ -121,6 +121,57 @@ class Satellite:
         return hardware_instance
 
     @safe_init
+<<<<<<< HEAD
+=======
+    def init_radio(self, hardware_key: str) -> None:
+        # Define Radio digital IO Pins
+        _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
+        _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
+        self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
+        self.radio1_DIO4: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO4)
+
+        # Configure Radio Pins
+
+        _rf_cs1.switch_to_output(value=True)  # cs1 and rst1 are only used locally
+        _rf_rst1.switch_to_output(value=True)
+        self.radio1_DIO0.switch_to_input()
+        self.radio1_DIO4.switch_to_input()
+
+        if self.f_fsk.get():
+            self.radio1: rfm9xfsk.RFM9xFSK = rfm9xfsk.RFM9xFSK(
+                self.spi0,
+                _rf_cs1,
+                _rf_rst1,
+                self.config.radio_cfg.transmit_frequency,
+                # code_rate=8, code rate does not exist for RFM9xFSK
+            )
+            self.radio1.fsk_node_address = 1
+            self.radio1.fsk_broadcast_address = 0xFF
+            self.radio1.modulation_type = 0
+        else:
+            # Default LoRa Modulation Settings
+            # Frequency: 437.4 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
+            self.radio1: rfm9x.RFM9x = rfm9x.RFM9x(
+                self.spi0,
+                _rf_cs1,
+                _rf_rst1,
+                self.config.radio_cfg.transmit_frequency,
+                # code_rate=8, code rate does not exist for RFM9xFSK
+            )
+            self.radio1.max_output = True
+            self.radio1.tx_power = self.config.radio_cfg.transmit_power
+            self.radio1.spreading_factor = self.config.radio_cfg.lora_spreading_factor
+
+            self.radio1.enable_crc = True
+            self.radio1.ack_delay = 0.2
+            if self.radio1.spreading_factor > 9:
+                self.radio1.preamble_length = self.radio1.spreading_factor
+        self.radio1.node = self.config.radio_cfg.sender_id
+        self.radio1.destination = self.config.radio_cfg.receiver_id
+        self.hardware[hardware_key] = True
+
+    @safe_init
+>>>>>>> e8a4946 (fixed some typos in pysquared.py)
     def init_rtc(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
@@ -163,7 +214,13 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
+<<<<<<< HEAD
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
+=======
+    def __init__(self, config: Config, logger: Logger) -> None:
+        # here assigning config to a var so 'init_radio' function can
+        # access 'radio_cfg' inside config
+>>>>>>> e8a4946 (fixed some typos in pysquared.py)
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
         """
@@ -266,7 +323,7 @@ class Satellite:
             cpu.frequency = cpu_freq
 
         """
-        Intializing Communication Buses
+        Initializing Communication Buses
         """
 
         # Alternative Implementations of hardware initialization specific for orpheus
@@ -334,7 +391,7 @@ class Satellite:
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
-        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
+        self.magnetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
         self.init_rtc(hardware_key="RTC")
@@ -508,7 +565,7 @@ class Satellite:
     @property
     def mag(self) -> Union[tuple[float, float, float], None]:
         try:
-            return self.mangetometer.magnetic
+            return self.magnetometer.magnetic
         except Exception as e:
             self.logger.error(
                 "There was an error retrieving the magnetometer sensor values", e
@@ -574,7 +631,7 @@ class Satellite:
             )
 
     """
-    Maintenence Functions
+    Maintenance Functions
     """
 
     def watchdog_pet(self) -> None:
