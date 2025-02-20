@@ -4,9 +4,9 @@ Logs can be output to standard output or saved to a file (functionality to be im
 """
 
 import json
-import time
 import traceback
 
+import lib.rv3028.rv3028 as rv3028  # Real Time Clock
 from lib.pysquared.nvm.counter import Counter
 
 
@@ -23,10 +23,12 @@ class Logger:
     def __init__(
         self,
         error_counter: Counter,
+        rtc,
         log_level: int = LogLevel.NOTSET,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self.rtc: rv3028.RV3028 = rtc
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -38,8 +40,12 @@ class Logger:
         kwargs["level"] = level
         kwargs["msg"] = message
 
-        now = time.localtime()
-        asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
+        # now = time.localtime()
+        hours, minutes, seconds = self.rtc.get_time()
+        year, month, date, weekday = self.rtc.get_date()
+        asctime = (
+            f"{year}-{month:02d}-{date:02d} {hours:02d}:{minutes:02d}:{seconds:02d}"
+        )
         kwargs["time"] = asctime
 
         # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
