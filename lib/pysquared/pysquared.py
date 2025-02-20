@@ -124,7 +124,7 @@ class Satellite:
 
     @safe_init
     def init_radio(self, hardware_key: str) -> None:
-        # Define Radio Ditial IO Pins
+        # Define Radio digital IO Pins
         _rf_cs1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.SPI0_CS0)
         _rf_rst1: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_RST)
         self.radio1_DIO0: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF1_IO0)
@@ -214,7 +214,7 @@ class Satellite:
             return
 
     def __init__(self, config: Config, logger: Logger) -> None:
-        # here assiging config to a var so 'init_radio' function can
+        # here assigning config to a var so 'init_radio' function can
         # access 'radio_cfg' inside config
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
@@ -316,7 +316,7 @@ class Satellite:
         machine.set_clock(62500000)
 
         """
-        Intializing Communication Buses
+        Initializing Communication Buses
         """
 
         # Alternative Implementations of hardware initialization specific for orpheus
@@ -385,7 +385,7 @@ class Satellite:
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
-        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
+        self.magnetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
         self.init_rtc(hardware_key="RTC")
@@ -577,7 +577,7 @@ class Satellite:
     @property
     def mag(self) -> Union[tuple[float, float, float], None]:
         try:
-            return self.mangetometer.magnetic
+            return self.magnetometer.magnetic
         except Exception as e:
             self.logger.error(
                 "There was an error retrieving the magnetometer sensor values", e
@@ -643,7 +643,7 @@ class Satellite:
             )
 
     """
-    Maintenence Functions
+    Maintenance Functions
     """
 
     def watchdog_pet(self) -> None:
