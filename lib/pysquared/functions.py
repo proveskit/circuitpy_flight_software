@@ -149,64 +149,6 @@ class functions:
 
         return temp + 143  # Added prescalar for temp
 
-    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
-        to_return: str = ""
-        for key, value in hardware.items():
-            to_return = to_return + key + "="
-            if value:
-                to_return += "1"
-            else:
-                to_return += "0"
-
-            if len(to_return) > 245:
-                return to_return
-
-        return to_return
-
-    def state_of_health(self) -> None:
-        import lib.pysquared.Field as Field
-
-        self.state_list: list = []
-        # list of state information
-        try:
-            self.state_list: list[str] = [
-                f"PM:{self.cubesat.power_mode}",
-                f"VB:{self.cubesat.battery_voltage}",
-                f"ID:{self.cubesat.current_draw}",
-                f"IC:{self.cubesat.charge_current}",
-                f"UT:{self.cubesat.get_system_uptime}",
-                f"BN:{self.cubesat.boot_count.get()}",
-                f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.last_radio_temp()}",
-                f"AT:{self.cubesat.internal_temperature}",
-                f"BT:{self.last_battery_temp}",
-                f"EC:{self.logger.get_error_count()}",
-                f"AB:{int(self.cubesat.f_burned.get())}",
-                f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{int(self.cubesat.f_fsk.get())}",
-            ]
-        except Exception as e:
-            self.logger.error("Couldn't aquire data for the state of health: ", e)
-
-        self.field: Field.Field = Field.Field(self.cubesat, self.logger)
-        if not self.state_of_health_part1:
-            self.field.Beacon(
-                f"{self.callsign} Yearling^2 State of Health 1/2"
-                + str(self.state_list)
-                + f"{self.callsign}"
-            )
-            self.state_of_health_part1: bool = True
-        else:
-            self.field.Beacon(
-                f"{self.callsign} YSOH 2/2"
-                + self.format_state_of_health(self.cubesat.hardware)
-                + f"{self.callsign}"
-            )
-            self.state_of_health_part1: bool = False
-        del self.field
-        del Field
-        gc.collect()
-
     def send_face(self) -> None:
         """Calls the data transmit function from the field class"""
         import lib.pysquared.Field as Field

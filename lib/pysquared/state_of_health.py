@@ -13,6 +13,7 @@ class StateOfHealth:
         self.c: Satellite = c
         self.logger: Logger = logger
         self.f: functions = f
+        self.soh1: bool = False
         self.state: OrderedDict[str, Any] = {
             # init all values to None
             "system_voltage": None,
@@ -62,3 +63,46 @@ class StateOfHealth:
             self.logger.error("Couldn't acquire data for state of health", err=e)
         
         self.logger.info("State of Health", state=self.state)
+
+    # stuff from end of old state_of_health function
+
+    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
+        """
+        Format the state of health into a string
+        """
+        to_return: str = ""
+        for key, value in hardware.items():
+            to_return = to_return + key + "="
+            if value:
+                to_return += "1"
+            else:
+                to_return += "0"
+
+            if len(to_return) > 245:
+                return to_return
+
+        return to_return
+
+    def beacon_state_of_health(self):
+        """
+        Beacon the state of health
+        """
+        import lib.pysquared.Field as Field
+        self.field: Field.Field = Field.Field(self.c, self.logger)
+        if not self.soh1:
+            self.field.Beacon(
+                f"{self.f.callsign} Yearling^2 State Of Health 1/2"
+                + self.format_state_of_health(self.state)
+                + f"{self.f.callsign}"
+            )
+            self.soh1 = True
+        else:
+            self.field.Beacon(
+                f"{self.f.callsign} Yearling^2 State Of Health 2/2"
+                + self.format_state_of_health(self.c.hardware)
+                + f"{self.f.callsign}"
+            )
+            self.soh1: bool = False
+        del self.field
+        del Field
+        self.f.gc.collect()
