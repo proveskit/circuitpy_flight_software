@@ -41,9 +41,12 @@ class PacketSender:
 
         while (time.monotonic() - start_time) < self.ack_timeout:
             packet: bytearray = self.radio.receive()
+            packet_string: str = packet.decode("utf-8")
 
-            if packet and self.packet_manager.is_ack_packet(packet):
-                ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(packet)
+            if packet and self.packet_manager.is_ack_packet(packet_string):
+                ack_seq: Union[int, None] = self.packet_manager.get_ack_seq_num(
+                    packet_string
+                )
                 if ack_seq == expected_seq:
                     # Got our ACK - only wait briefly for a duplicate then continue
                     time.sleep(0.2)
