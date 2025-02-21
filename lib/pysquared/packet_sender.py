@@ -198,7 +198,9 @@ class PacketSender:
                 break
 
             self.logger.info("Valid retransmit request received!")
-            missing_packets = self.packet_manager.parse_retransmit_request(packet)
+            missing_packets: list[int] = self.packet_manager.parse_retransmit_request(
+                packet
+            )
             self.logger.info("Retransmitting packets", missing_packets=missing_packets)
 
             # Add delay before retransmission to let receiver get ready
