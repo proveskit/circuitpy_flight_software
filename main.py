@@ -85,9 +85,8 @@ try:
 
         f.listen_loiter()
 
-        # f.state_of_health()
-        state_of_health.update_state_of_health()
-        logger.debug("finished updating state of health")
+        state_of_health.update()
+
         f.listen_loiter()
 
         f.all_face_data()
