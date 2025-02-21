@@ -130,6 +130,25 @@ class PacketSender:
             self.logger.error("Error handling retransmit request", e)
             return False
 
+    def send_first_packet(self, packets: list[bytes]) -> bool:
+        for attempt in range(self.max_retries):
+            self.logger.info(
+                "Sending first packet",
+                attempt_num=attempt + 1,
+                max_retries=self.max_retries,
+            )
+            self.radio.send(packets[0])
+
+            if self.wait_for_ack(0):
+                break
+
+            if attempt < self.max_retries - 1:
+                time.sleep(1.0)
+            else:
+                self.logger.warning("Failed to get ACK for first packet")
+                return False
+        return True
+
     def fast_send_data(
         self,
         data: Union[str, bytearray],
