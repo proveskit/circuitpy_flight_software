@@ -1,3 +1,5 @@
+import time
+
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
@@ -32,7 +34,6 @@ class PacketSender:
         """
         Optimized ACK wait with early return
         """
-        import time
 
         start_time: float = time.monotonic()
 
@@ -58,7 +59,6 @@ class PacketSender:
 
     def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
         """Optimized packet sending with minimal delays"""
-        import time
 
         for attempt in range(self.max_retries):
             self.radio.send(packet)
@@ -105,7 +105,6 @@ class PacketSender:
         self, packets: list[bytes], request_packet: list[str]
     ) -> bool:
         """Handle retransmit request by sending requested packets"""
-        import time
 
         try:
             missing_packets: list[int] = self.packet_manager.parse_retransmit_request(
@@ -138,7 +137,6 @@ class PacketSender:
         retransmit_wait: float = 15.0,
     ) -> bool:
         """Send data with improved retransmission handling"""
-        import time
 
         packets: list[bytes] = self.packet_manager.pack_data(data)
         total_packets: int = len(packets)
