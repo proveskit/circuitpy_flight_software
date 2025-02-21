@@ -804,3 +804,7 @@ class Satellite:
         r.datetime = time.struct_time(
             (year, month, date, hour, minute, second, day_of_week, -1, -1)
         )
+
+        self.BOOTTIME = time.mktime(r.datetime)
+
+        self.CURRENTTIME: int = self.BOOTTIME
