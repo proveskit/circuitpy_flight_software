@@ -197,8 +197,6 @@ class CommandDataHandler:
         time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
             monotonic_time=time.monotonic() + 10**_t
         )  # default 1 day
-        # set hot start flag right before sleeping
-        cubesat.f_hotstrt.toggle(True)
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
     def query(self, cubesat: Satellite, args: str) -> None:
