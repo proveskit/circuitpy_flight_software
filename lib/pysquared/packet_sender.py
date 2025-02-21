@@ -109,7 +109,7 @@ class PacketSender:
 
         try:
             missing_packets: list[int] = self.packet_manager.parse_retransmit_request(
-                request_packet
+                b",".join(s.encode("utf-8") for s in request_packet)
             )
             self.logger.info(
                 "Retransmit request received for missing packets",
