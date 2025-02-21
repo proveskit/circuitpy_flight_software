@@ -1,8 +1,3 @@
-"""
-from debugcolor import co
-print(co(msg='hello!',color='red'))
-"""
-
 _h = "\033["
 _e = "\033[0;39;49m"
 
