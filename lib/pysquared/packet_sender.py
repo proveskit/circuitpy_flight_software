@@ -149,6 +149,18 @@ class PacketSender:
                 return False
         return True
 
+    def send_packets(
+        self, packets: list[bytes], total_packets: int, send_delay: float
+    ) -> None:
+        self.logger.info("Sending remaining packets...")
+        for i in range(1, total_packets):
+            if i % 10 == 0:
+                self.logger.info(
+                    "Sending packet", current_packet=i, num_packets=total_packets
+                )
+            self.radio.send(packets[i])
+            time.sleep(send_delay)
+
     def fast_send_data(
         self,
         data: Union[str, bytearray],
