@@ -61,13 +61,13 @@ class CommandDataHandler:
         if msg[3] & 0x08:
             multi_msg = True
         # strip off RH header
-        msg: bytes = bytes(msg[4:])
-        cmd: bytes = msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
+        received_msg: bytes = bytes(msg[4:])
+        cmd: bytes = received_msg[4:6]  # [pass-code(4 bytes)] [cmd 2 bytes] [args]
         cmd_args: Union[bytes, None] = None
-        if len(msg) > 6:
+        if len(received_msg) > 6:
             self.logger.info("This is a command with args")
         try:
-            cmd_args = msg[6:]  # arguments are everything after
+            cmd_args = received_msg[6:]  # arguments are everything after
             self.logger.info("Here are the command arguments", cmd_args=cmd_args)
         except Exception as e:
             self.logger.error("There was an error decoding the arguments", e)
