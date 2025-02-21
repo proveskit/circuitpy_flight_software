@@ -40,15 +40,12 @@ class StateOfHealth:
         Update the state of health
         """
         try:
-            # update IC20 related values
-            if self.c.hardware["I2C0"]:
-                self.state["system_voltage"] = self.c.micro.cpu.voltage
-                self.state["system_current"] = self.c.charge_current
-                self.state["solar_voltage"] = None # unsure on how to get these values
-                self.state["solar_current"] = None   
-                self.state["battery_temperature"] = self.f.last_battery_temp   
-                self.state["battery_voltage"] = self.c.battery_voltage
-            
+            self.state["system_voltage"] = self.c.micro.cpu.voltage  # not 100% sure on this
+            self.state["system_current"] = self.c.charge_current
+            self.state["solar_voltage"] = None # unsure on how to get these values
+            self.state["solar_current"] = None   
+            self.state["battery_temperature"] = self.f.last_battery_temp # literally just gets a value from config  
+            self.state["battery_voltage"] = self.c.battery_voltage
             self.state["radio_temperature"] = self.f.last_radio_temp()
             self.state["microcontroller_temperature"] = self.c.micro.cpu.temperature
             self.state["internal_temperature"] = self.c.internal_temperature
