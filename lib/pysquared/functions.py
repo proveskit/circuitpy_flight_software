@@ -91,7 +91,7 @@ class functions:
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.field.Beacon(message)
+        self.field.send_beacon_message(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
@@ -132,7 +132,7 @@ class functions:
             )
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
-        self.field.Beacon(lora_beacon)
+        self.field.send_beacon_message(lora_beacon)
         del self.field
         del Field
         gc.collect()
@@ -190,14 +190,14 @@ class functions:
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         if not self.state_of_health_part1:
-            self.field.Beacon(
+            self.field.send_beacon_message(
                 f"{self.callsign} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
             self.state_of_health_part1: bool = True
         else:
-            self.field.Beacon(
+            self.field.send_beacon_message(
                 f"{self.callsign} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
@@ -213,7 +213,7 @@ class functions:
 
         self.field: Field.Field = Field.Field(self.cubesat, self.logger)
         self.logger.debug("Sending Face Data")
-        self.field.Beacon(
+        self.field.send_beacon_message(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
         del self.field

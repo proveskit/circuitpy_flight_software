@@ -19,7 +19,7 @@ class Field:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
 
-    def Beacon(self, msg: Any):
+    def send_beacon_message(self, msg: Any):
         if not self.cubesat.is_licensed:
             self.logger.debug(
                 "Please toggle licensed variable in code once you obtain an amateur radio license",
