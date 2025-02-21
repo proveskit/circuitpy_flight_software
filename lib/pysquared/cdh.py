@@ -195,7 +195,7 @@ class CommandDataHandler:
             _t = 5
 
         time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
-            monotonic_time=time.monotonic() + eval("1e" + str(_t))
+            monotonic_time=time.monotonic() + 10**_t
         )  # default 1 day
         # set hot start flag right before sleeping
         cubesat.f_hotstrt.toggle(True)
