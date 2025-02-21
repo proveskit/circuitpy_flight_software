@@ -36,6 +36,7 @@ test: .venv ## Run tests
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
 BOARD_MOUNT_POINT ?= ""
+VERSION ?= $(shell git tag --points-at HEAD --sort=-creatordate < /dev/null | head -n 1)
 
 .PHONY: install
 install: build ## Install the project onto a connected PROVES Kit use `make install BOARD_MOUNT_POINT=/my_board_destination/` to specify the mount point
@@ -57,6 +58,7 @@ build: download-libraries ## Build the project, store the result in the artifact
 	@echo "Creating artifacts/proves"
 	@mkdir -p artifacts/proves
 	$(call rsync_to_dest,artifacts/proves/)
+	@echo "__version__ = '$(VERSION)'" > artifacts/proves/version.py
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
 
@@ -65,7 +67,8 @@ define rsync_to_dest
 		echo "Issue with Make target, rsync destination is not specified. Stopping."; \
 		exit 1; \
 	fi
-	@rsync -avh config.json ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete --times --checksum
+
+	@rsync -avh config.json artifacts/proves/version.py ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete --times --checksum
 endef
 
 ##@ Build Tools
