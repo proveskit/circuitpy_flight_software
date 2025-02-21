@@ -57,8 +57,8 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 build: download-libraries ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
 	@mkdir -p artifacts/proves
-	$(call rsync_to_dest,artifacts/proves/)
 	@echo "__version__ = '$(VERSION)'" > artifacts/proves/version.py
+	$(call rsync_to_dest,artifacts/proves/)
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
 
