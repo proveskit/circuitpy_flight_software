@@ -162,22 +162,9 @@ class PacketSender:
         self.logger.info("Sending packets..", num_packets=total_packets)
 
         # Send first packet with retry until ACKed
-        for attempt in range(self.max_retries):
-            self.logger.info(
-                "Sending first packet",
-                attempt_num=attempt + 1,
-                max_retries=self.max_retries,
-            )
-            self.radio.send(packets[0])
-
-            if self.wait_for_ack(0):
-                break
-            else:
-                if attempt < self.max_retries - 1:
-                    time.sleep(1.0)
-                else:
-                    self.logger.warning("Failed to get ACK for first packet")
-                    return False
+        sent_first_packet: bool = self.send_first_packet(packets)
+        if not sent_first_packet:
+            return False
 
         # Send remaining packets without waiting for ACKs
         self.logger.info("Sending remaining packets...")
