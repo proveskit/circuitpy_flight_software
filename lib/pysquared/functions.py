@@ -122,60 +122,14 @@ class functions:
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
 
-    def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
-        to_return: str = ""
-        for key, value in hardware.items():
-            to_return = to_return + key + "="
-            if value:
-                to_return += "1"
-            else:
-                to_return += "0"
+    def last_radio_temp(self) -> int:
+        """Tries to grab former temp from module"""
+        raw_temp = self.cubesat.radio1.read_u8(0x5B)
+        temp = raw_temp & 0x7F
+        if (raw_temp & 0x80) == 0x80:
+            temp = ~temp + 0x01
 
-            if len(to_return) > 245:
-                return to_return
-
-        return to_return
-
-    def state_of_health(self) -> None:
-        self.state_list: list = []
-        # list of state information
-        try:
-            self.state_list: list[str] = [
-                f"PM:{self.cubesat.power_mode}",
-                f"VB:{self.cubesat.battery_voltage}",
-                f"ID:{self.cubesat.current_draw}",
-                f"IC:{self.cubesat.charge_current}",
-                f"UT:{self.cubesat.get_system_uptime}",
-                f"BN:{self.cubesat.boot_count.get()}",
-                f"MT:{self.cubesat.micro.cpu.temperature}",
-                f"RT:{self.radio_manager.get_temperature()}",
-                f"AT:{self.cubesat.internal_temperature}",
-                f"BT:{self.last_battery_temp}",
-                f"EC:{self.logger.get_error_count()}",
-                f"AB:{int(self.cubesat.f_burned.get())}",
-                f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{int(self.radio_manager.get_modulation())}",
-            ]
-        except Exception as e:
-            self.logger.error("Couldn't aquire data for the state of health: ", e)
-
-        message: str = ""
-        if not self.state_of_health_part1:
-            message = (
-                f"{self.callsign} Yearling^2 State of Health 1/2"
-                + str(self.state_list)
-                + f"{self.callsign}"
-            )
-            self.state_of_health_part1: bool = True
-        else:
-            message = (
-                f"{self.callsign} YSOH 2/2"
-                + self.format_state_of_health(self.cubesat.hardware)
-                + f"{self.callsign}"
-            )
-            self.state_of_health_part1: bool = False
-
-        self.radio_manager.beacon_radio_message(message)
+        return temp + 143  # Added prescalar for temp
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
