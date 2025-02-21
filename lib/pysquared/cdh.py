@@ -101,7 +101,6 @@ class CommandDataHandler:
             )
 
             if response is not None:
-                cubesat.c_gs_resp += 1
                 self.message_handler(cubesat, response)
             return
 
