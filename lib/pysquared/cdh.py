@@ -1,6 +1,8 @@
 import random
 import time
 
+import alarm
+
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
@@ -191,7 +193,6 @@ class CommandDataHandler:
             _t = cubesat.config.radio_cfg.start_time
         else:
             _t = 5
-        import alarm
 
         time_alarm: circuitpython_typing.Alarm = alarm.time.TimeAlarm(
             monotonic_time=time.monotonic() + eval("1e" + str(_t))
