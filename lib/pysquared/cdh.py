@@ -149,8 +149,8 @@ class CommandDataHandler:
         self.logger.info("Resetting")
         try:
             cubesat.radio1.send(data=b"resetting")
-            cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
-            cubesat.micro.reset()
+            cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)  # type: ignore
+            cubesat.micro.reset()  # type: ignore
         except Exception:
             pass
 
