@@ -10,26 +10,17 @@ Published: Nov 19, 2024
 
 import time
 
-import board
-import busio
 import microcontroller
 
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
-import lib.rv3028.rv3028 as rv3028
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.sleep_helper import SleepHelper
 
-i2c1: busio.I2C = busio.I2C(board.I2C1_SCL, board.I2C1_SDA, frequency=100000)
-rtc: rv3028.RV3028 = rv3028.RV3028(i2c1)
-# rtc.set_time(15, 36, 0)
-# rtc.set_date(25, 2, 20, 4)
-
-
 logger: Logger = Logger(
-    Counter(index=register.ERRORCNT, datastore=microcontroller.nvm), rtc
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
 )
 logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
@@ -44,7 +35,7 @@ try:
     logger.debug("Initializing Config")
     config: Config = Config("config.json")
 
-    c = pysquared.Satellite(config, logger, i2c1, rtc)
+    c = pysquared.Satellite(config, logger)
     c.watchdog_pet()
     sleep_helper = SleepHelper(c, logger)
 

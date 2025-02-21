@@ -26,6 +26,7 @@ import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
+import lib.rv3028.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.config import Config  # Configs
@@ -169,13 +170,13 @@ class Satellite:
         self.radio1.destination = self.config.radio_cfg.receiver_id
         self.hardware[hardware_key] = True
 
-    # @safe_init
-    # def init_rtc(self, hardware_key: str) -> None:
-    # self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
+    @safe_init
+    def init_rtc(self, hardware_key: str) -> None:
+        self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
-    # Still need to test these configs
-    # self.rtc.configure_backup_switchover(mode="level", interrupt=True)
-    # self.hardware[hardware_key] = True
+        # Still need to test these configs
+        self.rtc.configure_backup_switchover(mode="level", interrupt=True)
+        self.hardware[hardware_key] = True
 
     @safe_init
     def init_sd_card(self, hardware_key: str) -> None:
@@ -212,13 +213,11 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    def __init__(self, config: Config, logger: Logger, i2c1, rtc) -> None:
+    def __init__(self, config: Config, logger: Logger) -> None:
         # here assiging config to a var so 'init_radio' function can
         # access 'radio_cfg' inside config
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
-        self.rtc = rtc
-        self.i2c1 = i2c1
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
@@ -352,13 +351,13 @@ class Satellite:
             hardware_key="SPI0",
         )
 
-        # self.i2c1: busio.I2C = self.init_general_hardware(
-        # busio.I2C,
-        # board.I2C1_SCL,
-        # board.I2C1_SDA,
-        # frequency=100000,
-        # hardware_key="I2C1",
-        # )
+        self.i2c1: busio.I2C = self.init_general_hardware(
+            busio.I2C,
+            board.I2C1_SCL,
+            board.I2C1_SDA,
+            frequency=100000,
+            hardware_key="I2C1",
+        )
 
         self.uart: circuitpython_typing.ByteStream = self.init_general_hardware(
             busio.UART,
@@ -389,7 +388,7 @@ class Satellite:
         self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
-        # self.init_rtc(hardware_key="RTC")
+        self.init_rtc(hardware_key="RTC")
         self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
         self.init_tca_multiplexer(hardware_key="TCA")
