@@ -51,7 +51,7 @@ class StateOfHealth:
             
             self.state["radio_temperature"] = self.f.last_radio_temp()
             self.state["microcontroller_temperature"] = self.c.micro.cpu.temperature
-            self.state["internal_temperature"] = None # self.c.internal_temperature doesn't seem to work
+            self.state["internal_temperature"] = self.c.internal_temperature
             self.state["error_count"] = self.logger.get_error_count()
             self.state["power_mode"] = self.c.power_mode
             self.state["uptime"] = self.c.get_system_uptime
