@@ -4,8 +4,9 @@ Logs can be output to standard output or saved to a file (functionality to be im
 """
 
 import json
-import time
 import traceback
+
+import rtc
 
 from lib.pysquared.nvm.counter import Counter
 
@@ -27,6 +28,7 @@ class Logger:
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self.rtc = rtc.RTC()
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -38,7 +40,8 @@ class Logger:
         kwargs["level"] = level
         kwargs["msg"] = message
 
-        now = time.localtime()
+        # now = time.localtime()
+        now = self.rtc.datetime
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
         kwargs["time"] = asctime
 

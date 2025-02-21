@@ -18,6 +18,7 @@ import busio
 import digitalio
 import machine
 import microcontroller
+import rtc
 import sdcardio
 from micropython import const
 from storage import VfsFat, mount, umount
@@ -794,3 +795,9 @@ class Satellite:
         except Exception as e:
             self.logger.error("Error creating file", e, filedir=ff, binary_mode=binary)
             return None
+
+    def set_rtc_time(self, year, month, date, hour, minute, second, day_of_week):
+        r = rtc.RTC()
+        r.datetime = time.struct_time(
+            (year, month, date, hour, minute, second, day_of_week, -1, -1)
+        )
