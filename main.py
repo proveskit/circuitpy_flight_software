@@ -18,12 +18,13 @@ from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.sleep_helper import SleepHelper
+from version import __version__
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
 )
-logger.info("Booting", software_version="2.0.0", published_date="November 19, 2024")
 
+logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
 
 loiter_time: int = 5
 
@@ -35,7 +36,7 @@ try:
     logger.debug("Initializing Config")
     config: Config = Config("config.json")
 
-    c = pysquared.Satellite(config, logger)
+    c = pysquared.Satellite(config, logger, __version__)
     c.watchdog_pet()
     sleep_helper = SleepHelper(c, logger)
 
