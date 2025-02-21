@@ -214,7 +214,7 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    def __init__(self, config: Config, logger: Logger) -> None:
+    def __init__(self, config: Config, logger: Logger, version: str) -> None:
         # here assiging config to a var so 'init_radio' function can
         # access 'radio_cfg' inside config
         self.config: Config = config
@@ -421,6 +421,9 @@ class Satellite:
                 )
         # set power mode
         self.power_mode: str = "normal"
+
+        # Set current version
+        self.version: str = version
 
     """
     Init Helper Functions
