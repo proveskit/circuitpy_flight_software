@@ -179,14 +179,7 @@ class PacketSender:
             return False
 
         # Send remaining packets without waiting for ACKs
-        self.logger.info("Sending remaining packets...")
-        for i in range(1, total_packets):
-            if i % 10 == 0:
-                self.logger.info(
-                    "Sending packet", current_packet=i, num_packets=total_packets
-                )
-            self.radio.send(packets[i])
-            time.sleep(send_delay)
+        self.send_packets(packets, total_packets, send_delay)
 
         self.logger.info("Waiting for retransmit requests...")
         retransmit_end_time: float = time.monotonic() + retransmit_wait
