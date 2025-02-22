@@ -27,6 +27,7 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
+import lib.adafruit_ina219 as adafruit_ina219  # Power Monitor
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.adafruit_rfm import rfm9x, rfm9xfsk  # Radio
 from lib.pysquared.config import Config  # Configs
@@ -212,6 +213,22 @@ class Satellite:
             )
             self.hardware[hardware_key] = False
             return
+    
+    @safe_init
+    def init_power_monitor(self, hardware_key: str) -> None:
+        try:
+            self.pwr = adafruit_ina219.INA219(self.i2c0, addr=int(0x40))
+            self.hardware[hardware_key] = True
+        except Exception as e:
+            Logger.error("Error initializing power monitor", e)
+
+    @safe_init
+    def init_solar_power_monitor(self, hardware_key: str) -> None:
+        try:
+            self.solar = adafruit_ina219.INA219(self.i2c0, addr=int(0x44))
+            self.hardware[hardware_key] = True
+        except Exception as e:
+            Logger.error("Error initializing solar power monitor", e)
 
     def __init__(self, config: Config, logger: Logger) -> None:
         # here assigning config to a var so 'init_radio' function can
@@ -294,6 +311,8 @@ class Satellite:
                 ("Face3", False),
                 ("Face4", False),
                 ("RTC", False),
+                ("PWR", False),
+                ("SOLAR", False)
             ]
         )
 
@@ -392,6 +411,8 @@ class Satellite:
         self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
         self.init_tca_multiplexer(hardware_key="TCA")
+        self.init_power_monitor(hardware_key="PWR")
+        self.init_solar_power_monitor(hardware_key="SOLAR")
 
         """
         Face Initializations
