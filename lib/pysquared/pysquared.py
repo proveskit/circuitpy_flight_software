@@ -217,6 +217,7 @@ class Satellite:
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
         # here assiging config to a var so 'init_radio' function can
         # access 'radio_cfg' inside config
+        self.rp2040_rtc: rtc.RTC = rtc.RTC()
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
         """
@@ -271,7 +272,8 @@ class Satellite:
         """
         Define the boot time and current time
         """
-        self.BOOTTIME: int = 1577836800
+
+        self.BOOTTIME = time.mktime(self.rp2040_rtc.datetime)
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
@@ -804,6 +806,8 @@ class Satellite:
         r.datetime = time.struct_time(
             (year, month, date, hour, minute, second, day_of_week, -1, -1)
         )
+
+        print(r.datetime)
 
         self.BOOTTIME = time.mktime(r.datetime)
 
