@@ -8,7 +8,11 @@ Attempting to follow the FPrime model.
 """
 
 import json
-from typing import Union
+
+try:
+    from typing import Union
+except Exception:
+    pass
 
 
 class RadioConfig:
