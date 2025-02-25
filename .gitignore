@@ -1,6 +1,7 @@
 __pycache__/
 .pytest_cache
-.coverage
+.coverage*
+.coverage-reports/
 .DS_Store
 .venv
 artifacts/
@@ -10,6 +11,7 @@ venv
 **/*.mpy
 
 # libs
+lib/rv3028*
 lib/adafruit*
 lib/asyncio*
 lib/neopixel.py
