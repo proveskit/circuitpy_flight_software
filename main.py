@@ -11,6 +11,7 @@ Published: Nov 19, 2024
 import time
 
 import microcontroller
+import rtc
 
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
@@ -20,6 +21,10 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
 
+rtcc = rtc.RTC()
+rtc.set_time_source(rtcc)
+# rtc.datetime = time.struct_time((2023, 1, 24, 9, 00, 00, 1, 24, -1))
+# rtc.set_time_source(rtcc)
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
 )
