@@ -41,9 +41,9 @@ class StateOfHealth:
         """
         try:
             self.state["system_voltage"] = self.c.micro.cpu.voltage  # not 100% sure on this
-            self.state["system_current"] = self.c.charge_current
-            self.state["solar_voltage"] = None # unsure on how to get these values
-            self.state["solar_current"] = None   
+            self.state["system_current"] = self.c.current_draw
+            self.state["solar_voltage"] = self.c.solar_voltage
+            self.state["solar_current"] = self.c.charge_current
             self.state["battery_temperature"] = self.f.last_battery_temp # literally just gets a value from config  
             self.state["battery_voltage"] = self.c.battery_voltage
             self.state["radio_temperature"] = self.f.last_radio_temp()

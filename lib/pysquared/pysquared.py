@@ -221,7 +221,7 @@ class Satellite:
             self.pwr = adafruit_ina219.INA219(self.i2c0, addr=int(0x40))
             self.hardware[hardware_key] = True
         except Exception as e:
-            Logger.error("Error initializing power monitor", e)
+            self.logger.error("Error initializing power monitor", e)
 
     @safe_init
     def init_solar_power_monitor(self, hardware_key: str) -> None:
@@ -229,7 +229,7 @@ class Satellite:
             self.solar = adafruit_ina219.INA219(self.i2c0, addr=int(0x44))
             self.hardware[hardware_key] = True
         except Exception as e:
-            Logger.error("Error initializing solar power monitor", e)
+            self.logger.error("Error initializing solar power monitor", e)
 
 <<<<<<< HEAD
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
@@ -258,8 +258,6 @@ class Satellite:
         self.normal_charge_current: float = config.normal_charge_current
         self.normal_battery_voltage: float = config.normal_battery_voltage
         self.critical_battery_voltage: float = config.critical_battery_voltage
-        self.battery_voltage: float = config.battery_voltage
-        self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
 
@@ -277,17 +275,6 @@ class Satellite:
         self.buffer_size: int = 1
         self.send_buff: memoryview = memoryview(SEND_BUFF)
         self.micro: microcontroller = microcontroller
-
-        # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
-        # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
-        # None as a state instead of the values to better manage some conditions with Orpheus.
-        # I need to get a better understanding for the values and flow before potentially refactoring code here.
-        self.battery_voltage: Optional[float] = None
-        self.draw_current: Optional[float] = None
-        self.charge_voltage: Optional[float] = None
-        self.charge_current: Optional[float] = None
-        self.is_charging: Optional[bool] = None
-        self.battery_percentage: Optional[float] = None
 
         """
         Define the boot time and current time
@@ -361,28 +348,28 @@ class Satellite:
             self.hardware[hardware_key] = True
             return uart
 
+        # Initialize I2C buses first
         self.i2c0: busio.I2C = self.init_general_hardware(
             busio.I2C,
             board.I2C0_SCL,
             board.I2C0_SDA,
             hardware_key="I2C0",
-            orpheus_func=orpheus_skip_i2c,
-        )
-
-        self.spi0: busio.SPI = self.init_general_hardware(
-            busio.SPI,
-            board.SPI0_SCK,
-            board.SPI0_MOSI,
-            board.SPI0_MISO,
-            hardware_key="SPI0",
         )
 
         self.i2c1: busio.I2C = self.init_general_hardware(
             busio.I2C,
             board.I2C1_SCL,
             board.I2C1_SDA,
-            frequency=100000,
             hardware_key="I2C1",
+        )
+
+        # Initialize other components
+        self.spi0: busio.SPI = self.init_general_hardware(
+            busio.SPI,
+            board.SPI0_SCK,
+            board.SPI0_MOSI,
+            board.SPI0_MISO,
+            hardware_key="SPI0",
         )
 
         self.uart: circuitpython_typing.ByteStream = self.init_general_hardware(
@@ -407,6 +394,11 @@ class Satellite:
         #                                         #
         ######## Temporary Fix for RF_ENAB ########
 
+<<<<<<< HEAD
+=======
+        # Initialize other hardware components
+        self.init_radio(hardware_key="Radio1")
+>>>>>>> 8c5f81c (Added functions for getting battery and solar information, I2C0 seems to work now (?). Can't figure out how to connect to battery board to test.)
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
         )
@@ -650,6 +642,87 @@ class Satellite:
                 date=ymdw[2],
                 weekday=ymdw[3],
             )
+
+    @property
+    def battery_voltage(self) -> Union[float, None]:
+        if self.hardware["PWR"]:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += self.pwr.bus_voltage
+                return voltage / 50 + 0.2 # volts and correction factor
+            except Exception as e:
+                self.logger.error(
+                    "There was an error retrieving the battery voltage", e
+                )
+        else:
+            self.logger.warning("Attempting to receive battery voltage when Power Monitor not initialized")
+
+    @property
+    def system_voltage(self) -> Union[float, None]:
+        if self.hardware["PWR"]:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += self.pwr.bus_voltage + self.pwr.shunt_voltage
+                return voltage / 50  # volts
+            except Exception as e:
+                self.logger.error(
+                    "There was an error retrieving the system voltage", e
+                )
+        else:
+            self.logger.warning("Power monitor not initialized")
+    
+    @property
+    def current_draw(self) -> Union[float, None]:
+        if self.hardware["PWR"]:
+            idraw: float = 0
+            try:
+                for _ in range(50):
+                    idraw += self.pwr.current
+                return idraw / 50
+            except Exception as e:
+                self.logger.error(
+                    "There was an error retrieving the current draw", e
+                )
+        else:
+            self.logger.warning("Power monitor not initialized")
+    
+    @property
+    def is_charging(self) -> Union[bool, None]:
+        # not sure how this is implemented
+        # return not (self.charge_indicate.value)
+        return None
+
+    @property
+    def charge_current(self) -> Union[float, None]:
+        if self.hardware["SOLAR"]:
+            ichrg: float = 0
+            try:
+                for _ in range(50):
+                    ichrg += self.solar.current
+                return ichrg / 50
+            except Exception as e:
+                self.logger.error(
+                    "There was an error retrieving the charge current", e
+                )
+        else:
+            self.logger.warning("Solar power monitor not initialized")
+    
+    @property
+    def solar_voltage(self) -> Union[float, None]:
+        if self.hardware["SOLAR"]:
+            voltage: float = 0
+            try:
+                for _ in range(50):
+                    voltage += self.solar.bus_voltage
+                return voltage / 50
+            except Exception as e:
+                self.logger.error(
+                    "There was an error retrieving the solar voltage", e
+                )
+        else:
+            self.logger.warning("Solar power monitor not initialized")
 
     """
     Maintenance Functions
