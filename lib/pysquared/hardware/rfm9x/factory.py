@@ -151,6 +151,7 @@ class RFM9xFactory:
 
         if radio.spreading_factor > 9:
             radio.preamble_length = radio.spreading_factor
+            radio.low_datarate_optimize = 1
 
         return radio
 
