@@ -18,7 +18,7 @@ class RadioTest:
         self,
         config: Config,
         cubesat: Satellite,
-        fsk_or_lora: str,  # Either "f" for FSK or "l" for LoRa
+        fsk_or_lora: str,  # Either "fsk" for FSK or "lora" for LoRa
     ):
         self.debug_mode = config.debug
         self.callsign = config.callsign
@@ -31,21 +31,13 @@ class RadioTest:
 
         cubesat.f_fsk = True if fsk_or_lora == "fsk" else False
 
-        radio_cfg = {
-            "spreading_factor": 8,
-            "tx_power": 13,  # Set as a default that works for any radio
-            "node": 0x00,
-            "destination": 0x00,
-            "receive_timeout": 5,
-            "enable_crc": False,
-        }
-        self.cubesat.radio1.spreading_factor = radio_cfg["spreading_factor"]
+        self.cubesat.radio1.spreading_factor = config.radio_cfg.lora_spreading_factor
         if self.cubesat.radio1.spreading_factor > 8:
             self.cubesat.radio1.low_datarate_optimize = True
         else:
             self.cubesat.radio1.low_datarate_optimize = False
-        self.cubesat.radio1.tx_power = radio_cfg["tx_power"]
-        self.cubesat.radio1.receive_timeout = radio_cfg["receive_timeout"]
+        self.cubesat.radio1.tx_power = config.radio_cfg.transmit_power
+        self.cubesat.radio1.receive_timeout = 5
         self.cubesat.radio1.enable_crc = False
 
     def debug_print(self, message):
