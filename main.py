@@ -22,7 +22,7 @@ from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
 
 rtcc = rtc.RTC()
-rtc.set_time_source(rtcc)
+rtcc.datetime = time.localtime()
 # rtc.datetime = time.struct_time((2023, 1, 24, 9, 00, 00, 1, 24, -1))
 # rtc.set_time_source(rtcc)
 logger: Logger = Logger(
