@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from lib.pysquared.functions import functions
 from lib.pysquared.logger import Logger
 from lib.pysquared.pysquared import Satellite
@@ -15,25 +17,27 @@ class StateOfHealth:
         self.logger: Logger = logger
         self.f: functions = f
         self.soh1: bool = False
-        self.state: OrderedDict[str, Any] = {
-            # init all values to None
-            "system_voltage": None,
-            "system_current": None,
-            "solar_voltage": None,
-            "solar_current": None,
-            "radio_temperature": None,
-            "microcontroller_temperature": None,
-            "internal_temperature": None,
-            "error_count": None,
-            "power_mode": None,
-            "battery_voltage": None,
-            "uptime": None,
-            "boot_count": None,
-            "battery_temperature": None,
-            "burned_flag": None,
-            "brownout_flag": None,
-            "fsk_flag": None,
-        }
+        self.state: OrderedDict[str, Any] = OrderedDict(
+            [
+                # init all values in ordered dict to None
+                ("system_voltage", None),
+                ("system_current", None),
+                ("solar_voltage", None),
+                ("solar_current", None),
+                ("battery_temperature", None),
+                ("battery_voltage", None),
+                ("radio_temperature", None),
+                ("microcontroller_temperature", None),
+                ("internal_temperature", None),
+                ("error_count", None),
+                ("power_mode", None),
+                ("uptime", None),
+                ("boot_count", None),
+                ("burned_flag", None),
+                ("brownout_flag", None),
+                ("fsk_flag", None)
+            ]
+        )
 
     def update(self):
         """
