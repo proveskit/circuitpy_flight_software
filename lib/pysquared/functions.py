@@ -9,7 +9,6 @@ import gc
 import random
 import time
 
-from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
 from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
@@ -40,7 +39,6 @@ class functions:
         self.radio_manager: RFM9xManager = radio_manager
 
         self.logger.info("Initializing Functionalities")
-        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.packet_manager: PacketManager = PacketManager(
             logger=self.logger, max_packet_size=128
         )
@@ -122,7 +120,7 @@ class functions:
             lora_beacon: str = (
                 f"{self.callsign} Hello I am {self.cubesat_name}! I am: "
                 + str(self.cubesat.power_mode)
-                + f" UT:{self.cubesat.uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
+                + f" UT:{self.cubesat.get_system_uptime} BN:{self.cubesat.boot_count.get()} EC:{self.logger.get_error_count()} "
                 + f"IHBPFJASTMNE! {self.callsign}"
             )
         except Exception as e:
@@ -172,7 +170,7 @@ class functions:
                 f"VB:{self.cubesat.battery_voltage}",
                 f"ID:{self.cubesat.current_draw}",
                 f"IC:{self.cubesat.charge_current}",
-                f"UT:{self.cubesat.uptime}",
+                f"UT:{self.cubesat.get_system_uptime}",
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.radio_manager.get_temperature()}",
@@ -291,7 +289,7 @@ class functions:
                 bytes_free=gc.mem_free(),
             )
 
-            self.facestring: list[list[float]] = a.Face_Test_All()
+            self.facestring: list[list[float]] = a.face_test_all()
 
             del a
             del Big_Data
@@ -301,16 +299,6 @@ class functions:
             self.logger.error("Big_Data error", e)
 
         return self.facestring
-
-    def get_battery_data(
-        self,
-    ) -> Union[tuple[float, float, float, float, bool, float], None]:
-        try:
-            return self.battery.get_power_metrics()
-
-        except Exception as e:
-            self.logger.error("Error retrieving battery data", e)
-            return None
 
     def get_imu_data(
         self,
@@ -346,7 +334,7 @@ class functions:
     # that will adjust position towards Earth based on Gyro data
     def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
-        self.cubesat.RGB = (255, 255, 255)
+        self.cubesat.rgb = (255, 255, 255)
 
         try:
             import lib.pysquared.Big_Data as Big_Data
@@ -396,4 +384,4 @@ class functions:
             do_detumble()
         except Exception as e:
             self.logger.error("Detumble error", e)
-        self.cubesat.RGB = (100, 100, 50)
+        self.cubesat.rgb = (100, 100, 50)
