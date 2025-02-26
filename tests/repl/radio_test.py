@@ -6,6 +6,7 @@
 
 import time
 
+from lib.pysquared.config import Config
 from lib.pysquared.pysquared import Satellite
 
 
@@ -15,12 +16,12 @@ class RadioTest:
 
     def __init__(
         self,
-        config,
+        config: Config,
         cubesat: Satellite,
         fsk_or_lora: str,  # Either "f" for FSK or "l" for LoRa
     ):
-        self.debug_mode = config["debug"]
-        self.callsign = config["callsign"]
+        self.debug_mode = config.debug
+        self.callsign = config.callsign
 
         if self.callsign == "":
             print("No cube callsign! Radio will not function")
@@ -268,3 +269,25 @@ class RadioTest:
             elif device_selection == "C":
                 self.client(passcode)
                 time.sleep(1)
+
+
+# setup interrupt callback function
+# async def wait_for_packets(packet_status):
+#     while True:
+#         if rfm.payload_ready():
+#             packet = await rfm.asyncio_receive(with_header=True, timeout=None)
+#             if packet is not None:
+#                 packet_status.received = True
+#                 # Received a packet!
+#                 # Print out the raw bytes of the packet:
+#                 print(f"Received (raw bytes): {packet}")
+#                 print([hex(x) for x in packet])
+#                 print(f"RSSI: {rfm.last_rssi}")
+#         await asyncio.sleep(0.001)
+
+
+# async def main():
+#     packet_status = Packet()
+#     task1 = asyncio.create_task(wait_for_packets(packet_status))
+
+#     await asyncio.gather(task1)  # Don't forget "await"!
