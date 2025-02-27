@@ -9,19 +9,22 @@ from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 from mocks.circuitpython.adafruit_rfm.rfm_common import RFMSPI
-from mocks.circuitpython.busio import SPI
 from mocks.circuitpython.byte_array import ByteArray
-from mocks.circuitpython.digitalio import DigitalInOut
-from mocks.circuitpython.microcontroller import Pin
 
 
 @pytest.fixture
-def mock_rfm9x_factory(monkeypatch):
-    mock_factory = MagicMock(spec=RFM9xFactory)
-    monkeypatch.setattr(
-        "lib.pysquared.hardware.rfm9x.manager.RFM9xFactory", mock_factory
-    )
-    return mock_factory
+def mock_logger():
+    return Logger(Counter(0, ByteArray(size=8)))
+
+
+@pytest.fixture
+def mock_use_fsk():
+    return Flag(0, 0, ByteArray(size=8))
+
+
+@pytest.fixture
+def mock_radio_factory():
+    return MagicMock(spec=RFM9xFactory)
 
 
 @pytest.mark.parametrize(
@@ -29,12 +32,13 @@ def mock_rfm9x_factory(monkeypatch):
     [(RFM9xModulation.LORA, False), (RFM9xModulation.FSK, True)],
 )
 def test_radio_property_creates_radio(
-    mock_rfm9x_factory: MagicMock,
+    mock_logger: Logger,
+    mock_radio_factory: MagicMock,
     modulation: RFM9xModulation,
     use_fsk_initial: bool,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
-    mock_rfm9x_factory.create.return_value = mock_radio
+    mock_radio_factory.create.return_value = mock_radio
 
     # Set the flag to use FSK if required
     use_fsk = Flag(0, 0, ByteArray(size=8))
@@ -42,32 +46,16 @@ def test_radio_property_creates_radio(
         use_fsk.toggle(True)
 
     manager = RFM9xManager(
-        Logger(Counter(0, ByteArray(size=8))),
+        mock_logger,
         use_fsk,
-        mock_rfm9x_factory,
-        SPI(Pin()),
-        DigitalInOut(Pin()),
-        DigitalInOut(Pin()),
-        0,
-        1,
-        2,
-        3,
-        4,
+        mock_radio_factory,
     )
 
     radio = manager.radio
 
-    mock_rfm9x_factory.create.assert_called_once_with(
+    mock_radio_factory.create.assert_called_once_with(
         manager._log,
         modulation,
-        manager._spi,
-        manager._chip_select,
-        manager._reset,
-        manager._sender_id,
-        manager._receiver_id,
-        manager._frequency,
-        manager._transmit_power,
-        manager._lora_spreading_factor,
     )
     assert radio == mock_radio
     assert manager._radio == mock_radio
@@ -76,23 +64,17 @@ def test_radio_property_creates_radio(
     assert manager._use_fsk.get() is False
 
 
-def test_set_modulation(mock_rfm9x_factory: MagicMock):
+def test_set_modulation(
+    mock_logger: Logger, mock_use_fsk: Flag, mock_radio_factory: MagicMock
+):
     mock_radio = MagicMock(spec=RFMSPI)
-    mock_rfm9x_factory.create.return_value = mock_radio
+    mock_radio_factory.create.return_value = mock_radio
 
     mock_radio.read_u8 = MagicMock()
     manager = RFM9xManager(
-        Logger(Counter(0, ByteArray(size=8))),
-        Flag(0, 0, ByteArray(size=8)),
-        mock_rfm9x_factory,
-        SPI(Pin()),
-        DigitalInOut(Pin()),
-        DigitalInOut(Pin()),
-        0,
-        1,
-        2,
-        3,
-        4,
+        mock_logger,
+        mock_use_fsk,
+        mock_radio_factory,
     )
 
     manager.set_modulation(RFM9xModulation.LORA)
@@ -101,7 +83,7 @@ def test_set_modulation(mock_rfm9x_factory: MagicMock):
     manager.set_modulation(RFM9xModulation.FSK)
     assert manager._use_fsk.get() is True
 
-    mock_rfm9x_factory.get_instance_modulation.return_value = RFM9xModulation.FSK
+    mock_radio_factory.get_instance_modulation.return_value = RFM9xModulation.FSK
     manager.set_modulation(RFM9xModulation.FSK)
     assert manager._use_fsk.get() is True
 
@@ -114,25 +96,21 @@ def test_set_modulation(mock_rfm9x_factory: MagicMock):
     ],
 )
 def test_get_temperature(
-    mock_rfm9x_factory: MagicMock, raw_value: int, expected_temperature: int
+    mock_logger: Logger,
+    mock_use_fsk: Flag,
+    mock_radio_factory: MagicMock,
+    raw_value: int,
+    expected_temperature: int,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
     mock_radio.read_u8 = MagicMock()
     mock_radio.read_u8.return_value = raw_value
-    mock_rfm9x_factory.create.return_value = mock_radio
+    mock_radio_factory.create.return_value = mock_radio
 
     manager = RFM9xManager(
-        Logger(Counter(0, ByteArray(size=8))),
-        Flag(0, 0, ByteArray(size=8)),
-        mock_rfm9x_factory,
-        SPI(Pin()),
-        DigitalInOut(Pin()),
-        DigitalInOut(Pin()),
-        0,
-        1,
-        2,
-        3,
-        4,
+        mock_logger,
+        mock_use_fsk,
+        mock_radio_factory,
     )
 
     actual_temperature = manager.get_temperature()

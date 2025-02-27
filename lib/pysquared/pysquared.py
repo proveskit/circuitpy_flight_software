@@ -28,7 +28,7 @@ import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-from lib.pysquared.config import Config  # Configs
+from lib.pysquared.config.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
 

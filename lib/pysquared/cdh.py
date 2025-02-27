@@ -1,7 +1,7 @@
 import random
 import time
 
-from lib.pysquared.config import Config
+from lib.pysquared.config.config import Config
 from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
 from lib.pysquared.logger import Logger

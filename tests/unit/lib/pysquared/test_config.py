@@ -1,7 +1,7 @@
 import json
 import os
 
-from lib.pysquared.config import Config
+from lib.pysquared.config.config import Config
 
 os.path.dirname(__file__)
 file = f"{os.path.dirname(__file__)}/files/config.test.json"
@@ -13,33 +13,53 @@ def test_radio_cfg() -> None:
 
     config = Config(file)
 
+    # Test basic radio config properties
     assert (
-        config.radio_cfg.sender_id == json_data["radio_cfg"]["sender_id"]
+        config.radio.sender_id == json_data["radio"]["sender_id"]
     ), "No match for: sender_id"
     assert (
-        config.radio_cfg.receiver_id == json_data["radio_cfg"]["receiver_id"]
+        config.radio.receiver_id == json_data["radio"]["receiver_id"]
     ), "No match for: receiver_id"
     assert (
-        config.radio_cfg.transmit_frequency
-        == json_data["radio_cfg"]["transmit_frequency"]
+        config.radio.transmit_frequency == json_data["radio"]["transmit_frequency"]
     ), "No match for: transmit_frequency"
     assert (
-        config.radio_cfg.lora_spreading_factor
-        == json_data["radio_cfg"]["lora_spreading_factor"]
-    ), "No match for: lora_spreading_factor"
-    assert (
-        config.radio_cfg.transmit_bandwidth
-        == json_data["radio_cfg"]["transmit_bandwidth"]
-    ), "No match for: transmit_bandwidth"
-    assert (
-        config.radio_cfg.lora_coding_rate == json_data["radio_cfg"]["lora_coding_rate"]
-    ), "No match for: lora_coding_rate"
-    assert (
-        config.radio_cfg.transmit_power == json_data["radio_cfg"]["transmit_power"]
-    ), "No match for: transmit_power"
-    assert (
-        config.radio_cfg.start_time == json_data["radio_cfg"]["start_time"]
+        config.radio.start_time == json_data["radio"]["start_time"]
     ), "No match for: start_time"
+
+    # Test FSK config properties
+    assert (
+        config.radio.fsk.broadcast_address
+        == json_data["radio"]["fsk"]["broadcast_address"]
+    ), "No match for: fsk.broadcast_address"
+    assert (
+        config.radio.fsk.node_address == json_data["radio"]["fsk"]["node_address"]
+    ), "No match for: fsk.node_address"
+    assert (
+        config.radio.fsk.modulation_type == json_data["radio"]["fsk"]["modulation_type"]
+    ), "No match for: fsk.modulation_type"
+
+    # Test LoRa config properties
+    assert (
+        config.radio.lora.ack_delay == json_data["radio"]["lora"]["ack_delay"]
+    ), "No match for: lora.ack_delay"
+    assert (
+        config.radio.lora.coding_rate == json_data["radio"]["lora"]["coding_rate"]
+    ), "No match for: lora.coding_rate"
+    assert (
+        config.radio.lora.cyclic_redundancy_check
+        == json_data["radio"]["lora"]["cyclic_redundancy_check"]
+    ), "No match for: lora.cyclic_redundancy_check"
+    assert (
+        config.radio.lora.max_output == json_data["radio"]["lora"]["max_output"]
+    ), "No match for: lora.max_output"
+    assert (
+        config.radio.lora.spreading_factor
+        == json_data["radio"]["lora"]["spreading_factor"]
+    ), "No match for: lora.spreading_factor"
+    assert (
+        config.radio.lora.transmit_power == json_data["radio"]["lora"]["transmit_power"]
+    ), "No match for: lora.transmit_power"
 
 
 def test_strings() -> None:

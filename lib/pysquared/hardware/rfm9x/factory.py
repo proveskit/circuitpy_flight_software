@@ -1,3 +1,4 @@
+from lib.pysquared.config.radio import FSKConfig, LORAConfig, RadioConfig
 from lib.pysquared.hardware.decorators import with_retries
 from lib.pysquared.hardware.exception import HardwareInitializationError
 from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
@@ -26,33 +27,35 @@ class RFM9xFactory:
     Specifically we should try to keep adafruit_rfm to only this factory class with the exception of the RFMSPI class.
     """
 
-    @classmethod
-    @with_retries(max_attempts=3, initial_delay=1)
-    def create(
-        cls,
-        logger: Logger,
-        modulation: RFM9xModulation,
+    def __init__(
+        self,
         spi: SPI,
         chip_select: DigitalInOut,
         reset: DigitalInOut,
-        sender_id: int,
-        receiver_id: int,
-        frequency: int,
-        transmit_power: int,
-        lora_spreading_factor: int,
+        radio_config: RadioConfig,
+    ) -> None:
+        """Initialize the factory class.
+
+        :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
+        :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
+        :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
+        :param RadioConfig radio_config: Radio config object.
+        """
+        self._spi = spi
+        self._chip_select = chip_select
+        self._reset = reset
+        self._radio_config = radio_config
+
+    @with_retries(max_attempts=3, initial_delay=1)
+    def create(
+        self,
+        logger: Logger,
+        modulation: RFM9xModulation,
     ) -> RFMSPI:
         """Create a RFM9x radio instance.
 
         :param Logger logger: Logger instance for logging messages.
-        :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
-        :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
-        :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
         :param RFM9xModulation modulation: Either FSK or LoRa.
-        :param int sender_id: ID of the sender radio.
-        :param int receiver_id: ID of the receiver radio.
-        :param int frequency: Frequency at which the radio will transmit.
-        :param int transmit_power: Transmit power level (applicable for LoRa only).
-        :param int lora_spreading_factor: Spreading factor for LoRa modulation (applicable for LoRa only).
 
         :raises HardwareInitializationError: If the radio fails to initialize.
 
@@ -62,24 +65,24 @@ class RFM9xFactory:
 
         try:
             if modulation == RFM9xModulation.FSK:
-                radio: RFMSPI = cls.create_fsk_radio(
-                    spi,
-                    chip_select,
-                    reset,
-                    frequency,
+                radio: RFMSPI = self.create_fsk_radio(
+                    self._spi,
+                    self._chip_select,
+                    self._reset,
+                    self._radio_config.transmit_frequency,
+                    self._radio_config.fsk,
                 )
             else:
-                radio: RFMSPI = cls.create_lora_radio(
-                    spi,
-                    chip_select,
-                    reset,
-                    frequency,
-                    transmit_power,
-                    lora_spreading_factor,
+                radio: RFMSPI = self.create_lora_radio(
+                    self._spi,
+                    self._chip_select,
+                    self._reset,
+                    self._radio_config.transmit_frequency,
+                    self._radio_config.lora,
                 )
 
-            radio.node = sender_id
-            radio.destination = receiver_id
+            radio.node = self._radio_config.sender_id
+            radio.destination = self._radio_config.receiver_id
 
             return radio
         except Exception as e:
@@ -92,14 +95,16 @@ class RFM9xFactory:
         spi: SPI,
         cs: DigitalInOut,
         rst: DigitalInOut,
-        frequency: int,
+        transmit_frequency: int,
+        fsk_config: FSKConfig,
     ) -> RFMSPI:
         """Create a FSK radio instance.
 
         :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
         :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
         :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
-        :param int frequency: Frequency at which the radio will transmit.
+        :param int transmit_frequency: Frequency at which the radio will transmit.
+        :param FSKConfig config: FSK config object.
 
         :return An instance of :class:`~adafruit_rfm.rfm9xfsk.RFM9xFSK`.
         """
@@ -107,12 +112,12 @@ class RFM9xFactory:
             spi,
             cs,
             rst,
-            frequency,
+            transmit_frequency,
         )
 
-        radio.fsk_broadcast_address = 255
-        radio.fsk_node_address = 1
-        radio.modulation_type
+        radio.fsk_broadcast_address = fsk_config.broadcast_address
+        radio.fsk_node_address = fsk_config.node_address
+        radio.modulation_type = fsk_config.modulation_type
 
         return radio
 
@@ -121,18 +126,16 @@ class RFM9xFactory:
         spi: SPI,
         cs: DigitalInOut,
         rst: DigitalInOut,
-        frequency: int,
-        transmit_power: int,
-        lora_spreading_factor: int,
+        transmit_frequency: int,
+        lora_config: LORAConfig,
     ) -> RFMSPI:
         """Create a LoRa radio instance.
 
         :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
         :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
         :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
-        :param int frequency: Frequency at which the radio will transmit.
-        :param int transmit_power: Transmit power level (applicable for LoRa only).
-        :param int lora_spreading_factor: Spreading factor for LoRa modulation (applicable for LoRa only).
+        :param int transmit_frequency: Frequency at which the radio will transmit.
+        :param LORAConfig config: LoRa config object.
 
         :return An instance of the RFM9x class.
         """
@@ -140,14 +143,14 @@ class RFM9xFactory:
             spi,
             cs,
             rst,
-            frequency,
+            transmit_frequency,
         )
 
-        radio.ack_delay = 0.2
-        radio.enable_crc = True
-        radio.max_output = True
-        radio.spreading_factor = lora_spreading_factor
-        radio.tx_power = transmit_power
+        radio.ack_delay = lora_config.ack_delay
+        radio.enable_crc = lora_config.cyclic_redundancy_check
+        radio.max_output = lora_config.max_output
+        radio.spreading_factor = lora_config.spreading_factor
+        radio.tx_power = lora_config.transmit_power
 
         if radio.spreading_factor > 9:
             radio.preamble_length = radio.spreading_factor

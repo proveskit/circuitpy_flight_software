@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from lib.pysquared.config.radio import FSKConfig, LORAConfig, RadioConfig
 from lib.pysquared.hardware.exception import HardwareInitializationError
 from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
 from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
@@ -30,180 +31,176 @@ def mock_logger():
     return MagicMock()
 
 
-class TestRFM9xFactory:
-    def test_create_fsk_radio(self, mock_spi, mock_chip_select, mock_reset):
-        frequency = 915
-        radio = RFM9xFactory.create_fsk_radio(
-            mock_spi, mock_chip_select, mock_reset, frequency
-        )
-        assert isinstance(radio, RFM9xFSK)
-        assert radio.fsk_broadcast_address == 255
-        assert radio.fsk_node_address == 1
+@pytest.fixture
+def mock_fsk_config():
+    return FSKConfig(
+        {"broadcast_address": 255, "node_address": 1, "modulation_type": 0}
+    )
 
-    def test_create_lora_radio(self, mock_spi, mock_chip_select, mock_reset):
-        frequency = 915
-        transmit_power = 23
-        lora_spreading_factor = 7
-        radio = RFM9xFactory.create_lora_radio(
-            mock_spi,
-            mock_chip_select,
-            mock_reset,
-            frequency,
-            transmit_power,
-            lora_spreading_factor,
-        )
-        assert isinstance(radio, RFM9x)
-        assert math.isclose(radio.ack_delay, 0.2)
-        assert radio.enable_crc
-        assert radio.max_output
-        assert radio.spreading_factor == lora_spreading_factor
-        assert radio.tx_power == transmit_power
 
-    def test_create_lora_radio_high_sf(self, mock_spi, mock_chip_select, mock_reset):
-        frequency = 915
-        transmit_power = 23
-        lora_spreading_factor = 10
-        radio = RFM9xFactory.create_lora_radio(
-            mock_spi,
-            mock_chip_select,
-            mock_reset,
-            frequency,
-            transmit_power,
-            lora_spreading_factor,
-        )
-        assert isinstance(radio, RFM9x)
-        assert radio.preamble_length == lora_spreading_factor
+@pytest.fixture
+def mock_lora_config():
+    return LORAConfig(
+        {
+            "ack_delay": 0.2,
+            "coding_rate": 5,
+            "cyclic_redundancy_check": True,
+            "max_output": True,
+            "spreading_factor": 7,
+            "transmit_power": 23,
+        }
+    )
 
-    def test_create_fsk(self, mock_spi, mock_chip_select, mock_reset, mock_logger):
-        sender_id = 1
-        receiver_id = 2
-        frequency = 915
-        transmit_power = 23
-        lora_spreading_factor = 7
 
-        radio = RFM9xFactory.create(
+@pytest.fixture
+def mock_radio_config():
+    return RadioConfig(
+        {
+            "sender_id": 1,
+            "receiver_id": 2,
+            "transmit_frequency": 915,
+            "start_time": 0,
+            "fsk": {"broadcast_address": 255, "node_address": 1, "modulation_type": 0},
+            "lora": {
+                "ack_delay": 0.2,
+                "coding_rate": 5,
+                "cyclic_redundancy_check": True,
+                "max_output": True,
+                "spreading_factor": 7,
+                "transmit_power": 23,
+            },
+        }
+    )
+
+
+def test_create_fsk_radio(mock_spi, mock_chip_select, mock_reset, mock_fsk_config):
+    frequency = 915
+    radio = RFM9xFactory.create_fsk_radio(
+        mock_spi, mock_chip_select, mock_reset, frequency, mock_fsk_config
+    )
+    assert isinstance(radio, RFM9xFSK)
+    assert radio.fsk_broadcast_address == 255
+    assert radio.fsk_node_address == 1
+    assert radio.modulation_type == 0
+
+
+def test_create_lora_radio(mock_spi, mock_chip_select, mock_reset, mock_lora_config):
+    frequency = 915
+    radio = RFM9xFactory.create_lora_radio(
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+        frequency,
+        mock_lora_config,
+    )
+    assert isinstance(radio, RFM9x)
+    assert math.isclose(radio.ack_delay, 0.2)
+    assert radio.enable_crc
+    assert radio.max_output
+    assert radio.spreading_factor == 7
+    assert radio.tx_power == 23
+
+
+def test_create_lora_radio_high_sf(mock_spi, mock_chip_select, mock_reset):
+    frequency = 915
+    high_sf_config = LORAConfig(
+        {
+            "ack_delay": 0.2,
+            "coding_rate": 5,
+            "cyclic_redundancy_check": True,
+            "max_output": True,
+            "spreading_factor": 10,
+            "transmit_power": 23,
+        }
+    )
+
+    radio = RFM9xFactory.create_lora_radio(
+        mock_spi,
+        mock_chip_select,
+        mock_reset,
+        frequency,
+        high_sf_config,
+    )
+    assert isinstance(radio, RFM9x)
+    assert radio.preamble_length == 10
+    assert radio.low_datarate_optimize == 1
+
+
+def test_create_fsk(
+    mock_spi, mock_chip_select, mock_reset, mock_logger, mock_radio_config
+):
+    factory = RFM9xFactory(mock_spi, mock_chip_select, mock_reset, mock_radio_config)
+
+    radio = factory.create(
+        mock_logger,
+        RFM9xModulation.FSK,
+    )
+    assert isinstance(radio, RFM9xFSK)
+    assert radio.node == mock_radio_config.sender_id
+    assert radio.destination == mock_radio_config.receiver_id
+
+
+def test_create_lora(
+    mock_spi, mock_chip_select, mock_reset, mock_logger, mock_radio_config
+):
+    factory = RFM9xFactory(mock_spi, mock_chip_select, mock_reset, mock_radio_config)
+
+    radio = factory.create(
+        mock_logger,
+        RFM9xModulation.LORA,
+    )
+    assert isinstance(radio, RFM9x)
+    assert radio.node == mock_radio_config.sender_id
+    assert radio.destination == mock_radio_config.receiver_id
+
+
+def test_get_instance_modulation():
+    mock_fsk_radio = RFM9xFSK(None, None, None, 915)
+    mock_lora_radio = RFM9x(None, None, None, 915)
+
+    assert RFM9xFactory.get_instance_modulation(mock_fsk_radio) == RFM9xModulation.FSK
+    assert RFM9xFactory.get_instance_modulation(mock_lora_radio) == RFM9xModulation.LORA
+
+
+@pytest.mark.slow
+@patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_fsk_radio")
+def test_create_with_retries_fsk(
+    mock_create_fsk_radio,
+    mock_spi,
+    mock_chip_select,
+    mock_reset,
+    mock_logger,
+    mock_radio_config,
+):
+    mock_create_fsk_radio.side_effect = Exception("Simulated FSK failure")
+
+    factory = RFM9xFactory(mock_spi, mock_chip_select, mock_reset, mock_radio_config)
+
+    with pytest.raises(HardwareInitializationError):
+        factory.create(
             mock_logger,
             RFM9xModulation.FSK,
-            mock_spi,
-            mock_chip_select,
-            mock_reset,
-            sender_id,
-            receiver_id,
-            frequency,
-            transmit_power,
-            lora_spreading_factor,
         )
-        assert isinstance(radio, RFM9xFSK)
-        assert radio.node == sender_id
-        assert radio.destination == receiver_id
+    assert mock_create_fsk_radio.call_count == 3
 
-    def test_create_lora(self, mock_spi, mock_chip_select, mock_reset, mock_logger):
-        sender_id = 1
-        receiver_id = 2
-        frequency = 915
-        transmit_power = 23
-        lora_spreading_factor = 7
 
-        radio = RFM9xFactory.create(
+@pytest.mark.slow
+@patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_lora_radio")
+def test_create_with_retries_lora(
+    mock_create_lora_radio,
+    mock_spi,
+    mock_chip_select,
+    mock_reset,
+    mock_logger,
+    mock_radio_config,
+):
+    mock_create_lora_radio.side_effect = Exception("Simulated LoRa failure")
+
+    factory = RFM9xFactory(mock_spi, mock_chip_select, mock_reset, mock_radio_config)
+
+    with pytest.raises(HardwareInitializationError):
+        factory.create(
             mock_logger,
             RFM9xModulation.LORA,
-            mock_spi,
-            mock_chip_select,
-            mock_reset,
-            sender_id,
-            receiver_id,
-            frequency,
-            transmit_power,
-            lora_spreading_factor,
         )
-        assert isinstance(radio, RFM9x)
-        assert radio.node == sender_id
-        assert radio.destination == receiver_id
-
-    def test_get_instance_modulation(self):
-        mock_fsk_radio = RFM9xFSK(None, None, None, 915)
-        mock_lora_radio = RFM9x(None, None, None, 915)
-
-        assert (
-            RFM9xFactory.get_instance_modulation(mock_fsk_radio) == RFM9xModulation.FSK
-        )
-        assert (
-            RFM9xFactory.get_instance_modulation(mock_lora_radio)
-            == RFM9xModulation.LORA
-        )
-
-    def test_create_invalid_modulation(
-        self, mock_spi, mock_chip_select, mock_reset, mock_logger
-    ):
-        sender_id = 1
-        receiver_id = 2
-        frequency = 915
-        transmit_power = 23
-        lora_spreading_factor = 7
-        radio = RFM9xFactory.create(
-            mock_logger,
-            "INVALID",
-            mock_spi,
-            mock_chip_select,
-            mock_reset,
-            sender_id,
-            receiver_id,
-            frequency,
-            transmit_power,
-            lora_spreading_factor,
-        )
-        assert isinstance(radio, RFM9x)
-
-    @pytest.mark.slow
-    @patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_fsk_radio")
-    def test_create_with_retries_fsk(
-        self,
-        mock_create_fsk_radio,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-        mock_logger,
-    ):
-        mock_create_fsk_radio.side_effect = Exception("Simulated FSK failure")
-
-        with pytest.raises(HardwareInitializationError):
-            RFM9xFactory.create(
-                mock_logger,
-                RFM9xModulation.FSK,
-                mock_spi,
-                mock_chip_select,
-                mock_reset,
-                1,
-                2,
-                3,
-                4,
-                5,
-            )
-        assert mock_create_fsk_radio.call_count == 3
-
-    @pytest.mark.slow
-    @patch("lib.pysquared.hardware.rfm9x.factory.RFM9xFactory.create_lora_radio")
-    def test_create_with_retries_lora(
-        self,
-        mock_create_lora_radio,
-        mock_spi,
-        mock_chip_select,
-        mock_reset,
-        mock_logger,
-    ):
-        mock_create_lora_radio.side_effect = Exception("Simulated LoRa failure")
-
-        with pytest.raises(HardwareInitializationError):
-            RFM9xFactory.create(
-                mock_logger,
-                RFM9xModulation.LORA,
-                mock_spi,
-                mock_chip_select,
-                mock_reset,
-                1,
-                2,
-                3,
-                4,
-                5,
-            )
-        assert mock_create_lora_radio.call_count == 3
+    assert mock_create_lora_radio.call_count == 3

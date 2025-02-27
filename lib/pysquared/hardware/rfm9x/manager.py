@@ -2,9 +2,6 @@ from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
 
 # Type hinting only
 try:
-    from busio import SPI
-    from digitalio import DigitalInOut
-
     from lib.adafruit_rfm.rfm_common import RFMSPI
     from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
     from lib.pysquared.logger import Logger
@@ -23,43 +20,20 @@ class RFM9xManager:
         logger: Logger,
         use_fsk: Flag,
         radio_factory: RFM9xFactory,
-        spi: SPI,
-        chip_select: DigitalInOut,
-        reset: DigitalInOut,
-        sender_id: int,
-        receiver_id: int,
-        frequency: int,
-        transmit_power: int,
-        lora_spreading_factor: int,
-    ):
+    ) -> None:
         """Initialize the rfm9x manager.
 
         Stores configuration but doesn't create radio until needed.
 
         :param Logger logger: Logger instance for logging messages.
-        :param busio.SPI spi: The SPI bus connected to the chip. Ensure SCK, MOSI, and MISO are connected.
-        :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select line.
-        :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset line.
         :param Flag use_fsk: Flag to determine whether to use FSK or LoRa mode.
-        :param int sender_id: ID of the sender radio.
-        :param int receiver_id: ID of the receiver radio.
-        :param int frequency: Frequency at which the radio will transmit.
-        :param int transmit_power: Transmit power level (applicable for LoRa only).
-        :param int lora_spreading_factor: Spreading factor for LoRa modulation (applicable for LoRa only).
+        :param RFM9xFactory radio_factory: Factory for creating RFM9x radio instances.
 
         :raises HardwareInitializationError: If the radio fails to initialize.
         """
         self._log = logger
         self._use_fsk = use_fsk
         self._radio_factory = radio_factory
-        self._spi = spi
-        self._chip_select = chip_select
-        self._reset = reset
-        self._sender_id = sender_id
-        self._receiver_id = receiver_id
-        self._frequency = frequency
-        self._transmit_power = transmit_power
-        self._lora_spreading_factor = lora_spreading_factor
 
         self._radio = self.radio
 
@@ -72,18 +46,9 @@ class RFM9xManager:
             self._radio = self._radio_factory.create(
                 self._log,
                 self.get_modulation(),
-                self._spi,
-                self._chip_select,
-                self._reset,
-                self._sender_id,
-                self._receiver_id,
-                self._frequency,
-                self._transmit_power,
-                self._lora_spreading_factor,
             )
 
-            # TODO: We should use some default modulation value set in the config file
-            # instead of always toggling back to LoRa
+            # Always toggle back to LoRa on reboot
             self.set_modulation(RFM9xModulation.LORA)
 
         return self._radio
@@ -95,7 +60,7 @@ class RFM9xManager:
         if self._radio is None:
             return RFM9xModulation.FSK if self._use_fsk.get() else RFM9xModulation.LORA
 
-        return self._radio_factory.get_instance_modulation(self._radio)
+        return self._radio_factory.get_instance_modulation(self.radio)
 
     def set_modulation(self, req_modulation: RFM9xModulation) -> None:
         """
