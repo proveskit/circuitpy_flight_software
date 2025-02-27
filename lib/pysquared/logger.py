@@ -5,6 +5,7 @@ Logs can be output to standard output or saved to a file (functionality to be im
 
 import json
 import time
+import traceback
 
 # from lib.pysquared.debugcolor import color
 from collections import OrderedDict
@@ -71,6 +72,14 @@ class Logger:
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
 
+        # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
+        if (
+            "err" in kwargs
+            and level not in ("ERROR", "CRITICAL")
+            and isinstance(kwargs["err"], Exception)
+        ):
+            kwargs["err"] = traceback.format_exception(kwargs["err"])
+
         json_order: OrderedDict[str, str] = OrderedDict(
             [("time", asctime), ("level", level), ("msg", message)]
         )
@@ -102,17 +111,20 @@ class Logger:
         """
         self._log("WARNING", 3, message, **kwargs)
 
-    def error(self, message: str, **kwargs) -> None:
+    def error(self, message: str, err: Exception, **kwargs) -> None:
         """
         Log a message with severity level ERROR.
         """
+        kwargs["err"] = traceback.format_exception(err)
         self._error_counter.increment()
         self._log("ERROR", 4, message, **kwargs)
 
-    def critical(self, message: str, **kwargs) -> None:
+    def critical(self, message: str, err: Exception, **kwargs) -> None:
         """
         Log a message with severity level CRITICAL.
         """
+        kwargs["err"] = traceback.format_exception(err)
+        self._error_counter.increment()
         self._log("CRITICAL", 5, message, **kwargs)
 
     def get_error_count(self) -> int:

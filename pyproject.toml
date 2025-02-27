@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "adafruit-circuitpython-typing==1.11.2",
+    "circuitpython-stubs==9.2.4",
     "coverage==7.6.10",
     "pre-commit==4.0.1",
     "pytest==8.3.2",
@@ -32,9 +33,15 @@ include = [
     "repl.py",
     "safemode.py",
     ]
+omit = [
+    "lib/adafruit_*/**",
+    "lib/asyncio_*/**",
+    "lib/rv3028*/**",
+    "lib/neopixel.py",
+    ]
 
 [tool.coverage.html]
-directory = "coverage-reports/html"
+directory = ".coverage-reports/html"
 
 [tool.coverage.xml]
-output = "coverage-reports/coverage.xml"
+output = ".coverage-reports/coverage.xml"
