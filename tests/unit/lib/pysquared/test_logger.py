@@ -148,7 +148,11 @@ def test_warning_log_color(capsys, logger_color):
 
 def test_error_log_color(capsys, logger_color):
     logger_color.error(
-        "This is an error message", hee="haa", pleiades="five", please="work"
+        "This is an error message",
+        hee="haa",
+        pleiades="five",
+        please="work",
+        err=OSError("Manually creating an OS Error"),
     )
     captured = capsys.readouterr()
     assert color(msg="ERROR", color="pink") in captured.out
@@ -166,6 +170,7 @@ def test_critical_log_color(capsys, logger_color):
         soft="ware",
         j="20",
         config="king",
+        err=OSError("Manually creating an OS Error"),
     )
     captured = capsys.readouterr()
     assert color(msg="CRITICAL", color="red") in captured.out
