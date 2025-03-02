@@ -6,14 +6,12 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 import traceback
-
-# from lib.pysquared.debugcolor import color
 from collections import OrderedDict
 
 from lib.pysquared.nvm.counter import Counter
 
 
-def color(msg, color="gray", fmt="normal"):
+def _color(msg, color="gray", fmt="normal"):
     _h = "\033["
     _e = "\033[0;39;49m"
 
@@ -34,11 +32,11 @@ def color(msg, color="gray", fmt="normal"):
 
 LogColors = {
     "NOTSET": "NOTSET",
-    "DEBUG": color(msg="DEBUG", color="blue"),
+    "DEBUG": _color(msg="DEBUG", color="blue"),
     "INFO": "INFO",
-    "WARNING": color(msg="WARNING", color="orange"),
-    "ERROR": color(msg="ERROR", color="pink"),
-    "CRITICAL": color(msg="CRITICAL", color="red"),
+    "WARNING": _color(msg="WARNING", color="orange"),
+    "ERROR": _color(msg="ERROR", color="pink"),
+    "CRITICAL": _color(msg="CRITICAL", color="red"),
 }
 
 
