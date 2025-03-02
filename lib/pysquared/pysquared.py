@@ -273,7 +273,6 @@ class Satellite:
         Define the boot time and current time
         """
 
-        # self.BOOTTIME = time.mktime(self.rp2040_rtc.datetime)
         self.BOOTTIME = time.time()
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
@@ -803,12 +802,29 @@ class Satellite:
             return None
 
 
-def set_rtc_time(year, month, date, hour, minute, second, day_of_week):
+def set_rp2040_rtc_time(
+    year: int,
+    month: int,
+    date: int,
+    hour: int,
+    minute: int,
+    second: int,
+    day_of_week: int,
+):
+    """
+    Updates the RP2040's Real Time Clock (RTC) to the date and time passed
+
+    :param year: The year value (0-9999)
+    :param month: The month value (1-12)
+    :param date: The date value (1-31)
+    :param hour: The hour value (0-23)
+    :param minute: The minute value (0-59)
+    :param second: The second value (0-59)
+    :param day_of_week: The nth day of the week (0-6), where 0 represents Sunday and 6 represents Saturday
+    """
+
+    # Accessing the RP2040's RTC and updating its current date, time
     rtcc = rtc.RTC()
     rtcc.datetime = time.struct_time(
         (year, month, date, hour, minute, second, day_of_week, -1, -1)
     )
-
-    # BOOTTIME = time.time()
-
-    # self.CURRENTTIME = self.BOOTTIME
