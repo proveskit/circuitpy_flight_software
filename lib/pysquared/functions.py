@@ -9,7 +9,6 @@ import gc
 import random
 import time
 
-from lib.pysquared.battery_helper import BatteryHelper
 from lib.pysquared.config import Config
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
@@ -34,7 +33,6 @@ class functions:
     ) -> None:
         self.logger: Logger = logger
         self.cubesat: Satellite = cubesat
-        self.battery: BatteryHelper = BatteryHelper(cubesat, logger)
         self.logger.info("Initializing Functionalities")
         self.sleep_helper = sleep_helper
         self.packet_manager: PacketManager = PacketManager(
@@ -299,16 +297,6 @@ class functions:
             self.logger.error("Big_Data error", e)
 
         return self.facestring
-
-    def get_battery_data(
-        self,
-    ) -> Union[tuple[float, float, float, float, bool, float], None]:
-        try:
-            return self.battery.get_power_metrics()
-
-        except Exception as e:
-            self.logger.error("Error retrieving battery data", e)
-            return None
 
     def get_imu_data(
         self,
