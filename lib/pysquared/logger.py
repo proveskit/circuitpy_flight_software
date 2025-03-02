@@ -33,7 +33,7 @@ def _color(msg, color="gray", fmt="normal"):
 LogColors = {
     "NOTSET": "NOTSET",
     "DEBUG": _color(msg="DEBUG", color="blue"),
-    "INFO": "INFO",
+    "INFO": _color(msg="INFO", color="green"),
     "WARNING": _color(msg="WARNING", color="orange"),
     "ERROR": _color(msg="ERROR", color="pink"),
     "CRITICAL": _color(msg="CRITICAL", color="red"),

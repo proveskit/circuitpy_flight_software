@@ -129,7 +129,7 @@ def test_debug_log_color(capsys, logger_color):
 def test_info_log_color(capsys, logger_color):
     logger_color.info("This is a info message!!", foo="bar")
     captured = capsys.readouterr()
-    assert "INFO" in captured.out
+    assert _color(msg="INFO", color="green") in captured.out
     assert "This is a info message!!" in captured.out
     assert '"foo": "bar"' in captured.out
 
