@@ -1,4 +1,5 @@
 {
+"read_state": true,
 "cubesat_name": "Orpheus",
 "callsign": "KO6AZM",
 "last_battery_temp": 20.0,

@@ -1,8 +1,7 @@
 import os
 import sys
-import traceback
-from typing import Union
 
+# from typing import Union
 import board
 import busio
 import microcontroller
@@ -92,8 +91,9 @@ class USBFunctions:
         """Creates a file on the SD card."""
         self.make_file("/data/temperature.txt")
 
+    """"
     def make_file(self, file_name: str, binary: bool = False) -> Union[str, None]:
-        """Creates a new file in the specified directory.
+        Creates a new file in the specified directory.
 
         Args:
             file_name (str): The name of the file to create.
@@ -101,7 +101,7 @@ class USBFunctions:
 
         Returns:
             str: The name of the created file.
-        """
+
         try:
             ff = ""
             n = 0
@@ -160,7 +160,7 @@ class USBFunctions:
             return None
 
     def readfile(self, path: str, type: str = "string") -> Union[str, list]:
-        """Reads a file and returns its contents.
+        Reads a file and returns its contents.
 
         Args:
             path (str): The path to the file.
@@ -168,7 +168,7 @@ class USBFunctions:
 
         Returns:
             str: The contents of the file as a string or list.
-        """
+
         with open(path, "r") as f:  # Opens the file at the specified path in read mode
             lines = (
                 f.readlines()
@@ -179,6 +179,7 @@ class USBFunctions:
             return "".join(
                 map(str, lines)
             )  # Joins the list of lines into a single string and returns it
+    """
 
     def writefile(self, path: str, contents: str) -> str:
         """Writes contents to a file and returns the updated file contents.
