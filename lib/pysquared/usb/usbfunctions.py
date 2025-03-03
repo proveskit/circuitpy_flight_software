@@ -1,10 +1,7 @@
 import os
 import sys
 
-try:
-    from typing import Union
-except Exception:
-    pass
+# from typing import Union
 import traceback
 
 import board
@@ -96,7 +93,7 @@ class USBFunctions:
         """Creates a file on the SD card."""
         self.make_file("/data/temperature.txt")
 
-    def make_file(self, file_name: str, binary: bool = False) -> Union[str, None]:
+    def make_file(self, file_name: str, binary: bool = False):
         """
         Creates a new file in the specified directory.
 
@@ -165,7 +162,7 @@ class USBFunctions:
             print("Error creating file: " + "".join(traceback.format_exception(e)))
             return None
 
-    def readfile(self, path: str, type: str = "string") -> Union[str, list]:
+    def readfile(self, path: str, type: str = "string"):
         """
         Reads a file and returns its contents.
 
