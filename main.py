@@ -32,7 +32,9 @@ logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
     colorized=True,
 )
-
+f = open("demofile.txt", "a")
+f.write("Go Space Cadets -j20!")
+f.close()
 logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
 
 loiter_time: int = 5
