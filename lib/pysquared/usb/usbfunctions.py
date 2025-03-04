@@ -78,10 +78,10 @@ class USBFunctions:
             bool: True if initialization is successful, False otherwise.
         """
         spi_bus = busio.SPI(
-            board.SPI1_SCK, board.SPI1_MOSI, board.SPI1_MISO
+            board.SPI0_SCK, board.SPI0_MOSI, board.SPI0_MISO
         )  # Sets up the SPI bus
         _sd = sdcardio.SDCard(
-            spi_bus, board.SPI1_CS0, baudrate=4000000
+            spi_bus, board.SPI0_CS1, baudrate=4000000
         )  # Initializes the SD card with the SPI bus
         _vfs = storage.VfsFat(_sd)  # Creates a FAT filesystem on the SD card
         storage.mount(_vfs, "/sd")  # Mounts the filesystem to the /sd directory
@@ -109,13 +109,13 @@ class USBFunctions:
             ff = ""
             n = 0
             _folder = file_name[
-                : file_name.rfind("/") + 1
+                : str(file_name).rfind("/") + 1
             ]  # Extracts the folder from the file name
             _file = file_name[
-                file_name.rfind("/") + 1 : file_name.rfind(".")
+                str(file_name).rfind("/") + 1 : str(file_name).rfind(".")
             ]  # Extracts the file prefix from the file name
             _file_type = file_name[
-                file_name.rfind(".") + 1 :
+                str(file_name).rfind(".") + 1 :
             ]  # Extracts the file type from the file name
             print(
                 "Creating new file in directory: /sd{} with file prefix: {}".format(

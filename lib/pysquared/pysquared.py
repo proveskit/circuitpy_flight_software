@@ -8,7 +8,6 @@ Library Repo:
 """
 
 # Common CircuitPython Libs
-import sys
 import time
 from collections import OrderedDict
 from os import chdir, mkdir, stat
@@ -18,9 +17,8 @@ import busio
 import digitalio
 import machine
 import microcontroller
-import sdcardio
 from micropython import const
-from storage import VfsFat, mount, umount
+from storage import umount
 
 import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
@@ -178,15 +176,15 @@ class Satellite:
         self.rtc.configure_backup_switchover(mode="level", interrupt=True)
         self.hardware[hardware_key] = True
 
-    @safe_init
-    def init_sd_card(self, hardware_key: str) -> None:
-        # Baud rate depends on the card, 4MHz should be safe
-        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
-        _vfs = VfsFat(_sd)
-        mount(_vfs, "/sd")
-        self.fs = _vfs
-        sys.path.append("/sd")
-        self.hardware[hardware_key] = True
+    # @safe_init
+    # def init_sd_card(self, hardware_key: str) -> None:
+    #     # Baud rate depends on the card, 4MHz should be safe
+    #     _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
+    #     _vfs = VfsFat(_sd)
+    #     mount(_vfs, "/sd")
+    #     self.fs = _vfs
+    #     sys.path.append("/sd")
+    #     self.hardware[hardware_key] = True
 
     @safe_init
     def init_neopixel(self, hardware_key: str) -> None:
