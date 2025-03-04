@@ -22,8 +22,10 @@ from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
 
 rp2040_rtc = rtc.RTC()
-# This line allows the RP2040's RTC to capture the updated time
-# and date passed in the set_rp2040_rtc_time in the REPL when rebooting
+# This line below allows the RP2040's RTC to capture the updated time
+# and date passed in the set_rp2040_rtc_time in the REPL when rebooting.
+# Without this line, the program will hang at the first safe sleep after updating the
+# RP2040's RTC
 rp2040_rtc.datetime = time.localtime()
 
 logger: Logger = Logger(
