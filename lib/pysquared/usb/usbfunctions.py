@@ -32,12 +32,12 @@ class USBFunctions:
 
     """Initializing class, remounting storage, and initializing SD card"""
 
-    def __init__(self) -> None:
-        storage.remount("/", readonly=False)  # Remounts root file system as readable
-        self.sd_initialized = False  # Creating SD initialization flag
-        if self.init_sd():  # Checking if SD initialization via init_sd() was successful
-            self.sd_initialized = True  # Setting flag to True upon success
-        print("Initialized USB Functionalities")
+    # def __init__(self) -> None:
+    #    storage.remount("/", readonly=False)  # Remounts root file system as readable
+    #    self.sd_initialized = False  # Creating SD initialization flag
+    #    if self.init_sd():  # Checking if SD initialization via init_sd() was successful
+    #        self.sd_initialized = True  # Setting flag to True upon success
+    #    print("Initialized USB Functionalities")
 
     def disable_write(self) -> None:
         """Disables write access by inserting a line in a JSON file."""
@@ -197,7 +197,11 @@ class USBFunctions:
         """
         with open(path, "w") as f:  # Opens the file at the specified path in write mode
             f.write(contents)  # Writes the provided contents to the file
+
+        print("Worked")
         return self.readfile(path)  # Reads and returns the updated file contents
+
+        print("Worked")
 
     def appendfile(self, path: str, contents: str) -> str:
         """Appends contents to a file and returns the updated file contents.

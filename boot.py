@@ -12,5 +12,7 @@ else:
     print("read_state=false")
     storage.disable_usb_drive()
 
+storage.remount("/", False)
+
 # import supervisor
 # supervisor.set_next_stack_limit(4096 + 4096)
