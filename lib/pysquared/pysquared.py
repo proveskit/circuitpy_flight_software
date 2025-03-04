@@ -824,7 +824,7 @@ def set_rp2040_rtc_time(
     """
 
     # Accessing the RP2040's RTC and updating its current date, time
-    rtcc = rtc.RTC()
-    rtcc.datetime = time.struct_time(
+    rp2040_rtc = rtc.RTC()
+    rp2040_rtc.datetime = time.struct_time(
         (year, month, date, hour, minute, second, day_of_week, -1, -1)
     )
