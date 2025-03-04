@@ -6,8 +6,38 @@ Logs can be output to standard output or saved to a file (functionality to be im
 import json
 import time
 import traceback
+from collections import OrderedDict
 
 from lib.pysquared.nvm.counter import Counter
+
+
+def _color(msg, color="gray", fmt="normal"):
+    _h = "\033["
+    _e = "\033[0;39;49m"
+
+    _c = {
+        "red": "1",
+        "green": "2",
+        "orange": "3",
+        "blue": "4",
+        "pink": "5",
+        "teal": "6",
+        "white": "7",
+        "gray": "9",
+    }
+
+    _f = {"normal": "0", "bold": "1", "ulined": "4"}
+    return _h + _f[fmt] + ";3" + _c[color] + "m" + msg + _e
+
+
+LogColors = {
+    "NOTSET": "NOTSET",
+    "DEBUG": _color(msg="DEBUG", color="blue"),
+    "INFO": _color(msg="INFO", color="green"),
+    "WARNING": _color(msg="WARNING", color="orange"),
+    "ERROR": _color(msg="ERROR", color="pink"),
+    "CRITICAL": _color(msg="CRITICAL", color="red"),
+}
 
 
 class LogLevel:
@@ -24,9 +54,11 @@ class Logger:
         self,
         error_counter: Counter,
         log_level: int = LogLevel.NOTSET,
+        colorized: bool = False,
     ) -> None:
         self._error_counter: Counter = error_counter
         self._log_level: int = log_level
+        self.colorized: bool = colorized
 
     def _can_print_this_level(self, level_value: int) -> bool:
         return level_value >= self._log_level
@@ -35,12 +67,8 @@ class Logger:
         """
         Log a message with a given severity level and any addional key/values.
         """
-        kwargs["level"] = level
-        kwargs["msg"] = message
-
         now = time.localtime()
         asctime = f"{now.tm_year}-{now.tm_mon:02d}-{now.tm_mday:02d} {now.tm_hour:02d}:{now.tm_min:02d}:{now.tm_sec:02d}"
-        kwargs["time"] = asctime
 
         # case where someone used debug, info, or warning yet also provides an 'err' kwarg with an Exception
         if (
@@ -50,9 +78,18 @@ class Logger:
         ):
             kwargs["err"] = traceback.format_exception(kwargs["err"])
 
-        json_output = json.dumps(kwargs)
+        json_order: OrderedDict[str, str] = OrderedDict(
+            [("time", asctime), ("level", level), ("msg", message)]
+        )
+        json_order.update(kwargs)
+
+        json_output = json.dumps(json_order)
 
         if self._can_print_this_level(level_value):
+            if self.colorized:
+                json_output = json_output.replace(
+                    f'"level": "{level}"', f'"level": "{LogColors[level]}"'
+                )
             print(json_output)
 
     def debug(self, message: str, **kwargs) -> None:

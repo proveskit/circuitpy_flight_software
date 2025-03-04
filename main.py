@@ -29,7 +29,8 @@ rp2040_rtc = rtc.RTC()
 rp2040_rtc.datetime = time.localtime()
 
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm)
+    error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
+    colorized=True,
 )
 
 logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
