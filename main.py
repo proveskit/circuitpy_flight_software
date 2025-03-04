@@ -32,8 +32,10 @@ logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
     colorized=True,
 )
-f = open("demofile.txt", "a")
-f.write("Go Space Cadets -j20!")
+f = open("testing_on_March4.txt", "a")
+f.write(
+    "Trying to see if the date saved on filesystem shows as the current date or January 1, 2020"
+)
 f.close()
 logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
 
