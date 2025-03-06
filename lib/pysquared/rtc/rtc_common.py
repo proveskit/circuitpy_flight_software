@@ -20,4 +20,3 @@ class RTC:
         """
         rp2040_rtc = rtc.RTC()
         rp2040_rtc.datetime = time.localtime()
-        print(f"RTC initialized with time: {rp2040_rtc.datetime}")

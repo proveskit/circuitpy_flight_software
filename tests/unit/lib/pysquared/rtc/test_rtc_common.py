@@ -1,7 +1,15 @@
 import time
 
+import pytest
+
 import mocks.circuitpython.rtc as MockRTC
 from lib.pysquared.rtc.rtc_common import RTC
+
+
+@pytest.fixture(autouse=True)
+def cleanup():
+    yield
+    MockRTC.RTC().destroy()
 
 
 def test_init():
