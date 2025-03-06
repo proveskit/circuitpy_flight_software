@@ -14,7 +14,6 @@ import time
 import board
 import digitalio
 import microcontroller
-import rtc
 
 import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
@@ -26,15 +25,11 @@ from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
+from lib.pysquared.rtc.rtc_common import RTC
 from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
 
-rp2040_rtc = rtc.RTC()
-# This line below allows the RP2040's RTC to capture the updated time
-# and date passed in the set_rp2040_rtc_time in the REPL when rebooting.
-# Without this line, the program will hang at the first safe sleep after updating the
-# RP2040's RTC
-rp2040_rtc.datetime = time.localtime()
+RTC.init()
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
