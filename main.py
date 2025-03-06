@@ -8,15 +8,23 @@ Version: 2.0.0
 Published: Nov 19, 2024
 """
 
+import gc
 import time
 
+import board
+import digitalio
 import microcontroller
 
+import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
-from lib.pysquared.config import Config
+from lib.pysquared.config.config import Config
+from lib.pysquared.hardware.digitalio import initialize_pin
+from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
+from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
+from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
 
@@ -41,11 +49,18 @@ try:
     c.watchdog_pet()
     sleep_helper = SleepHelper(c, logger)
 
-    import gc  # Garbage collection
+    radio_manager = RFM9xManager(
+        logger,
+        Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
+        RFM9xFactory(
+            c.spi0,
+            initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+            initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
+            config.radio,
+        ),
+    )
 
-    import lib.pysquared.functions as functions
-
-    f = functions.functions(c, logger, config, sleep_helper)
+    f = functions.functions(c, logger, config, sleep_helper, radio_manager)
 
     def initial_boot():
         c.watchdog_pet()
