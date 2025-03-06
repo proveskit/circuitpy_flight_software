@@ -37,9 +37,5 @@ class Field:
 
         self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
 
-    def troubleshooting(self) -> None:
-        # this is for troubleshooting comms
-        pass
-
     def __del__(self) -> None:
         self.logger.debug("Object Destroyed!")
