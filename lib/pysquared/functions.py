@@ -47,7 +47,6 @@ class functions:
         )
 
         self.cubesat_name: str = config.cubesat_name
-        self.error_count: int = 0
         self.facestring: list = [None, None, None, None, None]
         self.jokes: list[str] = config.jokes
         self.last_battery_temp: float = config.last_battery_temp
@@ -55,16 +54,9 @@ class functions:
         self.callsign: str = config.callsign
         self.state_of_health_part1: bool = False
 
-        self.detumble_enable_z: bool = config.detumble_enable_z
-        self.detumble_enable_x: bool = config.detumble_enable_x
-        self.detumble_enable_y: bool = config.detumble_enable_y
-
     """
     Satellite Management Functions
     """
-
-    def current_check(self) -> float:
-        return self.cubesat.current_draw
 
     def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
