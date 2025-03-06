@@ -30,8 +30,12 @@ fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
 .PHONY: test
-test: .venv ## Run tests
+test: .venv download-libraries ## Run tests
+ifeq ($(TEST_SELECT),ALL)
 	$(UV) run coverage run --rcfile=pyproject.toml -m pytest tests/unit
+else
+	$(UV) run coverage run --rcfile=pyproject.toml -m pytest -m "not slow" tests/unit
+endif
 	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
