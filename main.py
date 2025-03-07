@@ -25,8 +25,11 @@ from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
+from lib.pysquared.rtc.rtc_common import RTC
 from lib.pysquared.sleep_helper import SleepHelper
 from version import __version__
+
+RTC.init()
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),

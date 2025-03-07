@@ -218,7 +218,8 @@ class Satellite:
         """
         Define the boot time and current time
         """
-        self.BOOTTIME: int = 1577836800
+
+        self.BOOTTIME = time.time()
         self.logger.debug("Booting up!", boot_time=f"{self.BOOTTIME}s")
         self.CURRENTTIME: int = self.BOOTTIME
         self.UPTIME: int = 0
