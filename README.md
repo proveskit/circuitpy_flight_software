@@ -36,7 +36,6 @@ You can cleanly load new software by doing the following:
 This software library contains all of the libraries required to operate the sensors, PySquared board, and radio module.
 - **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain the same sensors, this class handles the individual face sensors and returns them all to the main code.
 - **flag.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
-- **debugcolor.py** This is code that allows for easier debugging and is used by individual classes. Each class utilizes a different color and makes debugging substantially easier
 - **Field.py** This is code that implements the radio module for sending and listening
 - **functions.py** This is a library of functions utilized by the satellite to obtain data, detumble, run the battery heater
 - **pysquared.py** This is a library that initializes and maintains all the main functions for the pysquared architecture
