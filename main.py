@@ -8,7 +8,6 @@ Version: 2.0.0
 Published: Nov 19, 2024
 """
 
-import gc
 import time
 
 import board
@@ -49,7 +48,10 @@ try:
     config: Config = Config("config.json")
 
     c = pysquared.Satellite(config, logger, __version__)
-    c.watchdog_pet()
+
+    # Start the watchdog background task
+    c.start_watchdog_background_task()
+
     sleep_helper = SleepHelper(c, logger)
 
     radio_manager = RFM9xManager(
@@ -66,78 +68,41 @@ try:
     f = functions.functions(c, logger, config, sleep_helper, radio_manager)
 
     def initial_boot():
-        c.watchdog_pet()
         f.beacon()
-        c.watchdog_pet()
         f.listen()
-        c.watchdog_pet()
-
-    try:
-        c.boot_count.increment()
-
-        logger.info(
-            "FC Board Stats",
-            bytes_remaining=gc.mem_free(),
-            boot_number=c.boot_count.get(),
-        )
-
-        initial_boot()
-
-    except Exception as e:
-        logger.error("Error in Boot Sequence", e)
-
-    finally:
-        pass
-
-    def send_imu_data():
-        logger.info("Looking to get imu data...")
-        IMUData = []
-        c.watchdog_pet()
-        logger.info("IMU has baton")
-        IMUData = f.get_imu_data()
-        c.watchdog_pet()
-        f.send(IMUData)
-
-    def main():
-        f.beacon()
-
-        f.listen_loiter()
-
-        f.state_of_health()
-
-        f.listen_loiter()
-
-        f.all_face_data()
-        c.watchdog_pet()
-        f.send_face()
-
-        f.listen_loiter()
-
-        send_imu_data()
-
-        f.listen_loiter()
-
-        f.joke()
-
-        f.listen_loiter()
 
     def critical_power_operations():
         initial_boot()
-        c.watchdog_pet()
-
         sleep_helper.long_hibernate()
 
     def minimum_power_operations():
         initial_boot()
-        c.watchdog_pet()
-
         sleep_helper.short_hibernate()
+
+    def send_imu_data():
+        logger.info("Looking to get imu data...")
+        IMUData = []
+        IMUData = f.get_imu_data()
+        f.send(IMUData)
+
+    def main():
+        f.beacon()
+        f.listen_loiter()
+        f.state_of_health()
+        f.listen_loiter()
+        f.all_face_data()
+        f.send_face()
+        f.listen_loiter()
+        send_imu_data()
+        f.listen_loiter()
+        f.joke()
+        f.listen_loiter()
 
     ######################### MAIN LOOP ##############################
     try:
         while True:
             # L0 automatic tasks no matter the battery level
-            c.check_reboot()
+            c.check_reboot()  # This now includes watchdog petting
 
             if c.power_mode == "critical":
                 c.rgb = (0, 0, 0)
@@ -165,7 +130,6 @@ try:
         microcontroller.reset()
     finally:
         logger.info("Going Neutral!")
-
         c.rgb = (0, 0, 0)
         c.hardware["WDT"] = False
 
