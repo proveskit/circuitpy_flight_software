@@ -2,16 +2,21 @@
 # Nov 10, 2024
 from lib.pysquared.logger import Logger
 
+try:
+    from typing import Union
+except Exception:
+    pass
+
 
 class PacketManager:
-    def __init__(self, logger: Logger, max_packet_size=128):
+    def __init__(self, logger: Logger, max_packet_size: int = 128) -> None:
         """Initialize the packet manager with maximum packet size (default 128 bytes for typical LoRa)"""
-        self.max_packet_size = max_packet_size
-        self.header_size = 4  # 2 bytes for sequence number, 2 for total packets
-        self.payload_size = max_packet_size - self.header_size
-        self.logger = logger
+        self.max_packet_size: int = max_packet_size
+        self.header_size: int = 4  # 2 bytes for sequence number, 2 for total packets
+        self.payload_size: int = max_packet_size - self.header_size
+        self.logger: Logger = logger
 
-    def create_retransmit_request(self, missing_packets):
+    def create_retransmit_request(self, missing_packets: list[int]) -> bytes:
         """
         Create a packet requesting retransmission
         Format:
@@ -19,25 +24,29 @@ class PacketManager:
         - 2 bytes: Number of missing packets
         - Remaining bytes: Missing packet sequence numbers
         """
-        header = b"\xff\xff" + len(missing_packets).to_bytes(2, "big")
-        payload = b"".join(seq.to_bytes(2, "big") for seq in missing_packets)
+        header: bytes = b"\xff\xff" + len(missing_packets).to_bytes(2, "big")
+        payload: bytes = b"".join(
+            sequence_number.to_bytes(2, "big") for sequence_number in missing_packets
+        )
         return header + payload
 
-    def is_retransmit_request(self, packet):
+    def is_retransmit_request(self, packet: bytes) -> bool:
         """Check if packet is a retransmit request"""
         return len(packet) >= 4 and packet[:2] == b"\xff\xff"
 
-    def parse_retransmit_request(self, packet):
+    def parse_retransmit_request(self, packet: bytes) -> list[int]:
         """Extract missing packet numbers from retransmit request"""
-        num_missing = int.from_bytes(packet[2:4], "big")
-        missing = []
+        num_missing: int = int.from_bytes(packet[2:4], "big")
+        missing: list[int] = []
         for i in range(num_missing):
-            start_idx = 4 + (i * 2)
-            seq = int.from_bytes(packet[start_idx : start_idx + 2], "big")
-            missing.append(seq)
+            start_idx: int = 4 + (i * 2)
+            sequence_number: int = int.from_bytes(
+                packet[start_idx : start_idx + 2], "big"
+            )
+            missing.append(sequence_number)
         return missing
 
-    def pack_data(self, data):
+    def pack_data(self, data) -> list[bytes]:
         """
         Takes input data and returns a list of packets ready for transmission
         Each packet includes:
@@ -48,34 +57,36 @@ class PacketManager:
         # Convert data to bytes if it isn't already
         if not isinstance(data, bytes):
             if isinstance(data, str):
-                data = data.encode("utf-8")
+                data: bytes = data.encode("utf-8")
             else:
-                data = str(data).encode("utf-8")
+                data: bytes = str(data).encode("utf-8")
 
         # Calculate number of packets needed
-        total_packets = (len(data) + self.payload_size - 1) // self.payload_size
+        total_packets: int = (len(data) + self.payload_size - 1) // self.payload_size
         self.logger.info(
             "Packing data into packets",
             num_packets=total_packets,
             data_length=len(data),
         )
 
-        packets = []
-        for seq in range(total_packets):
+        packets: list[bytes] = []
+        for sequence_number in range(total_packets):
             # Create header
-            header = seq.to_bytes(2, "big") + total_packets.to_bytes(2, "big")
+            header: bytes = sequence_number.to_bytes(2, "big") + total_packets.to_bytes(
+                2, "big"
+            )
             self.logger.info("Created header", header=[hex(b) for b in header])
 
             # Get payload slice for this packet
-            start = seq * self.payload_size
-            end = start + self.payload_size
-            payload = data[start:end]
+            start: int = sequence_number * self.payload_size
+            end: int = start + self.payload_size
+            payload: bytes = data[start:end]
 
             # Combine header and payload
-            packet = header + payload
+            packet: bytes = header + payload
             self.logger.info(
                 "Combining the header and payload to form a Packet",
-                packet=seq,
+                packet=sequence_number,
                 packet_length=len(packet),
                 header=[hex(b) for b in header],
             )
@@ -83,7 +94,7 @@ class PacketManager:
 
         return packets
 
-    def unpack_data(self, packets):
+    def unpack_data(self, packets: list) -> Union[bytes, None]:
         """
         Takes a list of packets and reassembles the original data
         Returns None if packets are missing or corrupted
@@ -93,12 +104,12 @@ class PacketManager:
 
         # Sort packets by sequence number
         try:
-            packets = sorted(packets, key=lambda p: int.from_bytes(p[:2], "big"))
+            packets: list = sorted(packets, key=lambda p: int.from_bytes(p[:2], "big"))
         except Exception:
             return None
 
         # Verify all packets are present
-        total_packets = int.from_bytes(packets[0][2:4], "big")
+        total_packets: int = int.from_bytes(packets[0][2:4], "big")
         if len(packets) != total_packets:
             return None
 
@@ -108,18 +119,18 @@ class PacketManager:
                 return None
 
         # Combine payloads
-        data = b"".join(packet[self.header_size :] for packet in packets)
+        data: bytes = b"".join(packet[self.header_size :] for packet in packets)
         return data
 
-    def create_ack_packet(self, seq_num):
+    def create_ack_packet(self, sequence_number: int) -> bytes:
         """Creates an acknowledgment packet for a given sequence number"""
-        return b"ACK" + seq_num.to_bytes(2, "big")
+        return b"ACK" + sequence_number.to_bytes(2, "big")
 
-    def is_ack_packet(self, packet):
+    def is_ack_packet(self, packet: str) -> bool:
         """Checks if a packet is an acknowledgment packet"""
         return packet.startswith(b"ACK")
 
-    def get_ack_seq_num(self, ack_packet):
+    def get_ack_seq_num(self, ack_packet: str) -> Union[int, None]:
         """Extracts sequence number from an acknowledgment packet"""
         if self.is_ack_packet(ack_packet):
             return int.from_bytes(ack_packet[3:5], "big")

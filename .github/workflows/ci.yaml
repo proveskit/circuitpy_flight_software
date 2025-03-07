@@ -18,9 +18,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Disabling shallow clones is recommended for improving the relevancy of SonarQube reporting
+          fetch-depth: 0
       - name: Test
         run: |
-          make test
+          TEST_SELECT=ALL make test
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage-reports/coverage.xml
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   archive:
     runs-on: ubuntu-latest
     steps:
@@ -31,5 +43,5 @@ jobs:
       - name: Archive
         uses: actions/upload-artifact@v4
         with:
-          name: proves.zip
+          name: proves
           path: artifacts/proves.zip

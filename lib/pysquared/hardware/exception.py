@@ -1,0 +1,2 @@
+class HardwareInitializationError(Exception):
+    pass

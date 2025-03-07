@@ -19,21 +19,20 @@ CONFIG_SCHEMA = {
     "heating": bool,
     "orpheus": bool,
     "is_licensed": bool,
-    "NORMAL_TEMP": int,
-    "NORMAL_BATT_TEMP": int,
-    "NORMAL_MICRO_TEMP": int,
-    "NORMAL_CHARGE_CURRENT": float,
-    "NORMAL_BATTERY_VOLTAGE": float,
-    "CRITICAL_BATTERY_VOLTAGE": float,
-    "vlowbatt": float,
+    "normal_temp": int,
+    "normal_battery_temp": int,
+    "normal_micro_temp": int,
+    "normal_charge_current": float,
+    "normal_battery_voltage": float,
+    "critical_battery_voltage": float,
     "battery_voltage": float,
     "current_draw": float,
-    "REBOOT_TIME": int,
+    "reboot_time": int,
     "turbo_clock": bool,
-    "radio_cfg": dict,
+    "radio": dict,
     "super_secret_code": str,
     "repeat_code": str,
-    "jokereply": list,
+    "joke_reply": list,
 }
 
 
@@ -62,9 +61,8 @@ def validate_config(config: Dict[str, Any]) -> None:
     # Validate voltage ranges
     voltage_fields = [
         "battery_voltage",
-        "NORMAL_BATTERY_VOLTAGE",
-        "CRITICAL_BATTERY_VOLTAGE",
-        "vlowbatt",
+        "normal_battery_voltage",
+        "critical_battery_voltage",
     ]
     for field in voltage_fields:
         value = config[field]
@@ -76,39 +74,78 @@ def validate_config(config: Dict[str, Any]) -> None:
         raise ValueError("Current draw cannot be negative")
 
     # Validate time values
-    time_fields = ["sleep_duration", "REBOOT_TIME"]
+    time_fields = ["sleep_duration", "reboot_time"]
     for field in time_fields:
         if config[field] <= 0:
             raise ValueError(f"{field} must be positive")
 
-    # Add radio_cfg validation after voltage validation
     # Validate radio configuration
-    radio_required_fields = {
+    if not isinstance(config["radio"], dict):
+        raise TypeError("radio must be a dictionary")
+
+    # Validate basic radio fields
+    radio_basic_fields = {
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
-        "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
-        "transmit_power": int,
         "start_time": int,
     }
 
-    if not isinstance(config["radio_cfg"], dict):
-        raise TypeError("radio_cfg must be a dictionary")
-
-    for field, expected_type in radio_required_fields.items():
-        if field not in config["radio_cfg"]:
-            raise ValueError(f"Required radio config field '{field}' is missing")
-        if not isinstance(config["radio_cfg"][field], expected_type):
+    for field, expected_type in radio_basic_fields.items():
+        if field not in config["radio"]:
+            raise ValueError(f"Required radio field '{field}' is missing")
+        if not isinstance(config["radio"][field], expected_type):
             raise TypeError(
-                f"Radio config field '{field}' must be of type {expected_type.__name__}"
+                f"Radio field '{field}' must be of type {expected_type.__name__}"
+            )
+
+    # Validate FSK config
+    if "fsk" not in config["radio"]:
+        raise ValueError("Required radio field 'fsk' is missing")
+    if not isinstance(config["radio"]["fsk"], dict):
+        raise TypeError("radio.fsk must be a dictionary")
+
+    fsk_fields = {
+        "broadcast_address": int,
+        "node_address": int,
+        "modulation_type": int,
+    }
+
+    for field, expected_type in fsk_fields.items():
+        if field not in config["radio"]["fsk"]:
+            raise ValueError(f"Required radio.fsk field '{field}' is missing")
+        if not isinstance(config["radio"]["fsk"][field], expected_type):
+            raise TypeError(
+                f"Radio.fsk field '{field}' must be of type {expected_type.__name__}"
+            )
+
+    # Validate LoRa config
+    if "lora" not in config["radio"]:
+        raise ValueError("Required radio field 'lora' is missing")
+    if not isinstance(config["radio"]["lora"], dict):
+        raise TypeError("radio.lora must be a dictionary")
+
+    lora_fields = {
+        "ack_delay": float,
+        "coding_rate": int,
+        "cyclic_redundancy_check": bool,
+        "max_output": bool,
+        "spreading_factor": int,
+        "transmit_power": int,
+    }
+
+    for field, expected_type in lora_fields.items():
+        if field not in config["radio"]["lora"]:
+            raise ValueError(f"Required radio.lora field '{field}' is missing")
+        if not isinstance(config["radio"]["lora"][field], expected_type):
+            raise TypeError(
+                f"Radio.lora field '{field}' must be of type {expected_type.__name__}"
             )
 
     # Validate radio config ranges
-    if not 0 <= config["radio_cfg"]["transmit_power"] <= 23:
-        raise ValueError("transmit_power must be between 0 and 23")
-    if not 400 <= config["radio_cfg"]["transmit_frequency"] <= 450:
+    if not 0 <= config["radio"]["lora"]["transmit_power"] <= 23:
+        raise ValueError("lora.transmit_power must be between 0 and 23")
+    if not 400 <= config["radio"]["transmit_frequency"] <= 450:
         raise ValueError("transmit_frequency must be between 400 and 450 MHz")
 
 
@@ -161,10 +198,9 @@ def test_field_types(config_data):
     # Test numeric fields
     float_fields = [
         "last_battery_temp",
-        "NORMAL_CHARGE_CURRENT",
-        "NORMAL_BATTERY_VOLTAGE",
-        "CRITICAL_BATTERY_VOLTAGE",
-        "vlowbatt",
+        "normal_charge_current",
+        "normal_battery_voltage",
+        "critical_battery_voltage",
         "current_draw",
         "battery_voltage",
     ]
@@ -173,10 +209,10 @@ def test_field_types(config_data):
 
     int_fields = [
         "sleep_duration",
-        "NORMAL_TEMP",
-        "NORMAL_BATT_TEMP",
-        "NORMAL_MICRO_TEMP",
-        "REBOOT_TIME",
+        "normal_temp",
+        "normal_battery_temp",
+        "normal_micro_temp",
+        "reboot_time",
     ]
     for field in int_fields:
         assert isinstance(config_data[field], int), f"{field} must be an integer"
@@ -197,38 +233,66 @@ def test_field_types(config_data):
         assert isinstance(config_data[field], bool), f"{field} must be a boolean"
 
     # Test list fields
-    list_fields = ["jokes", "jokereply"]
+    list_fields = ["jokes", "joke_reply"]
     for field in list_fields:
         assert isinstance(config_data[field], list), f"{field} must be a list"
         assert all(
             isinstance(item, str) for item in config_data[field]
         ), f"All items in {field} must be strings"
 
-    # Add radio config testing after list fields
-    assert isinstance(config_data["radio_cfg"], dict), "radio_cfg must be a dictionary"
-    radio_fields = {
+    # Test radio config
+    assert isinstance(config_data["radio"], dict), "radio must be a dictionary"
+
+    # Test basic radio fields
+    radio_basic_fields = {
         "sender_id": int,
         "receiver_id": int,
         "transmit_frequency": float,
-        "LoRa_spreading_factor": int,
-        "transmit_bandwidth": int,
-        "LoRa_coding_rate": int,
-        "transmit_power": int,
         "start_time": int,
     }
-    for field, expected_type in radio_fields.items():
+    for field, expected_type in radio_basic_fields.items():
         assert isinstance(
-            config_data["radio_cfg"][field], expected_type
-        ), f"radio_cfg.{field} must be a {expected_type.__name__}"
+            config_data["radio"][field], expected_type
+        ), f"radio.{field} must be a {expected_type.__name__}"
+
+    # Test FSK fields
+    assert isinstance(
+        config_data["radio"]["fsk"], dict
+    ), "radio.fsk must be a dictionary"
+    fsk_fields = {
+        "broadcast_address": int,
+        "node_address": int,
+        "modulation_type": int,
+    }
+    for field, expected_type in fsk_fields.items():
+        assert isinstance(
+            config_data["radio"]["fsk"][field], expected_type
+        ), f"radio.fsk.{field} must be a {expected_type.__name__}"
+
+    # Test LoRa fields
+    assert isinstance(
+        config_data["radio"]["lora"], dict
+    ), "radio.lora must be a dictionary"
+    lora_fields = {
+        "ack_delay": float,
+        "coding_rate": int,
+        "cyclic_redundancy_check": bool,
+        "max_output": bool,
+        "spreading_factor": int,
+        "transmit_power": int,
+    }
+    for field, expected_type in lora_fields.items():
+        assert isinstance(
+            config_data["radio"]["lora"][field], expected_type
+        ), f"radio.lora.{field} must be a {expected_type.__name__}"
 
 
 def test_voltage_ranges(config_data):
     """Test that voltage values are within expected ranges."""
     voltage_fields = [
         "battery_voltage",
-        "NORMAL_BATTERY_VOLTAGE",
-        "CRITICAL_BATTERY_VOLTAGE",
-        "vlowbatt",
+        "normal_battery_voltage",
+        "critical_battery_voltage",
     ]
     for field in voltage_fields:
         value = config_data[field]
@@ -238,7 +302,7 @@ def test_voltage_ranges(config_data):
 def test_time_values(config_data):
     """Test that time values are positive."""
     assert config_data["sleep_duration"] > 0, "sleep_duration must be positive"
-    assert config_data["REBOOT_TIME"] > 0, "REBOOT_TIME must be positive"
+    assert config_data["reboot_time"] > 0, "reboot_time must be positive"
 
 
 def test_current_draw_positive(config_data):
@@ -249,10 +313,10 @@ def test_current_draw_positive(config_data):
 def test_lists_not_empty(config_data):
     """Test that list fields are not empty."""
     assert len(config_data["jokes"]) > 0, "jokes list cannot be empty"
-    assert len(config_data["jokereply"]) > 0, "jokereply list cannot be empty"
+    assert len(config_data["joke_reply"]) > 0, "joke_reply list cannot be empty"
     assert all(
         isinstance(joke, str) for joke in config_data["jokes"]
     ), "All jokes must be strings"
     assert all(
-        isinstance(reply, str) for reply in config_data["jokereply"]
+        isinstance(reply, str) for reply in config_data["joke_reply"]
     ), "All joke replies must be strings"

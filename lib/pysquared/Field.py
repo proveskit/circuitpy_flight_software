@@ -4,15 +4,25 @@ This class handles communications
 Authors: Nicole Maggard, Michael Pham, and Rachel Sarmiento
 """
 
+from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
 from lib.pysquared.logger import Logger
+from lib.pysquared.pysquared import Satellite
+
+try:
+    from typing import Any
+except Exception:
+    pass
 
 
 class Field:
-    def __init__(self, cubesat, logger: Logger):
-        self.cubesat = cubesat
-        self.logger = logger
+    def __init__(
+        self, cubesat: Satellite, logger: Logger, radio_manager: RFM9xManager
+    ) -> None:
+        self.cubesat: Satellite = cubesat
+        self.logger: Logger = logger
+        self.radio_manager: RFM9xManager = radio_manager
 
-    def Beacon(self, msg):
+    def Beacon(self, msg: Any):
         if not self.cubesat.is_licensed:
             self.logger.debug(
                 "Please toggle licensed variable in code once you obtain an amateur radio license",
@@ -20,16 +30,12 @@ class Field:
             return
 
         try:
-            sent = self.cubesat.radio1.send(bytes(msg, "UTF-8"))
+            sent = self.radio_manager.radio.send(bytes(msg, "UTF-8"))
         except Exception as e:
-            self.logger.error("There was an error while Beaconing", err=e)
+            self.logger.error("There was an error while Beaconing", e)
             return
 
         self.logger.info("I am beaconing", beacon=str(msg), success=str(sent))
 
-    def troubleshooting(self):
-        # this is for troubleshooting comms
-        pass
-
-    def __del__(self):
+    def __del__(self) -> None:
         self.logger.debug("Object Destroyed!")

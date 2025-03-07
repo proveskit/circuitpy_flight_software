@@ -10,7 +10,12 @@ If this is your first time using CircuitPython, it is highly recommended that yo
 # Usage
 If you have just received a clean PROVES Board, ensure you have loaded the latest firmware from that board's GitHub Repo. Currently the [latest FC Board firmware](https://github.com/proveskit/flight_controller_board/tree/main/Firmware) is `FC_FIRM_V2.uf2`.
 
-## Updating CircuitPython Code on a PROVES Board
+# Development Getting Started
+We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
+
+You can find our Getting Started Guide [here](docs/dev-guide.md).
+
+## Manually Updating CircuitPython Code on a PROVES Board
 You can cleanly load new software by doing the following:
 1. Clone the branch you wish to put on your board to your local machine.
 2. Connect to the target board so it mounts as an external drive.
@@ -21,16 +26,7 @@ You can cleanly load new software by doing the following:
   ```
   > NOTE: If you have only changed one or two files, it is fine to just drag and drop them onto the external drive to overwrite the existing files.
 4. The target board will now disappear and remount. Once remounted copy and paste the contents of the flight software folder for the target board from your GitHub repo.
-5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and typing one of the two following commands:
-
-__For Flight Controller Board__
-```py
-from pysquared import cubesat as c
-```
-# Development Getting Started
-We welcome contributions, so please feel free to join us. If you have any questions about contributing please open an issue or a discussion.
-
-You can find our Getting Started Guide [here](docs/dev-guide.md).
+5. When the new files are onboard you can verify that all the hardware on the board is working properly by opening a serial connection and entering the REPL after using `ctrl+c` to interupt the code that is currently running.
 
 ## General Structure:
 - **boot.py** This is the code that runs on boot and initializes the stack limit
@@ -40,7 +36,6 @@ You can find our Getting Started Guide [here](docs/dev-guide.md).
 This software library contains all of the libraries required to operate the sensors, PySquared board, and radio module.
 - **Big_Data.py** This is a class developed to obtain data from the sensors on the 5 solar faces. Since all the faces maintain the same sensors, this class handles the individual face sensors and returns them all to the main code.
 - **flag.py** This is code that allows for some registers within the microcontroller to be written to and saved through power cycles
-- **debugcolor.py** This is code that allows for easier debugging and is used by individual classes. Each class utilizes a different color and makes debugging substantially easier
 - **Field.py** This is code that implements the radio module for sending and listening
 - **functions.py** This is a library of functions utilized by the satellite to obtain data, detumble, run the battery heater
 - **pysquared.py** This is a library that initializes and maintains all the main functions for the pysquared architecture
