@@ -593,11 +593,32 @@ class Satellite:
     """
 
     def watchdog_pet(self) -> None:
+        """Pet the watchdog timer"""
+        self.logger.debug("Petting watchdog")
         self.watchdog_pin.value = True
         time.sleep(0.01)
         self.watchdog_pin.value = False
 
+    def start_watchdog_background_task(self) -> None:
+        """Start the watchdog petting as a background task"""
+        self._last_watchdog_pet = time.monotonic()
+        self.hardware["WDT"] = True
+
+    def check_watchdog(self) -> None:
+        """Check if watchdog needs to be petted"""
+        current_time = time.monotonic()
+        if not hasattr(self, "_last_watchdog_pet"):
+            self._last_watchdog_pet = current_time
+
+        # Pet watchdog every second
+        if current_time - self._last_watchdog_pet >= 1.0:
+            self.watchdog_pet()
+            self._last_watchdog_pet = current_time
+
     def check_reboot(self) -> None:
+        """Check if system needs to be rebooted and pet watchdog"""
+        self.check_watchdog()  # Pet watchdog as part of regular system checks
+
         self.UPTIME: int = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:
