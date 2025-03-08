@@ -48,6 +48,7 @@ ifeq ($(OS),Windows_NT)
 	rm -rf $(BOARD_MOUNT_POINT)
 	cp -r artifacts/proves/* $(BOARD_MOUNT_POINT)
 else
+	@rm $(BOARD_MOUNT_POINT)/code.py > /dev/null 2>&1 || true
 	$(call rsync_to_dest,$(BOARD_MOUNT_POINT))
 endif
 
