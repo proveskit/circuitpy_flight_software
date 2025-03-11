@@ -2,6 +2,8 @@ from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
 
 # Type hinting only
 try:
+    from typing import Any
+
     from lib.adafruit_rfm.rfm_common import RFMSPI
     from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
     from lib.pysquared.logger import Logger
@@ -52,6 +54,16 @@ class RFM9xManager:
             self.set_modulation(RFM9xModulation.LORA)
 
         return self._radio
+
+    def beacon_radio_message(self, msg: Any) -> None:
+        """Beacon a radio message and log the result."""
+        try:
+            sent = self.radio.send(bytes(msg, "UTF-8"))
+        except Exception as e:
+            self._log.error("There was an error while beaconing", e)
+            return
+
+        self._log.info("I am beaconing", beacon=str(msg), success=str(sent))
 
     def get_modulation(self) -> str:
         """Get the current radio modulation.
