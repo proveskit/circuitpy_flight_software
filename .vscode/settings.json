@@ -4,5 +4,9 @@
         "tests/unit"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "proves-kit",
+        "projectKey": "proveskit_circuitpy_flight_software"
+    }
 }

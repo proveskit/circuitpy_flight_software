@@ -1,6 +1,6 @@
 {
 "cubesat_name": "Orpheus",
-"callsign": "KO6AZM",
+"callsign": "KK4PDM",
 "last_battery_temp": 20.0,
 "sleep_duration": 30,
 "detumble_enable_z": true,
@@ -47,7 +47,7 @@
 "legacy": false,
 "heating": false,
 "orpheus":true,
-"is_licensed":false,
+"is_licensed":true,
 "normal_temp": 20,
 "normal_battery_temp": 1,
 "normal_micro_temp": 20,
