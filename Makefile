@@ -76,6 +76,12 @@ define rsync_to_dest
 	@rsync -avh config.json artifacts/proves/version.py ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete --times --checksum
 endef
 
+##@ Documentation
+
+.PHONY: sphinx
+sphinx: ## Build the Sphinx documentation
+	@sphinx-build -b html sphinx sphinx/_build
+
 ##@ Build Tools
 TOOLS_DIR ?= tools
 $(TOOLS_DIR):
