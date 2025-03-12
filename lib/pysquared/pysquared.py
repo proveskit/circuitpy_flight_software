@@ -16,7 +16,6 @@ from os import chdir, mkdir, stat
 import board
 import busio
 import digitalio
-import machine
 import microcontroller
 import sdcardio
 from micropython import const
@@ -261,7 +260,9 @@ class Satellite:
         """
         Set the CPU Clock Speed
         """
-        machine.set_clock(62500000)
+        cpu_freq: int = 125000000 if self.turbo_clock else 62500000
+        for cpu in microcontroller.cpus:
+            cpu.frequency = cpu_freq
 
         """
         Intializing Communication Buses
@@ -436,23 +437,6 @@ class Satellite:
     """
     Code to call satellite parameters
     """
-
-    @property
-    def turbo(self) -> bool:
-        return self.turbo_clock
-
-    @turbo.setter
-    def turbo(self, value: bool) -> None:
-        self.turbo_clock: bool = value
-
-        try:
-            if value is True:
-                machine.set_clock(125000000)  # 125Mhz
-            else:
-                machine.set_clock(62500000)  # 62.5Mhz
-
-        except Exception as e:
-            self.logger.error("There was an error trying to set the clock", e)
 
     @property
     def rgb(self) -> tuple[int, int, int]:
