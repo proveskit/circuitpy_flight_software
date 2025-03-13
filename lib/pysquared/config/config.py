@@ -46,7 +46,8 @@ class Config:
         self.repeat_code: str = json_data["repeat_code"]
         self.joke_reply: list[str] = json_data["joke_reply"]
 
-    def update_config(key: str, value) -> None:
+    # permanently updates values
+    def save_config(self, key: str, value) -> None:
         with open("config.json", "r") as f:
             json_data = json.loads(f.read())
 
@@ -54,3 +55,13 @@ class Config:
 
         with open("config.json", "w") as f:
             f.write(json.dumps(json_data))
+
+    # validates values from input
+    def validate(self, key: str, value) -> bool:
+        pass
+
+    # updates config values
+    def update_config(self, key: str, value, temporary: bool) -> None:
+        if self.validate(key, str):
+            if not temporary:
+                self.save_config(key, value)
