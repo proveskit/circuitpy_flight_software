@@ -260,11 +260,11 @@ class functions:
 
     def all_face_data(self) -> list:
         # self.cubesat.all_faces_on()
+        gc.collect()
         self.logger.debug(
             "Free Memory Stat at beginning of all_face_data function",
             bytes_free=gc.mem_free(),
         )
-        gc.collect()
 
         try:
             import lib.pysquared.Big_Data as Big_Data
