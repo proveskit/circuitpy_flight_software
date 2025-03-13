@@ -120,6 +120,7 @@ dependencies = [
     { name = "coverage" },
     { name = "pre-commit" },
     { name = "pytest" },
+    { name = "pyserial" },
 ]
 
 [package.metadata]
@@ -129,6 +130,7 @@ requires-dist = [
     { name = "coverage", specifier = "==7.6.10" },
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "pytest", specifier = "==8.3.2" },
+    { name = "pyserial", specifier = "==3.5" },
 ]
 
 [[package]]

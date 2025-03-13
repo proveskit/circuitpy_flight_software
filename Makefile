@@ -52,6 +52,14 @@ else
 	$(call rsync_to_dest,artifacts/proves,$(BOARD_MOUNT_POINT))
 endif
 
+
+SERIAL_PORT ?= ""
+.PHONY: sync-time
+sync-time:
+	@python3 ./sync-time.py $(SERIAL_PORT)
+
+
+
 .PHONY: clean
 clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 	git clean -dfX
