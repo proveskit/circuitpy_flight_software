@@ -58,7 +58,10 @@ class Config:
 
     # validates values from input
     def validate(self, key: str, value) -> bool:
-        pass
+        if hasattr(self, key):
+            pass
+        else:
+            pass
 
     # updates config values
     def update_config(self, key: str, value, temporary: bool) -> None:
@@ -67,4 +70,4 @@ class Config:
                 self.save_config(key, value)
 
             else:
-                pass
+                setattr(self, key, value)
