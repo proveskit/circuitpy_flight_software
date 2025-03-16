@@ -65,3 +65,6 @@ class Config:
         if self.validate(key, str):
             if not temporary:
                 self.save_config(key, value)
+
+            else:
+                pass

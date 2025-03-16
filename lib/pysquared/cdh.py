@@ -45,6 +45,7 @@ class CommandDataHandler:
         )
 
         self.radio_manager = radio_manager
+        self.config: Config = config
 
     ############### hot start helper ###############
     def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
@@ -193,3 +194,15 @@ class CommandDataHandler:
     def exec_cmd(self, cubesat: Satellite, args: str) -> None:
         self.logger.info("Executing command", args=args)
         exec(args)
+
+    def update_config(self, cubesat: Satellite, args: str) -> None:
+        # update these values with args
+        temporary: bool = False
+        key: str = ""
+        value = ""
+
+        try:
+            self.config.update_config(key, value, temporary)
+
+        except Exception as e:
+            self.logger.error("An error ocurred while updating config", e)
