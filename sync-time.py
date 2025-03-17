@@ -24,7 +24,7 @@ def sync_time():
     try:
         with serial.Serial(port, 115200, timeout=1) as ser:
             print(
-                "\nSync Time in Progress... DO NOT create a screen session or another other serial connection to the board!!!"
+                "\nSync Time in Progress... DO NOT create a screen session or another serial connection to the board!!!"
             )
             repl_line_met = False
             while not repl_line_met:
@@ -86,8 +86,8 @@ def sync_time():
 
         processID_output = subprocess.check_output(["pgrep", "SCREEN"])
         processID = processID_output.decode().split("\n")[0]
-
         subprocess.call(["screen", "-XS", processID, "quit"])
+        time.sleep(2)
         sync_time()
 
 
