@@ -33,7 +33,7 @@ RTC.init()
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
-    colorized=True,
+    colorized=False,
 )
 
 logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
