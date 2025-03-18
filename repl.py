@@ -9,7 +9,7 @@ from version import __version__
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
-    colorized=True,
+    colorized=False,
 )
 config: Config = Config("config.json")
 logger.info("Initializing a cubesat object as `c` in the REPL...")
