@@ -46,6 +46,54 @@ class Config:
         self.repeat_code: str = json_data["repeat_code"]
         self.joke_reply: list[str] = json_data["joke_reply"]
 
+    # validates values from input
+    def validate(self, key: str, value) -> bool:
+        if hasattr(self, key):
+            if isinstance(value, str):
+                if self.validate_string(value):
+                    return True
+                return False
+
+            elif isinstance(value, int):
+                if self.validate_int(value):
+                    return True
+                return False
+
+            elif isinstance(value, float):
+                if self.validate_float(value):
+                    return True
+                return False
+
+            elif isinstance(value, bool):
+                if self.validate_bool(value):
+                    return True
+                return False
+
+            elif isinstance(value, dict):
+                if self.validate_dict(value):
+                    return True
+                return False
+
+            return True
+        else:
+            print("Member variable not found")
+            return False
+
+    def validate_string(self, value: str) -> bool:
+        pass
+
+    def validate_int(self, value: int) -> bool:
+        pass
+
+    def validate_float(self, value: float) -> bool:
+        pass
+
+    def validate_bool(self, value: bool) -> bool:
+        pass
+
+    def validate_dict(self, value: dict) -> bool:
+        pass
+
     # permanently updates values
     def save_config(self, key: str, value) -> None:
         with open("config.json", "r") as f:
@@ -56,18 +104,13 @@ class Config:
         with open("config.json", "w") as f:
             f.write(json.dumps(json_data))
 
-    # validates values from input
-    def validate(self, key: str, value) -> bool:
-        if hasattr(self, key):
-            pass
-        else:
-            pass
-
     # updates config values
-    def update_config(self, key: str, value, temporary: bool) -> None:
-        if self.validate(key, str):
+    def update_config(self, key: str, value, temporary: bool) -> bool:
+        if self.validate(key, value):
             if not temporary:
                 self.save_config(key, value)
-
             else:
                 setattr(self, key, value)
+            return True
+        else:
+            return False

@@ -201,8 +201,7 @@ class CommandDataHandler:
         key: str = ""
         value = ""
 
-        try:
-            self.config.update_config(key, value, temporary)
-
-        except Exception as e:
-            self.logger.error("An error ocurred while updating config", e)
+        if self.config.update_config(key, value, temporary):
+            self.logger.info("Updated config value successfully")
+        else:
+            self.logger.error("An error ocurred while updating config")
