@@ -11,9 +11,13 @@ Published: Nov 19, 2024
 import gc
 import time
 
-import board
 import digitalio
 import microcontroller
+
+try:
+    from board_definitions import proveskit_rp2040_v4 as board
+except ImportError:
+    import board
 
 import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
