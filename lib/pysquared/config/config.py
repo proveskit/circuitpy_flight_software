@@ -46,53 +46,66 @@ class Config:
         self.repeat_code: str = json_data["repeat_code"]
         self.joke_reply: list[str] = json_data["joke_reply"]
 
+        self.CONFIG_SCHEMA = {
+            "cubesat_name": {"type": str, "min_length": 1, "max_length": 10},
+            "callsign": {"type": str, "min_length": 3, "max_length": 7},
+            "super_secret_code": {"type": str, "min_length": -1, "max_length": 1},
+            "repeat_code": {"type": str, "min_length": -1, "max_length": 1},
+            "last_battery_temp": {"type": float, "min": -1, "max": 1},
+            "normal_charge_current": {"type": float, "min": -1, "max": 1},
+            "normal_battery_voltage": {"type": float, "min": -1, "max": 1},
+            "critical_battery_voltage": {"type": float, "min": -1, "max": 1},
+            "battery_voltage": {"type": float, "min": 5.4, "max": 8.2},
+            "current_draw": {"type": float, "min": -1, "max": 1},
+            "sleep_duration": {"type": int, "min": -1, "max": 1},
+            "normal_temp": {"type": int, "min": 5, "max": 40},
+            "normal_battery_temp": {"type": int, "min": -1, "max": 1},
+            "normal_micro_temp": {"type": int, "min": -1, "max": 1},
+            "reboot_time": {"type": int, "min": -1, "max": 1},
+            "detumble_enable_z": {"type": bool, "min": 0, "max": 1},
+            "detumble_enable_x": {"type": bool, "min": 0, "max": 1},
+            "detumble_enable_y": {"type": bool, "min": 0, "max": 1},
+            "debug": {"type": bool, "min": 0, "max": 1},
+            "legacy": {"type": bool, "min": 0, "max": 1},
+            "heating": {"type": bool, "min": 0, "max": 1},
+            "orpheus": {"type": bool, "min": 0, "max": 1},
+            "is_licensed": {"type": bool, "min": 0, "max": 1},
+            "turbo_clock": {"type": bool, "min": 0, "max": 1},
+            "radio": {"type": dict, "keys": str, "values": (int, float, dict)},
+        }
+
+        self.RADIO_SCHEMA = {}
+
+        self.FSK_SCHEMA = {}
+
+        self.LORA_SCHEMA = {}
+
     # validates values from input
     def validate(self, key: str, value) -> bool:
-        if hasattr(self, key):
-            if isinstance(value, str):
-                if self.validate_string(value):
-                    return True
-                return False
-
-            elif isinstance(value, int):
-                if self.validate_int(value):
-                    return True
-                return False
-
-            elif isinstance(value, float):
-                if self.validate_float(value):
-                    return True
-                return False
-
-            elif isinstance(value, bool):
-                if self.validate_bool(value):
-                    return True
-                return False
-
-            elif isinstance(value, dict):
-                if self.validate_dict(value):
-                    return True
-                return False
-
-            return True
-        else:
-            print("Member variable not found")
+        # first checks if key is actually part of config
+        if key not in self.CONFIG_SCHEMA:
             return False
 
-    def validate_string(self, value: str) -> bool:
-        pass
+        schema = self.CONFIG_SCHEMA[key]
+        expected_type = schema["type"]
 
-    def validate_int(self, value: int) -> bool:
-        pass
+        # checks value is of same type
+        if not isinstance(value, expected_type):
+            return False
 
-    def validate_float(self, value: float) -> bool:
-        pass
+        # checks int and float range
+        if isinstance(value, (int, float)):
+            if "min" in schema and value < schema["min"]:
+                return False
+            if "max" in schema and value > schema["max"]:
+                return False
 
-    def validate_bool(self, value: bool) -> bool:
-        pass
-
-    def validate_dict(self, value: dict) -> bool:
-        pass
+        # checks string range
+        if isinstance(value, str):
+            if "min_length" in schema and len(value) < schema["min_lenght"]:
+                return False
+            if "max_length" in schema and len(value) < schema["max_length"]:
+                return False
 
     # permanently updates values
     def save_config(self, key: str, value) -> None:
@@ -104,7 +117,7 @@ class Config:
         with open("config.json", "w") as f:
             f.write(json.dumps(json_data))
 
-    # updates config values
+    # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> bool:
         if self.validate(key, value):
             if not temporary:
