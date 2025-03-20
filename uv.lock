@@ -125,7 +125,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "adafruit-circuitpython-typing", specifier = "==1.11.2" },
-    { name = "circuitpython-stubs", specifier = "==9.2.4" },
+    { name = "circuitpython-stubs", specifier = "==9.2.5" },
     { name = "coverage", specifier = "==7.6.10" },
     { name = "pre-commit", specifier = "==4.0.1" },
     { name = "pytest", specifier = "==8.3.2" },
@@ -133,11 +133,11 @@ requires-dist = [
 
 [[package]]
 name = "circuitpython-stubs"
-version = "9.2.4"
+version = "9.2.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/49/d2/51cc14e067cdc238c3c1cd22c098f372e71250c0454bb16aa8aef833fbfa/circuitpython_stubs-9.2.4.tar.gz", hash = "sha256:3e8c0ffc364686dd1102b6c6c41c4326e58cf50adc75432d43baaba5a8bb2af3", size = 338129 }
+sdist = { url = "https://files.pythonhosted.org/packages/07/d7/ce0a51ba9f6b15bdde6a79cfa96f3c63117dd749465be18980461771cfa9/circuitpython_stubs-9.2.5.tar.gz", hash = "sha256:2b2be4172552bdb9c5a1e9923124ee62f0bed4c0b128d862ad1baf8866e67174", size = 348760 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/4b/784fe1eed79c2a310e45041765e94f9d00d89e9ef5960748407cbdf23151/circuitpython_stubs-9.2.4-py3-none-any.whl", hash = "sha256:03c466650e19c22b4d6c13a6e83b8a2d48031a9500c0bebadb7593c389270ed2", size = 977428 },
+    { url = "https://files.pythonhosted.org/packages/c7/27/72e6715132a325db32ff06475c7da1a217e65082d710b1a7e8ce3c36ca0e/circuitpython_stubs-9.2.5-py3-none-any.whl", hash = "sha256:9b2e8ba04e7fee6a0155e5915b36a1a911e2e3486c795669baa9c2db76102a7c", size = 1006110 },
 ]
 
 [[package]]
