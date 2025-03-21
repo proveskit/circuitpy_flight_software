@@ -1,0 +1,22 @@
+import serial.tools.list_ports
+
+ports = list(serial.tools.list_ports.comports())
+
+golden_port = None
+
+for p in ports:
+    string_p = str(p)
+    serial_port = string_p.split(" - ")[0]
+    name = string_p.split(" - ")[1]
+
+    if name == "FLIGHT_CONTROLLER":
+        golden_port = serial_port
+
+
+def convert_cu_to_tty(port):
+    return "/dev/tty." + port.split("cu.")[1]
+
+
+print(golden_port)
+
+print(convert_cu_to_tty(golden_port))
