@@ -81,7 +81,6 @@ class functions:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        # self.field.Beacon(message)
         self.radio_manager.beacon_radio_message(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
