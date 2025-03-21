@@ -61,32 +61,58 @@ class Config:
             "normal_temp": {"type": int, "min": 5, "max": 40},
             "normal_battery_temp": {"type": int, "min": -1, "max": 1},
             "normal_micro_temp": {"type": int, "min": -1, "max": 1},
-            "reboot_time": {"type": int, "min": -1, "max": 1},
-            "detumble_enable_z": {"type": bool, "min": 0, "max": 1},
-            "detumble_enable_x": {"type": bool, "min": 0, "max": 1},
-            "detumble_enable_y": {"type": bool, "min": 0, "max": 1},
-            "debug": {"type": bool, "min": 0, "max": 1},
-            "legacy": {"type": bool, "min": 0, "max": 1},
-            "heating": {"type": bool, "min": 0, "max": 1},
-            "orpheus": {"type": bool, "min": 0, "max": 1},
-            "is_licensed": {"type": bool, "min": 0, "max": 1},
-            "turbo_clock": {"type": bool, "min": 0, "max": 1},
-            "radio": {"type": dict, "keys": str, "values": (int, float, dict)},
+            "reboot_time": {"type": int, "min": 3600, "max": 604800},
+            "detumble_enable_z": {"type": bool, "min": -1, "max": 1},
+            "detumble_enable_x": {"type": bool, "min": -1, "max": 1},
+            "detumble_enable_y": {"type": bool, "min": -1, "max": 1},
+            "debug": {"type": bool, "min": -1, "max": 1},
+            "legacy": {"type": bool, "min": -1, "max": 1},
+            "heating": {"type": bool, "min": -1, "max": 1},
+            "orpheus": {"type": bool, "min": -1, "max": 1},
+            "is_licensed": {"type": bool, "min": -1, "max": 1},
+            "turbo_clock": {"type": bool, "min": -1, "max": 1},
         }
 
-        self.RADIO_SCHEMA = {}
+        self.RADIO_SCHEMA = {
+            "receiver_id": {"type": int, "min": 0, "max": 255},
+            "sender_id": {"type": int, "min": -1, "max": 1},
+            "start_time": {"type": int, "min": -1, "max": 1},
+            "transmit_frequency": {"type": float, "min": -1, "max": 1},
+        }
 
-        self.FSK_SCHEMA = {}
+        self.FSK_SCHEMA = {
+            "ack_delay": {"type": float, "min": -1, "max": 1},
+            "coding_rate": {"type": int, "min": 4, "max": 8},
+            "cyclic_redundancy_check": {"type": bool, "min": -1, "max": 1},
+            "max_output": {"type": bool, "min": -1, "max": 1},
+            "spreading_factor": {"type": int, "min": 6, "max": 12},
+            "transmit_power": {"type": int, "min": 5, "max": 23},
+        }
 
-        self.LORA_SCHEMA = {}
+        self.LORA_SCHEMA = {
+            "broadcast_address": {"type": int, "min": -1, "max": 1},
+            "node_address": {"type": int, "min": -1, "max": 1},
+            "modulation_type": {"type": int, "min": -1, "max": 1},
+        }
 
     # validates values from input
     def validate(self, key: str, value) -> bool:
         # first checks if key is actually part of config
-        if key not in self.CONFIG_SCHEMA:
+        if key in self.CONFIG_SCHEMA:
+            schema = self.CONFIG_SCHEMA[key]
+
+        elif key in self.RADIO_SCHEMA:
+            schema = self.RADIO_SCHEMA[key]
+
+        elif key in self.FSK_SCHEMA:
+            schema = self.FSK_SCHEMA[key]
+
+        elif key in self.LORA_SCHEMA:
+            schema = self.LORA_SCHEMA[key]
+
+        else:
             return False
 
-        schema = self.CONFIG_SCHEMA[key]
         expected_type = schema["type"]
 
         # checks value is of same type
@@ -107,6 +133,8 @@ class Config:
             if "max_length" in schema and len(value) < schema["max_length"]:
                 return False
 
+        return True
+
     # permanently updates values
     def save_config(self, key: str, value) -> None:
         with open("config.json", "r") as f:
@@ -120,10 +148,37 @@ class Config:
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> bool:
         if self.validate(key, value):
-            if not temporary:
-                self.save_config(key, value)
+            if key in self.CONFIG_SCHEMA:
+                if not temporary:
+                    self.save_config(key, value)
+                else:
+                    setattr(self, key, value)
+
+            elif key in self.RADIO_SCHEMA:
+                if not temporary:
+                    with open("config.json", "r") as f:
+                        json_data = json.loads(f.read())
+                    json_data["radio"][key] = value
+                    with open("config.json", "w") as f:
+                        f.write(json.dumps(json_data))
+                self.radio["key"] = value
+
+            elif key in self.FSK_SCHEMA:
+                if not temporary:
+                    with open("config.json", "r") as f:
+                        json_data = json.loads(f.read())
+                    json_data["radio"]["fsk"][key] = value
+                    with open("config.json", "w") as f:
+                        f.write(json.dumps(json_data))
+                self.radio["fsk"][key] = value
+
             else:
-                setattr(self, key, value)
-            return True
+                if not temporary:
+                    with open("config.json", "r") as f:
+                        json_data = json.loads(f.read())
+                    json_data["radio"]["lora"][key] = value
+                    with open("config.json", "w") as f:
+                        f.write(json.dumps(json_data))
+                self.radio["lora"][key] = value
         else:
             return False
