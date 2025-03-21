@@ -114,7 +114,7 @@ def sync_time():
         # print(processID_output)
         processID = processID_output.decode().split("\n")[0]
         # print(processID)
-        subprocess.call(["screen", "-XS", processID, "quit"])
+        subprocess.call(["kill", processID])
         time.sleep(2)
         sync_time()
 
