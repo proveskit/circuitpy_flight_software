@@ -118,7 +118,6 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        # self.field.Beacon(lora_beacon)
         self.radio_manager.beacon_radio_message(lora_beacon)
 
     def joke(self) -> None:
