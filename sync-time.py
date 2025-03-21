@@ -110,10 +110,10 @@ def sync_time():
             "The screen session will first be terminated, and the time will be updated."
         )
 
-        processID_output = subprocess.check_output(["pgrep", "SCREEN"])
-        print(processID_output)
+        processID_output = subprocess.check_output(["fuser", port])
+        # print(processID_output)
         processID = processID_output.decode().split("\n")[0]
-        print(processID)
+        # print(processID)
         subprocess.call(["screen", "-XS", processID, "quit"])
         time.sleep(2)
         sync_time()
