@@ -1,3 +1,5 @@
+import os
+import platform
 import subprocess
 import time
 
@@ -35,6 +37,9 @@ def find_FCBoard_port() -> str:
 
         if name == "FLIGHT_CONTROLLER":
             golden_port = serial_port
+
+    if os.name == "posix" and platform.system() == "Linux":
+        return golden_port
 
     return convert_cu_to_tty(golden_port)
 
