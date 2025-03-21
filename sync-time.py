@@ -1,8 +1,8 @@
 import subprocess
-import sys
 import time
 
 import serial
+import serial.tools.list_ports
 
 # ser = serial.Serial('/dev/tty.usbmodem1101')
 # print(ser.name)
@@ -19,8 +19,29 @@ with serial.Serial('/dev/tty.usbmodem1101', 9600, timeout=5) as ser:
 #'from lib.pysquared.rtc.rp2040 import RP2040RTC'
 
 
+def convert_cu_to_tty(port):
+    return "/dev/tty." + port.split("cu.")[1]
+
+
+def find_FCBoard_port() -> str:
+    ports = list(serial.tools.list_ports.comports())
+
+    golden_port = None
+
+    for port in ports:
+        string_p = str(port)
+        serial_port = string_p.split(" - ")[0]
+        name = string_p.split(" - ")[1]
+
+        if name == "FLIGHT_CONTROLLER":
+            golden_port = serial_port
+
+    return convert_cu_to_tty(golden_port)
+
+
 def sync_time():
-    port = sys.argv[1]
+    port = find_FCBoard_port()
+
     try:
         with serial.Serial(port, 115200, timeout=1) as ser:
             print(
@@ -85,7 +106,9 @@ def sync_time():
         )
 
         processID_output = subprocess.check_output(["pgrep", "SCREEN"])
+        print(processID_output)
         processID = processID_output.decode().split("\n")[0]
+        print(processID)
         subprocess.call(["screen", "-XS", processID, "quit"])
         time.sleep(2)
         sync_time()

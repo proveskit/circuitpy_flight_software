@@ -53,10 +53,9 @@ else
 endif
 
 
-SERIAL_PORT ?= ""
 .PHONY: sync-time
 sync-time:
-	@python3 ./sync-time.py $(SERIAL_PORT)
+	@python3 ./sync-time.py
 
 
 
