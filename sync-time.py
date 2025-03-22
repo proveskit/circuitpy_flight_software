@@ -35,13 +35,19 @@ def find_FCBoard_port() -> str:
         serial_port = string_p.split(" - ")[0]
         name = string_p.split(" - ")[1]
 
-        if name == "FLIGHT_CONTROLLER":
+        if name == "FLIGHT_CONTROLLER" and platform.system() != "Windows":
+            golden_port = serial_port
+
+        elif name[:17] == "USB Serial Device":
             golden_port = serial_port
 
     if os.name == "posix" and platform.system() == "Linux":
         return golden_port
 
-    return convert_cu_to_tty(golden_port)
+    if platform.system() == "Darwin":
+        return convert_cu_to_tty(golden_port)
+
+    return golden_port
 
 
 def sync_time():
