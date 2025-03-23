@@ -23,8 +23,6 @@ def initialize_pin(
     """
     logger.debug(
         message="Initializing pin",
-        pin=pin,
-        direction=direction,
         initial_value=initial_value,
     )
 
@@ -34,4 +32,4 @@ def initialize_pin(
         digital_in_out.value = initial_value
         return digital_in_out
     except Exception as e:
-        raise HardwareInitializationError(f"Failed to initialize pin {pin}") from e
+        raise HardwareInitializationError("Failed to initialize pin") from e

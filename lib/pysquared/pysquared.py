@@ -26,6 +26,7 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
+from lib.adafruit_74hc595 import ShiftRegister74HC595
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.pysquared.config.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
@@ -130,7 +131,7 @@ class Satellite:
     @safe_init
     def init_sd_card(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
-        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
+        _sd = sdcardio.SDCard(self.spi0, board.SPI1_CS1, baudrate=4000000)
         _vfs = VfsFat(_sd)
         mount(_vfs, "/sd")
         self.fs = _vfs
@@ -139,8 +140,6 @@ class Satellite:
 
     @safe_init
     def init_neopixel(self, hardware_key: str) -> None:
-        self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
-        self.neopwr.switch_to_output(value=True)
         self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
             board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
         )
@@ -161,6 +160,13 @@ class Satellite:
             )
             self.hardware[hardware_key] = False
             return
+
+    @safe_init
+    def init_shift_register(self, hardware_key: str) -> None:
+        self._latch_pin = digitalio.DigitalInOut(board.SR_LATCH)
+        self.shift_register: ShiftRegister74HC595 = ShiftRegister74HC595(
+            self.spi0, self._latch_pin
+        )
 
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
         self.config: Config = config
@@ -227,6 +233,7 @@ class Satellite:
             [
                 ("I2C0", False),
                 ("SPI0", False),
+                ("SPI1", False),
                 ("I2C1", False),
                 ("UART", False),
                 ("IMU", False),
@@ -241,6 +248,7 @@ class Satellite:
                 ("Face3", False),
                 ("Face4", False),
                 ("RTC", False),
+                ("SR", False),
             ]
         )
 
@@ -294,9 +302,9 @@ class Satellite:
 
         self.spi0: busio.SPI = self.init_general_hardware(
             busio.SPI,
-            board.SPI0_SCK,
-            board.SPI0_MOSI,
-            board.SPI0_MISO,
+            board.SPI1_SCK,
+            MOSI=board.SPI1_MOSI,
+            MISO=board.SPI1_MISO,
             hardware_key="SPI0",
         )
 
@@ -312,7 +320,7 @@ class Satellite:
             busio.UART,
             board.TX,
             board.RX,
-            baud_rate=self.uart_baudrate,
+            baudrate=self.uart_baudrate,
             hardware_key="UART",
             orpheus_func=orpheus_init_uart,
         )
@@ -340,10 +348,14 @@ class Satellite:
         self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
         self.init_tca_multiplexer(hardware_key="TCA")
+        self.init_shift_register(hardware_key="SR")
+
+        self.shift_register_pins = [self.shift_register.get_pin(n) for n in range(8)]
 
         """
         Face Initializations
         """
+
         self.scan_tca_channels()
 
         """
