@@ -8,12 +8,16 @@ Version: 2.0.0
 Published: Nov 19, 2024
 """
 
-import gc
+import asyncio
 import time
 
-import board
 import digitalio
 import microcontroller
+
+try:
+    from board_definitions import proveskit_rp2040_v4 as board
+except ImportError:
+    import board
 
 import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
@@ -33,7 +37,7 @@ RTC.init()
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
-    colorized=True,
+    colorized=False,
 )
 
 logger.info("Booting", software_version=__version__, published_date="November 19, 2024")
@@ -49,7 +53,10 @@ try:
     config: Config = Config("config.json")
 
     c = pysquared.Satellite(config, logger, __version__)
-    c.watchdog_pet()
+
+    # Start the watchdog background task
+    c.start_watchdog_background_task()
+
     sleep_helper = SleepHelper(c, logger)
 
     radio_manager = RFM9xManager(
@@ -65,109 +72,107 @@ try:
 
     f = functions.functions(c, logger, config, sleep_helper, radio_manager)
 
-    def initial_boot():
-        c.watchdog_pet()
+    async def initial_boot():
         f.beacon()
-        c.watchdog_pet()
         f.listen()
-        c.watchdog_pet()
 
-    try:
-        c.boot_count.increment()
+    async def critical_power_operations():
+        await initial_boot()
+        # Convert blocking operation to a non-blocking one using run_in_executor
+        # Since this is a blocking function that will likely put the device to sleep,
+        # we accept that this will block the event loop as intended
+        logger.info("Entering long hibernation (this will block the event loop)")
+        sleep_helper.long_hibernate()
+        logger.info("Woke from long hibernation")
 
-        logger.info(
-            "FC Board Stats",
-            bytes_remaining=gc.mem_free(),
-            boot_number=c.boot_count.get(),
-        )
+    async def minimum_power_operations():
+        await initial_boot()
+        # Same as above - this is a blocking operation by design
+        logger.info("Entering short hibernation (this will block the event loop)")
+        sleep_helper.short_hibernate()
+        logger.info("Woke from short hibernation")
 
-        initial_boot()
-
-    except Exception as e:
-        logger.error("Error in Boot Sequence", e)
-
-    finally:
-        pass
-
-    def send_imu_data():
+    async def send_imu_data():
         logger.info("Looking to get imu data...")
         IMUData = []
-        c.watchdog_pet()
-        logger.info("IMU has baton")
         IMUData = f.get_imu_data()
-        c.watchdog_pet()
         f.send(IMUData)
 
-    def main():
+    async def main():
         f.beacon()
-
         f.listen_loiter()
-
         f.state_of_health()
-
         f.listen_loiter()
-
         f.all_face_data()
-        c.watchdog_pet()
         f.send_face()
-
         f.listen_loiter()
-
-        send_imu_data()
-
+        await send_imu_data()
         f.listen_loiter()
-
         f.joke()
-
         f.listen_loiter()
-
-    def critical_power_operations():
-        initial_boot()
-        c.watchdog_pet()
-
-        sleep_helper.long_hibernate()
-
-    def minimum_power_operations():
-        initial_boot()
-        c.watchdog_pet()
-
-        sleep_helper.short_hibernate()
 
     ######################### MAIN LOOP ##############################
+    async def main_loop():
+        """Async main loop that runs alongside the watchdog task"""
+        try:
+            while True:
+                # L0 automatic tasks no matter the battery level
+                c.check_reboot()  # Now this only checks for reboot conditions
+
+                if c.power_mode == "critical":
+                    c.rgb = (0, 0, 0)
+                    await critical_power_operations()
+
+                elif c.power_mode == "minimum":
+                    c.rgb = (255, 0, 0)
+                    await minimum_power_operations()
+
+                elif c.power_mode == "normal":
+                    c.rgb = (255, 255, 0)
+                    await main()
+
+                elif c.power_mode == "maximum":
+                    c.rgb = (0, 255, 0)
+                    await main()
+
+                else:
+                    f.listen()
+
+                # Small yield to allow other tasks to run
+                await asyncio.sleep(0.1)
+
+        except Exception as e:
+            logger.critical("Critical in Main Loop", e)
+            time.sleep(10)
+            microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
+            microcontroller.reset()
+        finally:
+            logger.info("Going Neutral!")
+            c.rgb = (0, 0, 0)
+            c.hardware["WDT"] = False
+
+    # Set up the asyncio event loop
+    async def run_tasks():
+        # The watchdog task is already started by c.start_watchdog_background_task()
+        # Just run the main loop as a task
+        main_task = asyncio.create_task(main_loop())
+
+        try:
+            # Wait for the main task to complete (it should run forever)
+            await main_task
+        except asyncio.CancelledError:
+            logger.info("Main task was cancelled")
+        except Exception as e:
+            logger.critical("Error in run_tasks", e)
+            raise
+
+    # Run the asyncio event loop
     try:
-        while True:
-            # L0 automatic tasks no matter the battery level
-            c.check_reboot()
-
-            if c.power_mode == "critical":
-                c.rgb = (0, 0, 0)
-                critical_power_operations()
-
-            elif c.power_mode == "minimum":
-                c.rgb = (255, 0, 0)
-                minimum_power_operations()
-
-            elif c.power_mode == "normal":
-                c.rgb = (255, 255, 0)
-                main()
-
-            elif c.power_mode == "maximum":
-                c.rgb = (0, 255, 0)
-                main()
-
-            else:
-                f.listen()
-
+        asyncio.run(run_tasks())
     except Exception as e:
-        logger.critical("Critical in Main Loop", e)
-        time.sleep(10)
+        logger.critical("Error in asyncio.run", e)
         microcontroller.on_next_reset(microcontroller.RunMode.NORMAL)
         microcontroller.reset()
-    finally:
-        logger.info("Going Neutral!")
-
-        c.rgb = (0, 0, 0)
-        c.hardware["WDT"] = False
 
 except Exception as e:
     logger.critical("An exception occured within main.py", e)

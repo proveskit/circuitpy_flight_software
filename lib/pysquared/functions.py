@@ -80,20 +80,12 @@ class functions:
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
-        import lib.pysquared.Field as Field
-
-        self.field: Field.Field = Field.Field(
-            self.cubesat, self.logger, self.radio_manager
-        )
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.field.Beacon(message)
+        self.radio_manager.beacon_radio_message(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
             self.logger.warning("Failed to send packet")
-        del self.field
-        del Field
-        gc.collect()
 
     def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
@@ -106,7 +98,6 @@ class functions:
 
     def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
-        import lib.pysquared.Field as Field
 
         try:
             lora_beacon: str = (
@@ -126,13 +117,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.field: Field.Field = Field.Field(
-            self.cubesat, self.logger, self.radio_manager
-        )
-        self.field.Beacon(lora_beacon)
-        del self.field
-        del Field
-        gc.collect()
+        self.radio_manager.beacon_radio_message(lora_beacon)
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
@@ -152,8 +137,6 @@ class functions:
         return to_return
 
     def state_of_health(self) -> None:
-        import lib.pysquared.Field as Field
-
         self.state_list: list = []
         # list of state information
         try:
@@ -176,41 +159,31 @@ class functions:
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
 
-        self.field: Field.Field = Field.Field(
-            self.cubesat, self.logger, self.radio_manager
-        )
+        message: str = ""
         if not self.state_of_health_part1:
-            self.field.Beacon(
+            message = (
                 f"{self.callsign} Yearling^2 State of Health 1/2"
                 + str(self.state_list)
                 + f"{self.callsign}"
             )
             self.state_of_health_part1: bool = True
         else:
-            self.field.Beacon(
+            message = (
                 f"{self.callsign} YSOH 2/2"
                 + self.format_state_of_health(self.cubesat.hardware)
                 + f"{self.callsign}"
             )
             self.state_of_health_part1: bool = False
-        del self.field
-        del Field
-        gc.collect()
+
+        self.radio_manager.beacon_radio_message(message)
 
     def send_face(self) -> None:
-        """Calls the data transmit function from the field class"""
-        import lib.pysquared.Field as Field
+        """Calls the data transmit function from the radio manager class"""
 
-        self.field: Field.Field = Field.Field(
-            self.cubesat, self.logger, self.radio_manager
-        )
         self.logger.debug("Sending Face Data")
-        self.field.Beacon(
+        self.radio_manager.beacon_radio_message(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
-        del self.field
-        del Field
-        gc.collect()
 
     def listen(self) -> bool:
         # need to instanciate cdh to feed it the config var
@@ -260,11 +233,11 @@ class functions:
 
     def all_face_data(self) -> list:
         # self.cubesat.all_faces_on()
+        gc.collect()
         self.logger.debug(
             "Free Memory Stat at beginning of all_face_data function",
             bytes_free=gc.mem_free(),
         )
-        gc.collect()
 
         try:
             import lib.pysquared.Big_Data as Big_Data

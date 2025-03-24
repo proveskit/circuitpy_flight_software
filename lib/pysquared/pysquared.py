@@ -8,6 +8,7 @@ Library Repo:
 """
 
 # Common CircuitPython Libs
+import asyncio  # Add asyncio import
 import sys
 import time
 from collections import OrderedDict
@@ -16,7 +17,6 @@ from os import chdir, mkdir, stat
 import board
 import busio
 import digitalio
-import machine
 import microcontroller
 import sdcardio
 from micropython import const
@@ -261,7 +261,9 @@ class Satellite:
         """
         Set the CPU Clock Speed
         """
-        machine.set_clock(62500000)
+        cpu_freq: int = 125000000 if self.turbo_clock else 62500000
+        for cpu in microcontroller.cpus:
+            cpu.frequency = cpu_freq
 
         """
         Intializing Communication Buses
@@ -438,23 +440,6 @@ class Satellite:
     """
 
     @property
-    def turbo(self) -> bool:
-        return self.turbo_clock
-
-    @turbo.setter
-    def turbo(self, value: bool) -> None:
-        self.turbo_clock: bool = value
-
-        try:
-            if value is True:
-                machine.set_clock(125000000)  # 125Mhz
-            else:
-                machine.set_clock(62500000)  # 62.5Mhz
-
-        except Exception as e:
-            self.logger.error("There was an error trying to set the clock", e)
-
-    @property
     def rgb(self) -> tuple[int, int, int]:
         return self.neopixel[0]
 
@@ -593,11 +578,38 @@ class Satellite:
     """
 
     def watchdog_pet(self) -> None:
+        """Pet the watchdog timer"""
+        self.logger.debug("Petting watchdog")
         self.watchdog_pin.value = True
         time.sleep(0.01)
         self.watchdog_pin.value = False
 
+    async def _watchdog_pet_task(self) -> None:
+        """Async task to continuously pet the watchdog"""
+        self.logger.info("Starting watchdog petting background task")
+        while self.hardware.get("WDT", False):
+            self.watchdog_pet()
+            await asyncio.sleep(1.0)  # Pet watchdog every second
+        self.logger.info("Watchdog petting task stopped")
+
+    def start_watchdog_background_task(self) -> None:
+        """Start the watchdog petting as a true background task using asyncio"""
+        self._last_watchdog_pet = time.monotonic()
+        self.hardware["WDT"] = True
+        # Create and schedule the task but don't wait for it
+        asyncio.create_task(self._watchdog_pet_task())
+        self.logger.info("Watchdog background task created")
+
+    def check_watchdog(self) -> None:
+        """
+        Legacy method maintained for compatibility
+        The actual petting is now handled by the background task
+        """
+        pass  # No-op as this is now handled by the async task
+
     def check_reboot(self) -> None:
+        """Check if system needs to be rebooted"""
+        # No need to check watchdog anymore as it's handled by the background task
         self.UPTIME: int = self.get_system_uptime
         self.logger.debug("Current up time stat:", uptime=self.UPTIME)
         if self.UPTIME > self.reboot_time:

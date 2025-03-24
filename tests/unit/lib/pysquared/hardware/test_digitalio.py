@@ -10,7 +10,7 @@ from lib.pysquared.logger import Logger
 
 @patch("lib.pysquared.hardware.digitalio.DigitalInOut")
 @patch("lib.pysquared.hardware.digitalio.Pin")
-def test_initialize_pin_success(mock_pin: MagicMock, mock_digitial_in_out: MagicMock):
+def test_initialize_pin_success(mock_pin: MagicMock, mock_digital_in_out: MagicMock):
     # Mock the logger
     mock_logger = MagicMock(spec=Logger)
 
@@ -20,15 +20,15 @@ def test_initialize_pin_success(mock_pin: MagicMock, mock_digitial_in_out: Magic
     initial_value = True
 
     # Mock DigitalInOut instance
-    mock_digital_in_out = mock_digitial_in_out.return_value
+    mock_dio = mock_digital_in_out.return_value
 
     # Call fn under test
     _ = initialize_pin(mock_logger, mock_pin, mock_direction, initial_value)
 
     # Assertions
-    mock_digitial_in_out.assert_called_once_with(mock_pin)
-    assert mock_digital_in_out.direction == mock_direction
-    assert mock_digital_in_out.value == initial_value
+    mock_digital_in_out.assert_called_once_with(mock_pin)
+    assert mock_dio.direction == mock_direction
+    assert mock_dio.value == initial_value
     mock_logger.debug.assert_called_once()
 
 
