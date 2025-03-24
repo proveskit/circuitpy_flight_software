@@ -27,7 +27,6 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
-from lib.adafruit_74hc595 import ShiftRegister74HC595
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 from lib.pysquared.config.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
@@ -162,12 +161,12 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    @safe_init
-    def init_shift_register(self, hardware_key: str) -> None:
-        self._latch_pin = digitalio.DigitalInOut(board.SR_LATCH)
-        self.shift_register: ShiftRegister74HC595 = ShiftRegister74HC595(
-            self.spi0, self._latch_pin
-        )
+    # @safe_init
+    # def init_shift_register(self, hardware_key: str) -> None:
+    #     self._latch_pin = digitalio.DigitalInOut(board.SR_LATCH)
+    #     self.shift_register: ShiftRegister74HC595 = ShiftRegister74HC595(
+    #         self.spi0, self._latch_pin
+    #     )
 
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
         self.config: Config = config
@@ -293,22 +292,6 @@ class Satellite:
             self.hardware[hardware_key] = True
             return uart
 
-        self.i2c0: busio.I2C = self.init_general_hardware(
-            busio.I2C,
-            board.I2C0_SCL,
-            board.I2C0_SDA,
-            hardware_key="I2C0",
-            orpheus_func=orpheus_skip_i2c,
-        )
-
-        self.spi0: busio.SPI = self.init_general_hardware(
-            busio.SPI,
-            board.SPI1_SCK,
-            MOSI=board.SPI1_MOSI,
-            MISO=board.SPI1_MISO,
-            hardware_key="SPI0",
-        )
-
         self.i2c1: busio.I2C = self.init_general_hardware(
             busio.I2C,
             board.I2C1_SCL,
@@ -346,12 +329,12 @@ class Satellite:
             adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
         self.init_rtc(hardware_key="RTC")
-        self.init_sd_card(hardware_key="SD Card")
+        # self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
         self.init_tca_multiplexer(hardware_key="TCA")
-        self.init_shift_register(hardware_key="SR")
+        # self.init_shift_register(hardware_key="SR")
 
-        self.shift_register_pins = [self.shift_register.get_pin(n) for n in range(8)]
+        # self.shift_register_pins = [self.shift_register.get_pin(n) for n in range(8)]
 
         """
         Face Initializations
