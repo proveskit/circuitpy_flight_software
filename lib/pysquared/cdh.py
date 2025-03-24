@@ -201,7 +201,23 @@ class CommandDataHandler:
         key: str = ""
         value = ""
 
+        """
+        can return an e from Exception I find a:
+
+        1. KeyError:
+            Occurs when trying to access a dictionary element using a key that does not exist.
+            - Can use this for when trying to change a value that isn't in config
+
+        2. TypeError:
+            Occurs when an operation or function is applied to an object of an inappropriate type, like adding a number to a string.
+            - Can use this for when a value is of wrong type
+
+        3. ValueError:
+            Signifies that a function received an argument of the correct type but an inappropriate value, like trying to convert "abc" to an integer.
+            - Can use this for when a value is not in range in schema
+        """
+        # could do try catch
         if self.config.update_config(key, value, temporary):
             self.logger.info("Updated config value successfully")
         else:
-            self.logger.error("An error ocurred while updating config")
+            self.logger.warning("An error ocurred while updating config")

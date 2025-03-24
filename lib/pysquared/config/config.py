@@ -62,15 +62,15 @@ class Config:
             "normal_battery_temp": {"type": int, "min": -1, "max": 1},
             "normal_micro_temp": {"type": int, "min": -1, "max": 1},
             "reboot_time": {"type": int, "min": 3600, "max": 604800},
-            "detumble_enable_z": {"type": bool, "min": -1, "max": 1},
-            "detumble_enable_x": {"type": bool, "min": -1, "max": 1},
-            "detumble_enable_y": {"type": bool, "min": -1, "max": 1},
-            "debug": {"type": bool, "min": -1, "max": 1},
-            "legacy": {"type": bool, "min": -1, "max": 1},
-            "heating": {"type": bool, "min": -1, "max": 1},
-            "orpheus": {"type": bool, "min": -1, "max": 1},
-            "is_licensed": {"type": bool, "min": -1, "max": 1},
-            "turbo_clock": {"type": bool, "min": -1, "max": 1},
+            "detumble_enable_z": {"type": bool, "min": False, "max": True},
+            "detumble_enable_x": {"type": bool, "min": False, "max": True},
+            "detumble_enable_y": {"type": bool, "min": False, "max": True},
+            "debug": {"type": bool, "min": False, "max": True},
+            "legacy": {"type": bool, "min": False, "max": True},
+            "heating": {"type": bool, "min": False, "max": True},
+            "orpheus": {"type": bool, "min": False, "max": True},
+            "is_licensed": {"type": bool, "min": False, "max": True},
+            "turbo_clock": {"type": bool, "min": False, "max": True},
         }
 
         self.RADIO_SCHEMA = {
@@ -83,8 +83,8 @@ class Config:
         self.FSK_SCHEMA = {
             "ack_delay": {"type": float, "min": -1, "max": 1},
             "coding_rate": {"type": int, "min": 4, "max": 8},
-            "cyclic_redundancy_check": {"type": bool, "min": -1, "max": 1},
-            "max_output": {"type": bool, "min": -1, "max": 1},
+            "cyclic_redundancy_check": {"type": bool, "min": False, "max": True},
+            "max_output": {"type": bool, "min": False, "max": True},
             "spreading_factor": {"type": int, "min": 6, "max": 12},
             "transmit_power": {"type": int, "min": 5, "max": 23},
         }
@@ -97,7 +97,7 @@ class Config:
 
     # validates values from input
     def validate(self, key: str, value) -> bool:
-        # first checks if key is actually part of config
+        # first checks if key is actually part of config/radio dict
         if key in self.CONFIG_SCHEMA:
             schema = self.CONFIG_SCHEMA[key]
 
@@ -133,6 +133,15 @@ class Config:
             if "max_length" in schema and len(value) < schema["max_length"]:
                 return False
 
+        # checks a bool value is either True or False
+        if isinstance(value, bool):
+            if value:
+                pass
+            elif not value:
+                pass
+            else:
+                return False
+
         return True
 
     # permanently updates values
@@ -147,38 +156,51 @@ class Config:
 
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> bool:
+        # validates value
         if self.validate(key, value):
             if key in self.CONFIG_SCHEMA:
+                # if permanent, saves to config
                 if not temporary:
                     self.save_config(key, value)
-                else:
-                    setattr(self, key, value)
+
+                # updates RAM
+                setattr(self, key, value)
 
             elif key in self.RADIO_SCHEMA:
+                # if permanent, saves to config
                 if not temporary:
                     with open("config.json", "r") as f:
                         json_data = json.loads(f.read())
                     json_data["radio"][key] = value
                     with open("config.json", "w") as f:
                         f.write(json.dumps(json_data))
+
+                # updates RAM
                 self.radio["key"] = value
 
             elif key in self.FSK_SCHEMA:
+                # if permanent, saves to config
                 if not temporary:
                     with open("config.json", "r") as f:
                         json_data = json.loads(f.read())
                     json_data["radio"]["fsk"][key] = value
                     with open("config.json", "w") as f:
                         f.write(json.dumps(json_data))
+
+                # updates RAM
                 self.radio["fsk"][key] = value
 
             else:
+                # key is in self.LORA_SCHEMA
+                # if permanent, saves to config
                 if not temporary:
                     with open("config.json", "r") as f:
                         json_data = json.loads(f.read())
                     json_data["radio"]["lora"][key] = value
                     with open("config.json", "w") as f:
                         f.write(json.dumps(json_data))
+
+                # updates RAM
                 self.radio["lora"][key] = value
         else:
             return False
