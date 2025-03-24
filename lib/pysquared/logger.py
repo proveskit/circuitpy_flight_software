@@ -83,7 +83,18 @@ class Logger:
         )
         json_order.update(kwargs)
 
-        json_output = json.dumps(json_order)
+        try:
+            json_output = json.dumps(json_order)
+        except TypeError as e:
+            json_output = json.dumps(
+                OrderedDict(
+                    [
+                        ("time", asctime),
+                        ("level", "ERROR"),
+                        ("msg", f"Failed to serialize log message: {e}"),
+                    ]
+                ),
+            )
 
         if self._can_print_this_level(level_value):
             if self.colorized:

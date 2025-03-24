@@ -49,7 +49,7 @@ ifeq ($(OS),Windows_NT)
 	cp -r artifacts/proves/* $(BOARD_MOUNT_POINT)
 else
 	@rm $(BOARD_MOUNT_POINT)/code.py > /dev/null 2>&1 || true
-	$(call rsync_to_dest,$(BOARD_MOUNT_POINT))
+	$(call rsync_to_dest,artifacts/proves,$(BOARD_MOUNT_POINT))
 endif
 
 .PHONY: clean
@@ -59,21 +59,28 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 ##@ Build
 
 .PHONY: build
-build: download-libraries ## Build the project, store the result in the artifacts directory
+build: download-libraries mpy-cross ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
 	@mkdir -p artifacts/proves
 	@echo "__version__ = '$(VERSION)'" > artifacts/proves/version.py
-	$(call rsync_to_dest,artifacts/proves/)
+	$(call compile_mpy)
+	$(call rsync_to_dest,.,artifacts/proves/)
+	@find artifacts/proves/lib -name '*.py' -type f -delete
 	@echo "Creating artifacts/proves.zip"
 	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
 
 define rsync_to_dest
 	@if [ -z "$(1)" ]; then \
+		echo "Issue with Make target, rsync source is not specified. Stopping."; \
+		exit 1; \
+	fi
+
+	@if [ -z "$(2)" ]; then \
 		echo "Issue with Make target, rsync destination is not specified. Stopping."; \
 		exit 1; \
 	fi
 
-	@rsync -avh config.json artifacts/proves/version.py ./*.py ./lib --exclude='requirements.txt' --exclude='__pycache__' $(1) --delete --times --checksum
+	@rsync -avh $(1)/config.json artifacts/proves/version.py $(1)/*.py $(1)/lib --exclude='requirements.txt' --exclude='__pycache__' $(2) --delete --times --checksum
 endef
 
 ##@ Build Tools
@@ -83,6 +90,7 @@ $(TOOLS_DIR):
 
 ### Tool Versions
 UV_VERSION ?= 0.5.24
+MPY_CROSS_VERSION ?= 9.0.5
 
 UV_DIR ?= $(TOOLS_DIR)/uv-$(UV_VERSION)
 UV ?= $(UV_DIR)/uv
@@ -91,3 +99,38 @@ UVX ?= $(UV_DIR)/uvx
 uv: $(UV) ## Download uv
 $(UV): $(TOOLS_DIR)
 	@test -s $(UV) || { mkdir -p $(UV_DIR); curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | UV_INSTALL_DIR=$(UV_DIR) sh > /dev/null; }
+
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+MPY_S3_PREFIX ?= https://adafruit-circuit-python.s3.amazonaws.com/bin/mpy-cross
+MPY_CROSS ?= $(TOOLS_DIR)/mpy-cross-$(MPY_CROSS_VERSION)
+.PHONY: mpy-cross
+mpy-cross: $(MPY_CROSS) ## Download mpy-cross
+$(MPY_CROSS): $(TOOLS_DIR)
+	@echo "Downloading mpy-cross $(MPY_CROSS_VERSION)..."
+	@mkdir -p $(dir $@)
+ifeq ($(OS),Windows_NT)
+	@curl -LsSf $(MPY_S3_PREFIX)/windows/mpy-cross-windows-$(MPY_CROSS_VERSION).static.exe -o $@
+else
+ifeq ($(UNAME_S),Linux)
+ifeq ($(or $(filter x86_64,$(UNAME_M)),$(filter amd64,$(UNAME_M))),$(UNAME_M))
+	@curl -LsSf $(MPY_S3_PREFIX)/linux-amd64/mpy-cross-linux-amd64-$(MPY_CROSS_VERSION).static -o $@
+	@chmod +x $@
+else
+	@echo "Pre-built mpy-cross not available for Linux machine: $(UNAME_M)"
+endif
+else ifeq ($(UNAME_S),Darwin)
+	@curl -LsSf $(MPY_S3_PREFIX)/macos-11/mpy-cross-macos-11-$(MPY_CROSS_VERSION)-universal -o $@
+	@chmod +x $@
+else
+	@echo "Pre-built mpy-cross not available for system: $(UNAME_S)"
+endif
+endif
+
+define compile_mpy
+	@find lib -name '*.py' -print0 | while IFS= read -r -d '' file; do \
+		echo "Compiling $$file to .mpy..."; \
+		$(MPY_CROSS) $$file; \
+	done
+endef
