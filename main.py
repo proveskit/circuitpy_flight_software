@@ -32,6 +32,7 @@ from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.rtc.rtc_common import RTC
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.state_of_health import StateOfHealth
+from version import __version__
 
 logger: Logger = Logger(
     error_counter=Counter(index=register.ERRORCNT, datastore=microcontroller.nvm),
