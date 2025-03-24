@@ -23,8 +23,6 @@ def initialize_pin(
     """
     logger.debug(
         message="Initializing pin",
-        pin=pin,
-        direction=direction,
         initial_value=initial_value,
     )
 
