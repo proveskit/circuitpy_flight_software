@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 
-class RFM9xFactory:
+class SX126xFactory:
     """Factory class for creating RFM9x radio instances.
     The purpose of the factory class is to hide the complexity of radio initialization from the caller.
     Specifically we should try to keep adafruit_rfm to only this factory class with the exception of the RFMSPI class.
