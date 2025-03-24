@@ -26,8 +26,9 @@ import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.pysquared.nvm.register as register
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
-from lib.adafruit_74hc595 import ShiftRegister74HC595
+from lib.adafruit_ina219 import INA219
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
+from lib.adafruit_mcp9808 import MCP9808
 from lib.pysquared.config.config import Config  # Configs
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
@@ -131,7 +132,7 @@ class Satellite:
     @safe_init
     def init_sd_card(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
-        _sd = sdcardio.SDCard(self.spi0, board.SPI1_CS1, baudrate=4000000)
+        _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
         _vfs = VfsFat(_sd)
         mount(_vfs, "/sd")
         self.fs = _vfs
@@ -140,6 +141,8 @@ class Satellite:
 
     @safe_init
     def init_neopixel(self, hardware_key: str) -> None:
+        self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
+        self.neopwr.switch_to_output(value=True)
         self.neopixel: neopixel.NeoPixel = neopixel.NeoPixel(
             board.NEOPIX, 1, brightness=0.2, pixel_order=neopixel.GRB
         )
@@ -161,16 +164,10 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    @safe_init
-    def init_shift_register(self, hardware_key: str) -> None:
-        self._latch_pin = digitalio.DigitalInOut(board.SR_LATCH)
-        self.shift_register: ShiftRegister74HC595 = ShiftRegister74HC595(
-            self.spi0, self._latch_pin
-        )
-
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name
+
         """
         Big init routine as the whole board is brought up. Starting with config variables.
         """
@@ -233,7 +230,6 @@ class Satellite:
             [
                 ("I2C0", False),
                 ("SPI0", False),
-                ("SPI1", False),
                 ("I2C1", False),
                 ("UART", False),
                 ("IMU", False),
@@ -248,7 +244,6 @@ class Satellite:
                 ("Face3", False),
                 ("Face4", False),
                 ("RTC", False),
-                ("SR", False),
             ]
         )
 
@@ -302,9 +297,9 @@ class Satellite:
 
         self.spi0: busio.SPI = self.init_general_hardware(
             busio.SPI,
-            board.SPI1_SCK,
-            MOSI=board.SPI1_MOSI,
-            MISO=board.SPI1_MISO,
+            board.SPI0_SCK,
+            board.SPI0_MOSI,
+            board.SPI0_MISO,
             hardware_key="SPI0",
         )
 
@@ -316,11 +311,14 @@ class Satellite:
             hardware_key="I2C1",
         )
 
+        self.pwr = INA219(self.i2c1, addr=int(0x40))
+        self.mcp = MCP9808(self.i2c1, address=27)
+
         self.uart: circuitpython_typing.ByteStream = self.init_general_hardware(
             busio.UART,
             board.TX,
             board.RX,
-            baudrate=self.uart_baudrate,
+            baud_rate=self.uart_baudrate,
             hardware_key="UART",
             orpheus_func=orpheus_init_uart,
         )
@@ -348,14 +346,10 @@ class Satellite:
         self.init_sd_card(hardware_key="SD Card")
         self.init_neopixel(hardware_key="NEOPIX")
         self.init_tca_multiplexer(hardware_key="TCA")
-        self.init_shift_register(hardware_key="SR")
-
-        self.shift_register_pins = [self.shift_register.get_pin(n) for n in range(8)]
 
         """
         Face Initializations
         """
-
         self.scan_tca_channels()
 
         """
@@ -469,6 +463,42 @@ class Satellite:
                 e,
                 value=value,
             )
+
+    def battery_voltage(self):
+        voltage = 0
+        try:
+            for _ in range(50):
+                voltage += self.pwr.bus_voltage
+            return voltage / 50 + 0.2  # volts and corection factor
+        except Exception as e:
+            self.logger.error("Power Monitor warning", e)
+
+    # else:
+    # self.logger.warning('Power monitor not initialized')
+
+    def system_voltage(self):
+        voltage = 0
+        try:
+            for _ in range(50):
+                voltage += self.pwr.bus_voltage + self.pwr.shunt_voltage
+            return voltage / 50  # volts
+        except Exception as e:
+            self.logger.error("Power Monitor warning", e)
+
+    # else:
+    # self.logger.warning('Power monitor not initialized')
+
+    def current_draw(self):
+        idraw = 0
+        try:
+            for _ in range(50):  # average 50 readings
+                idraw += self.pwr.current
+            return idraw / 50
+        except Exception as e:
+            self.logger.error("Power Monitor warning", e)
+
+    # else:
+    # self.logger.warning('Power monitor not initialized')
 
     @property
     def get_system_uptime(self) -> int:

@@ -61,8 +61,8 @@ try:
         Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         RFM9xFactory(
             c.spi0,
-            initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True),
-            initialize_pin(logger, board.RF2_RST, digitalio.Direction.OUTPUT, True),
+            initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+            initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
             config.radio,
         ),
     )
@@ -108,6 +108,9 @@ try:
         f.listen_loiter()
 
         f.state_of_health()
+        logger.info("Battery Voltage Info", voltage=c.battery_voltage())
+        logger.info("System Voltage Info", voltage=c.system_voltage())
+        logger.info("Current info", current=c.current_draw())
 
         f.listen_loiter()
 
