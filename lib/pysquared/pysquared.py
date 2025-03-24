@@ -222,6 +222,17 @@ class Satellite:
             self.hardware[hardware_key] = True
         except Exception as e:
             self.logger.error("Error initializing power monitor", e)
+<<<<<<< HEAD
+=======
+
+    @safe_init
+    def init_solar_power_monitor(self, hardware_key: str) -> None:
+        try:
+            self.solar = adafruit_ina219.INA219(self.i2c0, addr=int(0x44))
+            self.hardware[hardware_key] = True
+        except Exception as e:
+            self.logger.error("Error initializing solar power monitor", e)
+>>>>>>> e005f5302a14fe4ef2cb25598c475af9aa84e8c6
 
     @safe_init
     def init_solar_power_monitor(self, hardware_key: str) -> None:
@@ -395,7 +406,10 @@ class Satellite:
         ######## Temporary Fix for RF_ENAB ########
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> e005f5302a14fe4ef2cb25598c475af9aa84e8c6
         # Initialize other hardware components
         self.init_radio(hardware_key="Radio1")
 >>>>>>> 8c5f81c (Added functions for getting battery and solar information, I2C0 seems to work now (?). Can't figure out how to connect to battery board to test.)
