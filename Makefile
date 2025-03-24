@@ -59,7 +59,7 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 ##@ Build
 
 .PHONY: build
-build: download-libraries ## Build the project, store the result in the artifacts directory
+build: download-libraries mpy-cross ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves"
 	@mkdir -p artifacts/proves
 	@echo "__version__ = '$(VERSION)'" > artifacts/proves/version.py
