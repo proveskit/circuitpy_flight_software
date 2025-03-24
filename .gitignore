@@ -15,3 +15,4 @@ lib/rv3028*
 lib/adafruit*
 lib/asyncio*
 lib/neopixel.py
+lib/proves_sx126/

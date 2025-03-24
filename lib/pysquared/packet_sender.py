@@ -1,4 +1,4 @@
-from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
+from lib.pysquared.hardware.radio.manager import RadioManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 
@@ -12,7 +12,7 @@ class PacketSender:
     def __init__(
         self,
         logger: Logger,
-        radio_manager: RFM9xManager,
+        radio_manager: RadioManager,
         packet_manager: PacketManager,
         ack_timeout: float = 2.0,
         max_retries: int = 3,
@@ -22,7 +22,7 @@ class PacketSender:
         Initialize the packet sender with optimized timing
         """
         self.logger: Logger = logger
-        self.radio_manager: RFM9xManager = radio_manager
+        self.radio_manager: RadioManager = radio_manager
         self.packet_manager: PacketManager = packet_manager
         self.ack_timeout: float = ack_timeout
         self.max_retries: int = max_retries

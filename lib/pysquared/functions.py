@@ -10,7 +10,7 @@ import random
 import time
 
 from lib.pysquared.config.config import Config
-from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
+from lib.pysquared.hardware.radio.manager import RadioManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.packet_manager import PacketManager
 from lib.pysquared.packet_sender import PacketSender
@@ -30,13 +30,13 @@ class functions:
         logger: Logger,
         config: Config,
         sleep_helper: SleepHelper,
-        radio_manager: RFM9xManager,
+        radio_manager: RadioManager,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
         self.sleep_helper = sleep_helper
-        self.radio_manager: RFM9xManager = radio_manager
+        self.radio_manager: RadioManager = radio_manager
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(

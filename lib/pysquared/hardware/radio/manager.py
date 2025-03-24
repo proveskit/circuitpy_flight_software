@@ -1,21 +1,22 @@
-from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
+from lib.pysquared.hardware.radio.modulation import RadioModulation
 
 # Type hinting only
 try:
     from typing import Any
 
     from lib.adafruit_rfm.rfm_common import RFMSPI
-    from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
+    from lib.pysquared.hardware.radio.rfm9x_factory import RFM9xFactory
     from lib.pysquared.logger import Logger
     from lib.pysquared.nvm.flag import Flag
+    from lib.sx126.sx1262 import SX1262
 except ImportError:
     pass
 
 
-class RFM9xManager:
+class RadioManager:
     """Manages the lifecycle and mode switching of the RFM9x radio."""
 
-    _radio: RFMSPI | None = None
+    _radio: RFMSPI | SX1262 | None = None
 
     def __init__(
         self,
@@ -51,7 +52,7 @@ class RFM9xManager:
             )
 
             # Always toggle back to LoRa on reboot
-            self.set_modulation(RFM9xModulation.LORA)
+            self.set_modulation(RadioModulation.LORA)
 
         return self._radio
 
@@ -70,11 +71,11 @@ class RFM9xManager:
         :return str: The current radio modulation.
         """
         if self._radio is None:
-            return RFM9xModulation.FSK if self._use_fsk.get() else RFM9xModulation.LORA
+            return RadioModulation.FSK if self._use_fsk.get() else RadioModulation.LORA
 
         return self._radio_factory.get_instance_modulation(self.radio)
 
-    def set_modulation(self, req_modulation: RFM9xModulation) -> None:
+    def set_modulation(self, req_modulation: RadioModulation) -> None:
         """
         Set the radio modulation.
         Takes effect on the next reboot.
@@ -82,7 +83,7 @@ class RFM9xManager:
         :return: None
         """
         if self.get_modulation() != req_modulation:
-            self._use_fsk.toggle(req_modulation == RFM9xModulation.FSK)
+            self._use_fsk.toggle(req_modulation == RadioModulation.FSK)
             self._log.info(
                 "Radio modulation change requested", modulation=req_modulation
             )

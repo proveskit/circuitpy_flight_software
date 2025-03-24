@@ -24,8 +24,8 @@ import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config.config import Config
 from lib.pysquared.hardware.digitalio import initialize_pin
-from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
-from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
+from lib.pysquared.hardware.radio.manager import RadioManager
+from lib.pysquared.hardware.radio.rfm9x_factory import RFM9xFactory
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
@@ -56,7 +56,7 @@ try:
     c.watchdog_pet()
     sleep_helper = SleepHelper(c, logger)
 
-    radio_manager = RFM9xManager(
+    radio_manager = RadioManager(
         logger,
         Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         RFM9xFactory(

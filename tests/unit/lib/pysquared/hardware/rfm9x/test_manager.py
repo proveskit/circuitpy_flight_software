@@ -2,9 +2,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from lib.pysquared.hardware.rfm9x.factory import RFM9xFactory
-from lib.pysquared.hardware.rfm9x.manager import RFM9xManager
-from lib.pysquared.hardware.rfm9x.modulation import RFM9xModulation
+from lib.pysquared.hardware.radio.manager import RadioManager
+from lib.pysquared.hardware.radio.modulation import RadioModulation
+from lib.pysquared.hardware.radio.rfm9x_factory import RFM9xFactory
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.nvm.flag import Flag
@@ -29,12 +29,12 @@ def mock_radio_factory():
 
 @pytest.mark.parametrize(
     "modulation, use_fsk_initial",
-    [(RFM9xModulation.LORA, False), (RFM9xModulation.FSK, True)],
+    [(RadioModulation.LORA, False), (RadioModulation.FSK, True)],
 )
 def test_radio_property_creates_radio(
     mock_logger: Logger,
     mock_radio_factory: MagicMock,
-    modulation: RFM9xModulation,
+    modulation: RadioModulation,
     use_fsk_initial: bool,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
@@ -45,7 +45,7 @@ def test_radio_property_creates_radio(
     if use_fsk_initial:
         use_fsk.toggle(True)
 
-    manager = RFM9xManager(
+    manager = RadioManager(
         mock_logger,
         use_fsk,
         mock_radio_factory,
@@ -71,20 +71,20 @@ def test_set_modulation(
     mock_radio_factory.create.return_value = mock_radio
 
     mock_radio.read_u8 = MagicMock()
-    manager = RFM9xManager(
+    manager = RadioManager(
         mock_logger,
         mock_use_fsk,
         mock_radio_factory,
     )
 
-    manager.set_modulation(RFM9xModulation.LORA)
+    manager.set_modulation(RadioModulation.LORA)
     assert manager._use_fsk.get() is False
 
-    manager.set_modulation(RFM9xModulation.FSK)
+    manager.set_modulation(RadioModulation.FSK)
     assert manager._use_fsk.get() is True
 
-    mock_radio_factory.get_instance_modulation.return_value = RFM9xModulation.FSK
-    manager.set_modulation(RFM9xModulation.FSK)
+    mock_radio_factory.get_instance_modulation.return_value = RadioModulation.FSK
+    manager.set_modulation(RadioModulation.FSK)
     assert manager._use_fsk.get() is True
 
 
@@ -107,7 +107,7 @@ def test_get_temperature(
     mock_radio.read_u8.return_value = raw_value
     mock_radio_factory.create.return_value = mock_radio
 
-    manager = RFM9xManager(
+    manager = RadioManager(
         mock_logger,
         mock_use_fsk,
         mock_radio_factory,
@@ -126,7 +126,7 @@ def test_beacon_radio_message(
     mock_radio.send.return_value = False
     mock_radio_factory.create.return_value = mock_radio
 
-    manager = RFM9xManager(mock_logger, mock_use_fsk, mock_radio_factory)
+    manager = RadioManager(mock_logger, mock_use_fsk, mock_radio_factory)
 
     manager.beacon_radio_message(None)
     assert "There was an error while beaconing" in capsys.readouterr().out

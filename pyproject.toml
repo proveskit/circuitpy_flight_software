@@ -41,6 +41,7 @@ omit = [
     "lib/asyncio_*/**",
     "lib/rv3028*/**",
     "lib/neopixel.py",
+    "lib/proves_sx126/**",
     ]
 
 [tool.coverage.html]
