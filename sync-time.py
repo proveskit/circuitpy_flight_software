@@ -6,20 +6,6 @@ import time
 import serial
 import serial.tools.list_ports
 
-# ser = serial.Serial('/dev/tty.usbmodem1101')
-# print(ser.name)
-
-"""
-with serial.Serial('/dev/tty.usbmodem1101', 9600, timeout=5) as ser:
-    x = ser.read()          # read one byte
-    s = ser.read(10)        # read up to ten bytes (timeout)
-    line = ser.readlines()   # read a '\n' terminated line
-    print(line)
-
-"""
-
-#'from lib.pysquared.rtc.rp2040 import RP2040RTC'
-
 
 def convert_cu_to_tty(port):
     return "/dev/tty." + port.split("cu.")[1]
@@ -35,8 +21,14 @@ def find_FCBoard_port() -> str:
         serial_port = string_p.split(" - ")[0]
         name = string_p.split(" - ")[1]
 
-        if name == "FLIGHT_CONTROLLER" and platform.system() != "Windows":
+        print(string_p)
+        if (
+            name == "FLIGHT_CONTROLLER"
+            or name.startswith("ProvesKit")
+            and platform.system() != "Windows"
+        ):
             golden_port = serial_port
+            print("dfjdfajdjfdjasdjkadfjsk")
 
         elif name[:17] == "USB Serial Device":
             golden_port = serial_port
@@ -44,6 +36,7 @@ def find_FCBoard_port() -> str:
     if os.name == "posix" and platform.system() == "Linux":
         return golden_port
 
+    # If on a Mac, the port will initially show as a cu device instead of tty
     if platform.system() == "Darwin":
         return convert_cu_to_tty(golden_port)
 
@@ -77,10 +70,7 @@ def sync_time():
 
                 for line in lines:
                     # print(line)
-                    if (
-                        b"Adafruit CircuitPython 9.1.4-dirty on 2024-10-05; PySquaredFCv4 with rp2040"
-                        in line
-                    ):
+                    if b"Adafruit CircuitPython" in line:
                         adafruit_line_met = True
 
             ser.write(b"import lib.pysquared.rtc.rp2040 as rp")
@@ -109,20 +99,53 @@ def sync_time():
         )
 
     except serial.serialutil.SerialException:
+        if platform.system() == "Windows":
+            print(
+                "The time was unable to be updated because a separate serial connection is present.\nPlease close that connection, and try the make-sync command again."
+            )
+            return
+
         print(
-            "\nThere is currently a screen session used with the board. This prevents this program from being able to run."
+            "\nThere is currently a screen session used with the board. This prevents this command from being able to run."
         )
         print(
-            "The screen session will first be terminated, and the time will be updated."
+            "If the serial connection happens to be a screen session, the screen session will first be terminated, and the time will be updated."
         )
 
         processID_output = subprocess.check_output(["fuser", port])
-        # print(processID_output)
+
         processID = processID_output.decode().split("\n")[0]
-        # print(processID)
-        subprocess.call(["kill", processID])
-        time.sleep(2)
-        sync_time()
+
+        try:
+            # checking if screen is present
+            isScreen = subprocess.check_output(["screen", "-ls", processID])
+        except Exception:
+            print(
+                "An exception occured during the command. Please try the command again."
+            )
+            return
+
+        # screen session not detected
+        if isScreen[:11] == "No Sockets":
+            print(
+                "The time was unable to be updated because a separate serial connection is present.\nPlease close that connection, and try the make-sync command again."
+            )
+            return
+
+        print(
+            "A screen session associated with the serial port has been found. That screen process will be deleted and the time will be updated\n"
+        )
+
+    except Exception:
+        # try:
+        #   # print(processID)
+        #   subprocess.call(["kill", processID])
+
+        # except Exception:
+        print("JAODSJKSAJKFJKDSFKJDSJKDS")
+
+        # time.sleep(2)
+        # sync_time()
 
 
 sync_time()
