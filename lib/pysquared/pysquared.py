@@ -167,7 +167,7 @@ class Satellite:
     @safe_init
     def init_power_monitor(self, hardware_key: str) -> None:
         try:
-            self.pwr = adafruit_ina219.INA219(self.i2c0, addr=int(0x40))
+            self.pwr = adafruit_ina219.INA219(self.i2c1, addr=int(0x40))
             self.hardware[hardware_key] = True
         except Exception as e:
             self.logger.error("Error initializing power monitor", e)
@@ -175,7 +175,7 @@ class Satellite:
     @safe_init
     def init_solar_power_monitor(self, hardware_key: str) -> None:
         try:
-            self.solar = adafruit_ina219.INA219(self.i2c0, addr=int(0x44))
+            self.solar = adafruit_ina219.INA219(self.i2c1, addr=int(0x44))
             self.hardware[hardware_key] = True
         except Exception as e:
             self.logger.error("Error initializing solar power monitor", e)
