@@ -180,14 +180,6 @@ class Satellite:
         except Exception as e:
             self.logger.error("Error initializing solar power monitor", e)
 
-    @safe_init
-    def init_solar_power_monitor(self, hardware_key: str) -> None:
-        try:
-            self.solar = adafruit_ina219.INA219(self.i2c0, addr=int(0x44))
-            self.hardware[hardware_key] = True
-        except Exception as e:
-            self.logger.error("Error initializing solar power monitor", e)
-
     def __init__(self, config: Config, logger: Logger, version: str) -> None:
         self.config: Config = config
         self.cubesat_name: str = config.cubesat_name

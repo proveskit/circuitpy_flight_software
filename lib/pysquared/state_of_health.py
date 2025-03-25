@@ -44,7 +44,7 @@ class StateOfHealth:
         Update the state of health
         """
         try:
-            self.state["system_voltage"] = self.c.micro.cpu.voltage  # not 100% sure on this
+            self.state["system_voltage"] = self.c.system_voltage
             self.state["system_current"] = self.c.current_draw
             self.state["solar_voltage"] = self.c.solar_voltage
             self.state["solar_current"] = self.c.charge_current
