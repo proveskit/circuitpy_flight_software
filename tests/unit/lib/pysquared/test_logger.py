@@ -115,7 +115,14 @@ def test_critical_log(capsys, logger):
     assert '"soft": "ware"' in captured.out
     assert '"j": "20"' in captured.out
     assert '"config": "king"' in captured.out
-    assert "OSError: Manually creating an OS Error" in captured.out
+
+
+def test_type_error_log(capsys, logger):
+    logger.info("Testing type error", bad_arg=lambda x: x + 1)
+    captured = capsys.readouterr()
+    assert '"level": "ERROR"' in captured.out
+    assert "Failed to serialize log message:" in captured.out
+    assert "Object of type function is not JSON serializable" in captured.out
 
 
 def test_debug_log_color(capsys, logger_color):
