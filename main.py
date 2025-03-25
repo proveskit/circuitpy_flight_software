@@ -23,8 +23,6 @@ import lib.pysquared.functions as functions
 import lib.pysquared.nvm.register as register
 import lib.pysquared.pysquared as pysquared
 from lib.pysquared.config.config import Config
-from lib.pysquared.hardware.busio import initialize_spi_bus
-from lib.pysquared.hardware.digitalio import initialize_pin
 from lib.pysquared.hardware.radio.manager import RadioManager
 from lib.pysquared.hardware.radio.sx126x_factory import SX126xFactory
 from lib.pysquared.logger import Logger
@@ -60,24 +58,27 @@ try:
 
     sleep_helper = SleepHelper(c, logger)
 
+    SPI1_CS0 = digitalio.DigitalInOut(board.SPI1_CS0)
+    SPI1_CS0.direction = digitalio.Direction.OUTPUT
+
+    RF2_IO0 = digitalio.DigitalInOut(board.RF2_IO0)
+    RF2_IO0.direction = digitalio.Direction.INPUT
+
+    RF2_RST = digitalio.DigitalInOut(board.RF2_RST)
+    RF2_RST.direction = digitalio.Direction.OUTPUT
+
+    RF2_IO4 = digitalio.DigitalInOut(board.RF2_IO4)
+    RF2_IO4.direction = digitalio.Direction.INPUT
+
     radio_manager = RadioManager(
         logger,
         Flag(index=register.FLAG, bit_index=7, datastore=microcontroller.nvm),
         SX126xFactory(
-            initialize_spi_bus(
-                logger,
-                board.SPI1_SCK,
-                board.SPI1_MOSI,
-                board.SPI1_MISO,
-                200000,
-                0,
-                0,
-                8,
-            ),
-            initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True),
-            initialize_pin(logger, board.RF2_IO1, digitalio.Direction.INPUT, False),
-            initialize_pin(logger, board.RF2_RST, digitalio.Direction.OUTPUT, True),
-            initialize_pin(logger, board.RF2_IO4, digitalio.Direction.INPUT, False),
+            c.spi0,
+            SPI1_CS0,
+            RF2_IO0,
+            RF2_RST,
+            RF2_IO4,
             config.radio,
         ),
     )
