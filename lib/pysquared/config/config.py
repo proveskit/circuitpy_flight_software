@@ -156,7 +156,7 @@ class Config:
 
     # handles temp or permanent updates
     def update_config(self, key: str, value, temporary: bool) -> bool:
-        # validates value
+        # validates key and value
         if self.validate(key, value):
             if key in self.CONFIG_SCHEMA:
                 # if permanent, saves to config
