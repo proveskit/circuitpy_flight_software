@@ -45,11 +45,7 @@ def test_radio_property_creates_radio(
     if use_fsk_initial:
         use_fsk.toggle(True)
 
-    manager = RFM9xManager(
-        mock_logger,
-        use_fsk,
-        mock_radio_factory,
-    )
+    manager = RFM9xManager(mock_logger, use_fsk, mock_radio_factory, is_licensed=True)
 
     radio = manager.radio
 
@@ -72,9 +68,7 @@ def test_set_modulation(
 
     mock_radio.read_u8 = MagicMock()
     manager = RFM9xManager(
-        mock_logger,
-        mock_use_fsk,
-        mock_radio_factory,
+        mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=True
     )
 
     manager.set_modulation(RFM9xModulation.LORA)
@@ -108,9 +102,7 @@ def test_get_temperature(
     mock_radio_factory.create.return_value = mock_radio
 
     manager = RFM9xManager(
-        mock_logger,
-        mock_use_fsk,
-        mock_radio_factory,
+        mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=True
     )
 
     actual_temperature = manager.get_temperature()
@@ -118,18 +110,37 @@ def test_get_temperature(
     mock_radio.read_u8.assert_called_once_with(0x5B)
 
 
+@pytest.mark.parametrize(
+    "is_licensed, message, expected_warning",
+    [
+        (True, "Testing beaconing function in radio manager.", None),
+        (
+            False,
+            "Testing beaconing function in radio manager.",
+            "Radio is not licensed, cannot send message",
+        ),
+    ],
+)
 def test_beacon_radio_message(
-    mock_logger: Logger, mock_use_fsk: Flag, mock_radio_factory: MagicMock, capsys
+    mock_logger: Logger,
+    mock_use_fsk: Flag,
+    mock_radio_factory: MagicMock,
+    capsys,
+    is_licensed: bool,
+    message: str,
+    expected_warning: str,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
-    mock_radio.send = MagicMock()
-    mock_radio.send.return_value = False
+    mock_radio.send = MagicMock(return_value=True)
     mock_radio_factory.create.return_value = mock_radio
 
-    manager = RFM9xManager(mock_logger, mock_use_fsk, mock_radio_factory)
+    manager = RFM9xManager(mock_logger, mock_use_fsk, mock_radio_factory, is_licensed)
 
-    manager.beacon_radio_message(None)
-    assert "There was an error while beaconing" in capsys.readouterr().out
+    manager.beacon_radio_message(message)
 
-    manager.beacon_radio_message("Testing beaconing function in radio manager.")
-    assert "I am beaconing" in capsys.readouterr().out
+    if is_licensed:
+        mock_radio.send.assert_called_once_with(bytes(message, "UTF-8"))
+        assert expected_warning is None
+    else:
+        mock_radio.send.assert_not_called()
+        assert expected_warning in capsys.readouterr().out
