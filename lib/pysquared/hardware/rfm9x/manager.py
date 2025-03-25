@@ -18,7 +18,11 @@ class RFM9xManager:
     _radio: RFMSPI | None = None
 
     def __init__(
-        self, logger: Logger, use_fsk: Flag, radio_factory: RFM9xFactory, is_licensed
+        self,
+        logger: Logger,
+        use_fsk: Flag,
+        radio_factory: RFM9xFactory,
+        is_licensed: bool,
     ) -> None:
         """Initialize the rfm9x manager.
 
@@ -56,11 +60,10 @@ class RFM9xManager:
     def beacon_radio_message(self, msg: Any) -> None:
         """Beacon a radio message and log the result."""
         try:
-            if self._is_licensed:
-                sent = self.radio.send(bytes(msg, "UTF-8"))
-            else:
-                sent = False
-                self._log.warning("Radio is not licensed, cannot send message")
+            if not self._is_licensed:
+                raise ValueError("Radio is not licensed")
+
+            sent = self.radio.send(bytes(msg, "UTF-8"))
         except Exception as e:
             self._log.error("There was an error while beaconing", e)
             return

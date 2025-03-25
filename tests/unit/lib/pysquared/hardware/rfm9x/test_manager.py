@@ -45,7 +45,12 @@ def test_radio_property_creates_radio(
     if use_fsk_initial:
         use_fsk.toggle(True)
 
-    manager = RFM9xManager(mock_logger, use_fsk, mock_radio_factory, is_licensed=True)
+    manager = RFM9xManager(
+        mock_logger,
+        use_fsk,
+        mock_radio_factory,
+        is_licensed=True,
+    )
 
     radio = manager.radio
 
@@ -110,37 +115,43 @@ def test_get_temperature(
     mock_radio.read_u8.assert_called_once_with(0x5B)
 
 
-@pytest.mark.parametrize(
-    "is_licensed, message, expected_warning",
-    [
-        (True, "Testing beaconing function in radio manager.", None),
-        (
-            False,
-            "Testing beaconing function in radio manager.",
-            "Radio is not licensed, cannot send message",
-        ),
-    ],
-)
 def test_beacon_radio_message(
     mock_logger: Logger,
     mock_use_fsk: Flag,
     mock_radio_factory: MagicMock,
     capsys,
-    is_licensed: bool,
-    message: str,
-    expected_warning: str,
 ):
     mock_radio = MagicMock(spec=RFMSPI)
     mock_radio.send = MagicMock(return_value=True)
     mock_radio_factory.create.return_value = mock_radio
 
-    manager = RFM9xManager(mock_logger, mock_use_fsk, mock_radio_factory, is_licensed)
+    message = "Testing beaconing function in radio manager."
+    manager = RFM9xManager(
+        mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=True
+    )
 
     manager.beacon_radio_message(message)
 
-    if is_licensed:
-        mock_radio.send.assert_called_once_with(bytes(message, "UTF-8"))
-        assert expected_warning is None
-    else:
-        mock_radio.send.assert_not_called()
-        assert expected_warning in capsys.readouterr().out
+    mock_radio.send.assert_called_once_with(bytes(message, "UTF-8"))
+    assert "I am beaconing" in capsys.readouterr().out
+
+
+def test_beacon_radio_message_unlicensed(
+    mock_logger: Logger,
+    mock_use_fsk: Flag,
+    mock_radio_factory: MagicMock,
+    capsys,
+):
+    mock_radio = MagicMock(spec=RFMSPI)
+    mock_radio.send = MagicMock(return_value=True)
+    mock_radio_factory.create.return_value = mock_radio
+
+    message = "Testing beaconing function in radio manager."
+    manager = RFM9xManager(
+        mock_logger, mock_use_fsk, mock_radio_factory, is_licensed=False
+    )
+
+    manager.beacon_radio_message(message)
+
+    mock_radio.send.assert_not_called()
+    assert "Radio is not licensed" in capsys.readouterr().out
