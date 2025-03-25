@@ -61,8 +61,8 @@ try:
     SPI1_CS0 = digitalio.DigitalInOut(board.SPI1_CS0)
     SPI1_CS0.direction = digitalio.Direction.OUTPUT
 
-    RF2_IO0 = digitalio.DigitalInOut(board.RF2_IO0)
-    RF2_IO0.direction = digitalio.Direction.INPUT
+    # RF2_IO0 = digitalio.DigitalInOut(board.RF2_IO0)
+    # RF2_IO0.direction = digitalio.Direction.INPUT
 
     RF2_RST = digitalio.DigitalInOut(board.RF2_RST)
     RF2_RST.direction = digitalio.Direction.OUTPUT
@@ -76,10 +76,12 @@ try:
         SX126xFactory(
             c.spi0,
             SPI1_CS0,
-            RF2_IO0,
+            board.RF2_IO0,
             RF2_RST,
             RF2_IO4,
             config.radio,
+            c.enable_tx,
+            c.enable_rx,
         ),
     )
 

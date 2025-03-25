@@ -29,6 +29,8 @@ class SX126xFactory:
         reset: DigitalInOut,
         gpio: DigitalInOut,
         radio_config: RadioConfig,
+        tx_enable: DigitalInOut,
+        rx_enable: DigitalInOut,
     ) -> None:
         """Initialize the factory class.
 
@@ -43,12 +45,14 @@ class SX126xFactory:
         self._reset = reset
         self._gpio = gpio
         self._radio_config = radio_config
+        self.tx_enable = tx_enable
+        self.rx_enable = rx_enable
 
-    @with_retries(max_attempts=3, initial_delay=1)
+    @with_retries(max_attempts=1, initial_delay=1)
     def create(
         self,
         logger: Logger,
-        modulation: RadioModulation,
+        modulation: RadioModulation = RadioModulation.LORA,
     ) -> SX1262:
         """Create a RFM9x radio instance.
 

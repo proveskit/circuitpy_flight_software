@@ -117,7 +117,9 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
+        self.cubesat.enable_tx.value = True
         self.radio_manager.beacon_radio_message(lora_beacon)
+        self.cubesat.enable_tx.value = False
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))

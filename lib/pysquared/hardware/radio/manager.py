@@ -59,7 +59,9 @@ class RadioManager:
     def beacon_radio_message(self, msg: Any) -> None:
         """Beacon a radio message and log the result."""
         try:
+            # self.radio.tx_enable.value = True #Specific for SX1262
             sent = self.radio.send(bytes(msg, "UTF-8"))
+            # self.radio.tx_enable.value = False # Specific for SX1262
         except Exception as e:
             self._log.error("There was an error while beaconing", e)
             return

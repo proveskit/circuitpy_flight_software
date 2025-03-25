@@ -326,6 +326,11 @@ class Satellite:
             orpheus_func=orpheus_init_uart,
         )
 
+        self.enable_tx: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF2_TX_EN)
+        self.enable_rx: digitalio.DigitalInOut = digitalio.DigitalInOut(board.RF2_RX_EN)
+        self.enable_tx.switch_to_output(value=True)
+        self.enable_rx.switch_to_output(value=False)
+
         ######## Temporary Fix for RF_ENAB ########
         #                                         #
         if self.legacy:
