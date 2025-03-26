@@ -121,7 +121,7 @@ def sync_time():
         )
 
         processID_output = subprocess.check_output(["fuser", port]).decode()
-        processID = processID_output
+        processID = processID_output.strip()
 
         screen_process_exists = False
         try:
