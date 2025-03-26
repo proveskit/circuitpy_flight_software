@@ -611,7 +611,7 @@ class Satellite:
                     "There was an error retrieving the system voltage", e
                 )
         else:
-            self.logger.warning("Power monitor not initialized")
+            self.logger.warning("Attempting to receive system voltage when Power monitor not initialized")
     
     @property
     def current_draw(self) -> Union[float, None]:
@@ -626,7 +626,7 @@ class Satellite:
                     "There was an error retrieving the current draw", e
                 )
         else:
-            self.logger.warning("Power monitor not initialized")
+            self.logger.warning("Attempting to receive current draw when Power monitor not initialized")
     
     @property
     def is_charging(self) -> Union[bool, None]:
@@ -647,7 +647,7 @@ class Satellite:
                     "There was an error retrieving the charge current", e
                 )
         else:
-            self.logger.warning("Solar power monitor not initialized")
+            self.logger.warning("Attempting to receive charge current when Solar power monitor not initialized")
     
     @property
     def solar_voltage(self) -> Union[float, None]:
@@ -662,7 +662,7 @@ class Satellite:
                     "There was an error retrieving the solar voltage", e
                 )
         else:
-            self.logger.warning("Solar power monitor not initialized")
+            self.logger.warning("Attempting to receive solar voltage when Solar power monitor not initialized")
 
     """
     Maintenance Functions
