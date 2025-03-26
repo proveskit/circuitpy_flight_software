@@ -5,7 +5,6 @@ try:
     from typing import Any
 
     from lib.adafruit_rfm.rfm_common import RFMSPI
-
     from pysquared.hardware.rfm9x.factory import RFM9xFactory
     from pysquared.logger import Logger
     from pysquared.nvm.flag import Flag

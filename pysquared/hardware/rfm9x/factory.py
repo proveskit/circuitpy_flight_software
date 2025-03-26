@@ -9,13 +9,13 @@ try:
     from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 except ImportError:
     from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import \
-        RFM9xFSK  # type: ignore
+    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
 
 # Type hinting only
 try:
     from busio import SPI
     from digitalio import DigitalInOut
+
     from lib.adafruit_rfm.rfm_common import RFMSPI
 except ImportError:
     pass
