@@ -13,8 +13,15 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["pysquared"]
-
+packages = [
+    "pysquared",
+    "pysquared.config",
+    "pysquared.hardware",
+    "pysquared.hardware.rfm9x",
+    "pysquared.nvm",
+    "pysquared.rtc",
+    "pysquared.usb"
+]
 [tool.ruff.format]
 # Use `\n` line endings for all files
 line-ending = "lf"

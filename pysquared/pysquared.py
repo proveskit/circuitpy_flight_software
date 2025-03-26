@@ -25,11 +25,12 @@ import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
-import pysquared.nvm.register as register
 from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
-from pysquared.config.config import Config  # Configs
-from pysquared.nvm.counter import Counter
-from pysquared.nvm.flag import Flag
+
+from .config.config import Config  # Configs
+from .nvm import register
+from .nvm.counter import Counter
+from .nvm.flag import Flag
 
 try:
     from typing import Any, Callable, Optional, OrderedDict, TextIO, Union
@@ -38,7 +39,7 @@ try:
 except Exception:
     pass
 
-from pysquared.logger import Logger
+from .logger import Logger
 
 SEND_BUFF: bytearray = bytearray(252)
 

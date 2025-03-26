@@ -1,6 +1,6 @@
 # Written with Claude 3.5
 # Nov 10, 2024
-from pysquared.logger import Logger
+from .logger import Logger
 
 try:
     from typing import Union

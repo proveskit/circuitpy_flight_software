@@ -1,6 +1,6 @@
 import time
 
-from pysquared.hardware.exception import HardwareInitializationError
+from .exception import HardwareInitializationError
 
 
 def with_retries(max_attempts: int = 3, initial_delay: float = 1.0):

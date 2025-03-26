@@ -9,13 +9,13 @@ import gc
 import random
 import time
 
-from pysquared.config.config import Config
-from pysquared.hardware.rfm9x.manager import RFM9xManager
-from pysquared.logger import Logger
-from pysquared.packet_manager import PacketManager
-from pysquared.packet_sender import PacketSender
-from pysquared.pysquared import Satellite
-from pysquared.sleep_helper import SleepHelper
+from .config.config import Config
+from .hardware.rfm9x.manager import RFM9xManager
+from .logger import Logger
+from .packet_manager import PacketManager
+from .packet_sender import PacketSender
+from .pysquared import Satellite
+from .sleep_helper import SleepHelper
 
 try:
     from typing import List, OrderedDict, Union

@@ -1,21 +1,21 @@
-from pysquared.config.radio import FSKConfig, LORAConfig, RadioConfig
-from pysquared.hardware.decorators import with_retries
-from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.hardware.rfm9x.modulation import RFM9xModulation
-from pysquared.logger import Logger
+from ...config.radio import FSKConfig, LORAConfig, RadioConfig
+from ...logger import Logger
+from ..decorators import with_retries
+from ..exception import HardwareInitializationError
+from .modulation import RFM9xModulation
 
 try:
     from lib.adafruit_rfm.rfm9x import RFM9x
     from lib.adafruit_rfm.rfm9xfsk import RFM9xFSK
 except ImportError:
     from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from mocks.circuitpython.adafruit_rfm.rfm9xfsk import \
+        RFM9xFSK  # type: ignore
 
 # Type hinting only
 try:
     from busio import SPI
     from digitalio import DigitalInOut
-
     from lib.adafruit_rfm.rfm_common import RFMSPI
 except ImportError:
     pass

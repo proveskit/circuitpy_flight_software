@@ -1,9 +1,9 @@
 from busio import SPI
 from microcontroller import Pin
 
-from pysquared.hardware.decorators import with_retries
-from pysquared.hardware.exception import HardwareInitializationError
-from pysquared.logger import Logger
+from ..logger import Logger
+from .decorators import with_retries
+from .exception import HardwareInitializationError
 
 try:
     from typing import Optional
