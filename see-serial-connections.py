@@ -12,7 +12,7 @@ for p in ports:
     serial_port = string_p.split(" - ")[0]
     name = string_p.split(" - ")[1]
 
-    if name == "FLIGHT_CONTROLLER" and platform.system() != "Windows":
+    if name == "FLIGHT_CONTROLLER" and platform.system() == "Darwin":
         golden_port = serial_port
 
     elif name[:17] == "USB Serial Device":
@@ -21,6 +21,3 @@ for p in ports:
 
 def convert_cu_to_tty(port):
     return "/dev/tty." + port.split("cu.")[1]
-
-
-print(golden_port)
