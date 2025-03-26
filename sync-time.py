@@ -37,6 +37,7 @@ def find_FCBoard_port() -> str:
     return port_used
 
 
+# an attempt to sync the time on the board
 def sync_attempt(port) -> None:
     with serial.Serial(port, 115200, timeout=1) as ser:
         print(
@@ -132,7 +133,6 @@ def sync_time():
                 subprocess.run(["screen", "-XS", processID, "quit"])
                 time.sleep(2)
                 sync_attempt(port)
-
         except subprocess.CalledProcessError as e:
             print(e)  # Output: Command 'exit 1' returned non-zero exit status 1.:
             print(
