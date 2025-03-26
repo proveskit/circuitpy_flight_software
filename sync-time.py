@@ -53,7 +53,6 @@ def sync_attempt(port) -> None:
         while not repl_line_met:
             ser.write(b"\x03")
             lines = ser.readlines()
-            print(lines)
 
             # this is the case where the repl is entered
             if lines == [b"\r\n", b">>> "]:
