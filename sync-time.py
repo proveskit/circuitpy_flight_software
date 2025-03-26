@@ -1,4 +1,3 @@
-import os
 import platform
 import subprocess
 import time
@@ -14,7 +13,7 @@ def convert_cu_to_tty(port):
 def find_FCBoard_port() -> str:
     ports = list(serial.tools.list_ports.comports())
 
-    golden_port = None
+    port_used = None
 
     for port in ports:
         string_p = str(port)
@@ -26,19 +25,16 @@ def find_FCBoard_port() -> str:
             or name.startswith("ProvesKit")
             and platform.system() != "Windows"
         ):
-            golden_port = serial_port
+            port_used = serial_port
 
-        elif name.startswith("USB Serial Device"):
-            golden_port = serial_port
-
-    if os.name == "posix" and platform.system() == "Linux":
-        return golden_port
+        elif name.startswith("USB Serial Device") and platform.system() == "Windows":
+            port_used = serial_port
 
     # If on a Mac, the port will initially show as a cu device instead of tty
     if platform.system() == "Darwin":
-        return convert_cu_to_tty(golden_port)
+        return convert_cu_to_tty(port_used)
 
-    return golden_port
+    return port_used
 
 
 def sync_attempt(port) -> None:
@@ -140,7 +136,7 @@ def sync_time():
         except subprocess.CalledProcessError as e:
             print(e)  # Output: Command 'exit 1' returned non-zero exit status 1.:
             print(
-                "An exception occured during the command. Please try the command again."
+                "An exception occured during the command. Please try the make-sync command again."
             )
             return
 
