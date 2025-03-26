@@ -68,6 +68,7 @@ try:
             initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
             config.radio,
         ),
+        config.is_licensed,
     )
 
     f = functions.functions(c, logger, config, sleep_helper, radio_manager)
