@@ -154,7 +154,7 @@ class functions:
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
                 f"BO:{int(self.cubesat.f_brownout.get())}",
-                f"FK:{int(self.radio_manager.get_modulation())}",
+                f"FK:{self.radio_manager.get_modulation()}",
             ]
         except Exception as e:
             self.logger.error("Couldn't aquire data for the state of health: ", e)
