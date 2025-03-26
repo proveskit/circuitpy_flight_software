@@ -52,7 +52,7 @@ class StateOfHealth:
             self.state["battery_temperature"] = self.f.last_battery_temp # literally just gets a value from config  
             self.state["battery_voltage"] = self.c.battery_voltage
             self.state["radio_temperature"] = self.f.radio_manager.get_temperature()
-            self.state["radio_modulation"] = int(self.f.radio_manager.get_modulation())
+            self.state["radio_modulation"] = self.f.radio_manager.get_modulation()
             self.state["microcontroller_temperature"] = self.c.micro.cpu.temperature
             self.state["internal_temperature"] = self.c.internal_temperature
             self.state["error_count"] = self.logger.get_error_count()
