@@ -30,18 +30,11 @@ relative_files = true
 show_missing = true
 skip_covered = false
 include = [
-    "lib/**/*.py",
-    "boot.py",
-    "main.py",
-    "repl.py",
-    "safemode.py",
-    ]
+    "pysquared/**/*.py",
+]
 omit = [
-    "lib/adafruit_*/**",
-    "lib/asyncio_*/**",
-    "lib/rv3028*/**",
-    "lib/neopixel.py",
-    ]
+    "lib/**/*.py",
+]
 
 [tool.coverage.html]
 directory = ".coverage-reports/html"
