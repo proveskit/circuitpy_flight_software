@@ -52,11 +52,9 @@ else
 	$(call rsync_to_dest,artifacts/proves,$(BOARD_MOUNT_POINT))
 endif
 
-
 .PHONY: sync-time
 sync-time:
 	@python3 ./sync-time.py
-
 
 
 .PHONY: clean
@@ -66,15 +64,14 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 ##@ Build
 
 .PHONY: build
-build: download-libraries mpy-cross ## Build the project, store the result in the artifacts directory
-	@echo "Creating artifacts/proves"
-	@mkdir -p artifacts/proves
-	@echo "__version__ = '$(VERSION)'" > artifacts/proves/version.py
+build: mpy-cross ## Build the project, store the result in the artifacts directory
+	@echo "Creating artifacts/pysquared"
+	@mkdir -p artifacts/pysquared
 	$(call compile_mpy)
-	$(call rsync_to_dest,.,artifacts/proves/)
-	@find artifacts/proves/lib -name '*.py' -type f -delete
-	@echo "Creating artifacts/proves.zip"
-	@zip -r artifacts/proves.zip artifacts/proves > /dev/null
+	$(call rsync_to_dest,.,artifacts/pysquared/)
+	@find artifacts/pysquared -name '*.py' -type f -delete
+	@echo "Creating artifacts/pysquared.zip"
+	@zip -r artifacts/pysquared.zip artifacts/pysquared > /dev/null
 
 define rsync_to_dest
 	@if [ -z "$(1)" ]; then \
@@ -87,7 +84,7 @@ define rsync_to_dest
 		exit 1; \
 	fi
 
-	@rsync -avh $(1)/config.json artifacts/proves/version.py $(1)/*.py $(1)/lib --exclude='requirements.txt' --exclude='__pycache__' $(2) --delete --times --checksum
+	@rsync -avh $(1)/pysquared/* --exclude='requirements.txt' --exclude='__pycache__' $(2) --delete --times --checksum
 endef
 
 ##@ Build Tools
@@ -136,7 +133,7 @@ endif
 endif
 
 define compile_mpy
-	@find lib -name '*.py' -print0 | while IFS= read -r -d '' file; do \
+	@find pysquared -name '*.py' -print0 | while IFS= read -r -d '' file; do \
 		echo "Compiling $$file to .mpy..."; \
 		$(MPY_CROSS) $$file; \
 	done
