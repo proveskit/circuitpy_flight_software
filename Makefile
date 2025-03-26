@@ -39,19 +39,6 @@ endif
 	@$(UV) run coverage html --rcfile=pyproject.toml > /dev/null
 	@$(UV) run coverage xml --rcfile=pyproject.toml > /dev/null
 
-BOARD_MOUNT_POINT ?= ""
-VERSION ?= $(shell git tag --points-at HEAD --sort=-creatordate < /dev/null | head -n 1)
-
-.PHONY: install
-install: build ## Install the project onto a connected PROVES Kit use `make install BOARD_MOUNT_POINT=/my_board_destination/` to specify the mount point
-ifeq ($(OS),Windows_NT)
-	rm -rf $(BOARD_MOUNT_POINT)
-	cp -r artifacts/proves/* $(BOARD_MOUNT_POINT)
-else
-	@rm $(BOARD_MOUNT_POINT)/code.py > /dev/null 2>&1 || true
-	$(call rsync_to_dest,artifacts/proves,$(BOARD_MOUNT_POINT))
-endif
-
 .PHONY: clean
 clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 	git clean -dfX
