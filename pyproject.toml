@@ -12,6 +12,9 @@ dependencies = [
     "pytest==8.3.2",
 ]
 
+[tool.setuptools]
+packages = ["pysquared"]
+
 [tool.ruff.format]
 # Use `\n` line endings for all files
 line-ending = "lf"
