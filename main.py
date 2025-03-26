@@ -67,7 +67,7 @@ try:
         config.is_licensed,
     )
 
-    f = functions.functions(c, logger, config, sleep_helper)
+    f = functions.functions(c, logger, config, sleep_helper, radio_manager)
     state_of_health = StateOfHealth(c, logger, f)
 
     def initial_boot():
