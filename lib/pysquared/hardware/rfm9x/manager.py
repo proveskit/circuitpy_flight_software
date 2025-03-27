@@ -55,10 +55,10 @@ class RFM9xManager:
 
         return self._radio
 
-    def beacon_radio_message(self, msg: Any, **kwargs) -> None:
+    async def beacon_radio_message(self, msg: Any, **kwargs) -> None:
         """Beacon a radio message and log the result."""
         try:
-            sent = self.radio.send(bytes(msg, "UTF-8"), **kwargs)
+            sent = await self.radio.asyncio_send(bytes(msg, "UTF-8"), **kwargs)
         except Exception as e:
             self._log.error("There was an error while beaconing", e)
             return
