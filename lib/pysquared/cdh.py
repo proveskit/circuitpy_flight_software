@@ -87,7 +87,7 @@ class CommandDataHandler:
 
         return multi_msg, cmd, cmd_args
 
-    def handle_command(
+    async def handle_command(
         self,
         cubesat: Satellite,
         msg: bytearray,
@@ -97,7 +97,7 @@ class CommandDataHandler:
     ) -> None:
         if cmd not in self._commands:
             self.logger.info("invalid command!")
-            cubesat.radio1.send(b"invalid cmd" + msg[4:])
+            await self.radio_manager.beacon_radio_message(b"invalid cmd" + msg[4:])
             # check for multi-message mode
             if multi_msg:
                 # TODO check for optional radio config
@@ -131,7 +131,7 @@ class CommandDataHandler:
                 eval(self._commands[cmd])(cubesat, cmd_args)
         except Exception as e:
             self.logger.error("something went wrong!", e)
-            cubesat.radio1.send(str(e).encode())
+            await self.radio_manager.beacon_radio_message(str(e).encode())
 
     def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
         multi_msg: bool = False
