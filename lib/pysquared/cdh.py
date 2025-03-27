@@ -49,13 +49,15 @@ class CommandDataHandler:
         self.radio_manager = radio_manager
 
     ############### hot start helper ###############
-    def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
+    async def hotstart_handler(self, cubesat: Satellite, msg: Any) -> None:
         # check that message is for me
         if msg[0] == self.radio_manager.radio.node:
             # TODO check for optional radio config
 
             # manually send ACK
-            self.radio_manager.radio.send("!", identifier=msg[2], flags=0x80)
+            await self.radio_manager.beacon_radio_message(
+                "!", identifier=msg[2], flags=0x80
+            )
             # TODO remove this delay. for testing only!
             time.sleep(0.5)
             self.message_handler(cubesat, msg)
