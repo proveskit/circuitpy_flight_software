@@ -157,10 +157,10 @@ class CommandDataHandler:
     def noop(self) -> None:
         self.logger.info("no-op")
 
-    def hreset(self, cubesat: Satellite) -> None:
+    async def hreset(self, cubesat: Satellite) -> None:
         self.logger.info("Resetting")
         try:
-            self.radio_manager.radio.send(data=b"resetting")
+            await self.radio_manager.beacon_radio_message(b"resetting")
             cubesat.micro.on_next_reset(cubesat.micro.RunMode.NORMAL)
             cubesat.micro.reset()
         except Exception:
