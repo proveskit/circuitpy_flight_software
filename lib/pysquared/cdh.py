@@ -133,7 +133,7 @@ class CommandDataHandler:
             self.logger.error("something went wrong!", e)
             await self.radio_manager.beacon_radio_message(str(e).encode())
 
-    def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
+    async def message_handler(self, cubesat: Satellite, msg: bytearray) -> None:
         multi_msg: bool = False
 
         if not (len(msg) >= 10 or bytes(msg[4:6]) == self._repeat_code):
@@ -143,7 +143,7 @@ class CommandDataHandler:
         if bytes(msg[4:6]) == self._repeat_code:
             self.logger.info("Repeating last message!")
             try:
-                self.radio_manager.radio.send(msg[6:])
+                await self.radio_manager.beacon_radio_message(msg[6:])
             except Exception as e:
                 self.logger.error("There was an error repeating the message!", e)
             return
@@ -151,7 +151,7 @@ class CommandDataHandler:
         if bytes(msg[4:8]) == self._super_secret_code:
             multi_msg, cmd, cmd_args = self.parse_message(msg)
 
-        self.handle_command(cubesat, msg, multi_msg, cmd, cmd_args)
+        await self.handle_command(cubesat, msg, multi_msg, cmd, cmd_args)
 
     ########### commands without arguments ###########
     def noop(self) -> None:
