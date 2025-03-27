@@ -1,4 +1,4 @@
-from pysquared.hardware.rfm9x.modulation import RFM9xModulation
+from .modulation import RFM9xModulation
 
 # Type hinting only
 try:

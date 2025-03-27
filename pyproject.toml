@@ -1,5 +1,5 @@
 [project]
-name = "circuitpy-flight-software"
+name = "pysquared"
 version = "2.0.0"
 description = "Flight Software for the PROVES Kit"
 readme = "README.md"
@@ -12,6 +12,16 @@ dependencies = [
     "pytest==8.3.2",
 ]
 
+[tool.setuptools]
+packages = [
+    "pysquared",
+    "pysquared.config",
+    "pysquared.hardware",
+    "pysquared.hardware.rfm9x",
+    "pysquared.nvm",
+    "pysquared.rtc",
+    "pysquared.usb"
+]
 [tool.ruff.format]
 # Use `\n` line endings for all files
 line-ending = "lf"

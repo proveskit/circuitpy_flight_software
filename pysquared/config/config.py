@@ -9,7 +9,7 @@ Attempting to follow the FPrime model.
 
 import json
 
-from pysquared.config.radio import RadioConfig
+from .radio import RadioConfig
 
 
 class Config:

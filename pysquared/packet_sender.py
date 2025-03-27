@@ -1,6 +1,6 @@
-from pysquared.hardware.rfm9x.manager import RFM9xManager
-from pysquared.logger import Logger
-from pysquared.packet_manager import PacketManager
+from .hardware.rfm9x.manager import RFM9xManager
+from .logger import Logger
+from .packet_manager import PacketManager
 
 try:
     from typing import Union
