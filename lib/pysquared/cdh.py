@@ -103,7 +103,7 @@ class CommandDataHandler:
                 # TODO check for optional radio config
                 self.logger.info("multi-message mode enabled")
 
-            response: bytearray = cubesat.radio1.receive(
+            response: bytearray = self.radio_manager.radio.receive(
                 keep_listening=True,
                 with_ack=True,
                 with_header=True,
