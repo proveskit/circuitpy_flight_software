@@ -112,7 +112,7 @@ class CommandDataHandler:
             )
 
             if response is not None:
-                self.message_handler(cubesat, response)
+                await self.message_handler(cubesat, response)
             return
 
         try:
