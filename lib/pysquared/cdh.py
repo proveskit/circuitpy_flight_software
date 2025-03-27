@@ -206,10 +206,10 @@ class CommandDataHandler:
         )  # default 1 day
         alarm.exit_and_deep_sleep_until_alarms(time_alarm)
 
-    def query(self, cubesat: Satellite, args: str) -> None:
+    async def query(self, cubesat: Satellite, args: str) -> None:
         self.logger.info("Sending query with args", args=args)
 
-        self.radio_manager.radio.send(data=str(eval(args)))
+        await self.radio_manager.beacon_radio_message(str(eval(args)))
 
     def exec_cmd(self, args: str) -> None:
         self.logger.info("Executing command", args=args)
