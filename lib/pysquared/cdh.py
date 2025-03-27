@@ -169,10 +169,10 @@ class CommandDataHandler:
     def fsk(self) -> None:
         self.radio_manager.set_modulation(RFM9xModulation.FSK)
 
-    def joke_reply(self, cubesat: Satellite) -> None:
+    async def joke_reply(self, cubesat: Satellite) -> None:
         joke: str = random.choice(self._joke_reply)
         self.logger.info("Sending joke reply", joke=joke)
-        self.radio_manager.radio.send(joke)
+        await self.radio_manager.beacon_radio_message(joke)
 
     ########### commands with arguments ###########
 
