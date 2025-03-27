@@ -60,7 +60,7 @@ class CommandDataHandler:
             )
             # TODO remove this delay. for testing only!
             time.sleep(0.5)
-            self.message_handler(cubesat, msg)
+            await self.message_handler(cubesat, msg)
         else:
             self.logger.info(
                 "Message not for me?",

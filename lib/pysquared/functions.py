@@ -185,7 +185,7 @@ class functions:
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
 
-    def listen(self) -> bool:
+    async def listen(self) -> bool:
         # need to instanciate cdh to feed it the config var
         # assigned from the Config object
         from lib.pysquared.cdh import CommandDataHandler
@@ -206,7 +206,7 @@ class functions:
         try:
             if received is not None:
                 self.logger.debug("Received Packet", packet=received)
-                cdh.message_handler(self.cubesat, received)
+                await cdh.message_handler(self.cubesat, received)
                 return True
         except Exception as e:
             self.logger.error("An Error has occured while handling a command: ", e)
