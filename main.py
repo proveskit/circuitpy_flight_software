@@ -104,7 +104,7 @@ try:
         await f.state_of_health()
         f.listen_loiter()
         f.all_face_data()
-        f.send_face()
+        await f.send_face()
         f.listen_loiter()
         await send_imu_data()
         f.listen_loiter()
