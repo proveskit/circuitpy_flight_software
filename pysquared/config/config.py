@@ -49,50 +49,56 @@ class Config:
         self.CONFIG_SCHEMA = {
             "cubesat_name": {"type": str, "min_length": 1, "max_length": 10},
             "callsign": {"type": str, "min_length": 3, "max_length": 7},
-            "super_secret_code": {"type": str, "min_length": -1, "max_length": 1},
-            "repeat_code": {"type": str, "min_length": -1, "max_length": 1},
-            "last_battery_temp": {"type": float, "min": -1, "max": 1},
-            "normal_charge_current": {"type": float, "min": -1, "max": 1},
-            "normal_battery_voltage": {"type": float, "min": -1, "max": 1},
-            "critical_battery_voltage": {"type": float, "min": -1, "max": 1},
-            "battery_voltage": {"type": float, "min": 5.4, "max": 8.2},
-            "current_draw": {"type": float, "min": -1, "max": 1},
-            "sleep_duration": {"type": int, "min": -1, "max": 1},
+            "super_secret_code": {"type": bytes, "min": 1, "max": 24},
+            "repeat_code": {"type": bytes, "min": 1, "max": 4},
+            # "last_battery_temp": {"type": float, "min": -1, "max": 1},
+            "normal_charge_current": {"type": float, "min": 0.0, "max": 2000.0},
+            "normal_battery_voltage": {"type": float, "min": 6.0, "max": 8.4},
+            "critical_battery_voltage": {"type": float, "min": 5.4, "max": 7.2},
+            # "battery_voltage": {"type": float, "min": 5.4, "max": 8.2},
+            # "current_draw": {"type": float, "min": -1, "max": 1},
+            "sleep_duration": {"type": int, "min": 1, "max": 86400},
             "normal_temp": {"type": int, "min": 5, "max": 40},
-            "normal_battery_temp": {"type": int, "min": -1, "max": 1},
-            "normal_micro_temp": {"type": int, "min": -1, "max": 1},
+            "normal_battery_temp": {"type": int, "min": 1, "max": 35},
+            "normal_micro_temp": {"type": int, "min": 1, "max": 50},
             "reboot_time": {"type": int, "min": 3600, "max": 604800},
-            "detumble_enable_z": {"type": bool, "min": False, "max": True},
-            "detumble_enable_x": {"type": bool, "min": False, "max": True},
-            "detumble_enable_y": {"type": bool, "min": False, "max": True},
-            "debug": {"type": bool, "min": False, "max": True},
-            "legacy": {"type": bool, "min": False, "max": True},
-            "heating": {"type": bool, "min": False, "max": True},
-            "orpheus": {"type": bool, "min": False, "max": True},
-            "is_licensed": {"type": bool, "min": False, "max": True},
-            "turbo_clock": {"type": bool, "min": False, "max": True},
+            "detumble_enable_z": {"type": bool, "allowed_values": [True, False]},
+            "detumble_enable_x": {"type": bool, "allowed_values": [True, False]},
+            "detumble_enable_y": {"type": bool, "allowed_values": [True, False]},
+            "debug": {"type": bool, "allowed_values": [True, False]},
+            "legacy": {"type": bool, "allowed_values": [True, False]},
+            "heating": {"type": bool, "allowed_values": [True, False]},
+            "orpheus": {"type": bool, "allowed_values": [True, False]},
+            "is_licensed": {"type": bool, "allowed_values": [True, False]},
+            "turbo_clock": {"type": bool, "allowed_values": [True, False]},
         }
 
         self.RADIO_SCHEMA = {
             "receiver_id": {"type": int, "min": 0, "max": 255},
-            "sender_id": {"type": int, "min": -1, "max": 1},
-            "start_time": {"type": int, "min": -1, "max": 1},
-            "transmit_frequency": {"type": float, "min": -1, "max": 1},
+            "sender_id": {"type": int, "min": 0, "max": 255},
+            "start_time": {"type": int, "min": 0, "max": 80000},
+            "transmit_frequency": {
+                "type": float,
+                "min0": 435,
+                "max0": 438,
+                "min1": 915,
+                "max1": 915,
+            },
         }
 
         self.FSK_SCHEMA = {
-            "ack_delay": {"type": float, "min": -1, "max": 1},
+            "ack_delay": {"type": float, "min": 0.0, "max": 2.0},
             "coding_rate": {"type": int, "min": 4, "max": 8},
-            "cyclic_redundancy_check": {"type": bool, "min": False, "max": True},
-            "max_output": {"type": bool, "min": False, "max": True},
+            "cyclic_redundancy_check": {"type": bool, "allowed_values": [True, False]},
+            "max_output": {"type": bool, "allowed_values": [True, False]},
             "spreading_factor": {"type": int, "min": 6, "max": 12},
             "transmit_power": {"type": int, "min": 5, "max": 23},
         }
 
         self.LORA_SCHEMA = {
-            "broadcast_address": {"type": int, "min": -1, "max": 1},
-            "node_address": {"type": int, "min": -1, "max": 1},
-            "modulation_type": {"type": int, "min": -1, "max": 1},
+            "broadcast_address": {"type": int, "min": 0, "max": 255},
+            "node_address": {"type": int, "min": 0, "max": 255},
+            "modulation_type": {"type": int, "min": 0, "max": 1},
         }
 
     # validates values from input
@@ -115,31 +121,36 @@ class Config:
 
         expected_type = schema["type"]
 
-        # checks value is of same type
+        # checks value is of same type; also covers bools
         if not isinstance(value, expected_type):
             return False
 
-        # checks int and float range
-        if isinstance(value, (int, float)):
+        # checks int, float, and bytes range
+        if isinstance(value, (int, float, bytes)):
             if "min" in schema and value < schema["min"]:
                 return False
             if "max" in schema and value > schema["max"]:
                 return False
 
+            # specific to transmit_frequency
+            if value == "transmit_frequency":
+                if "min0" in schema and value < schema["min0"]:
+                    return False
+                if "max1" in schema and value > schema["max1"]:
+                    return False
+                if (
+                    "max0" in schema
+                    and value > schema["max0"]
+                    and "min1" in schema
+                    and value < schema["min1"]
+                ):
+                    return False
+
         # checks string range
-        if isinstance(value, str):
+        elif isinstance(value, str):
             if "min_length" in schema and len(value) < schema["min_lenght"]:
                 return False
             if "max_length" in schema and len(value) < schema["max_length"]:
-                return False
-
-        # checks a bool value is either True or False
-        if isinstance(value, bool):
-            if value:
-                pass
-            elif not value:
-                pass
-            else:
                 return False
 
         return True
