@@ -28,7 +28,7 @@ def test_create_power_monitor(mock_i2c, mock_logger):
 
     assert isinstance(ina219, INA219)
     assert ina219.i2c == mock_i2c
-    assert ina219.address == mock_address
+    assert ina219.addr == mock_address
     mock_logger.debug.assert_called_once_with("Creating INA219 instance")
 
 @pytest.mark.slow
