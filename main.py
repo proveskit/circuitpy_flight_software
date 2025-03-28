@@ -99,7 +99,7 @@ try:
         await f.send(IMUData)
 
     async def main():
-        f.beacon()
+        await f.beacon()
         f.listen_loiter()
         f.state_of_health()
         f.listen_loiter()
