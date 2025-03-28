@@ -102,7 +102,7 @@ class Config:
         }
 
     # validates values from input
-    def validate(self, key: str, value) -> bool:
+    def validate(self, key: str, value) -> None:
         # first checks if key is actually part of config/radio dict
         if key in self.CONFIG_SCHEMA:
             schema = self.CONFIG_SCHEMA[key]
@@ -117,43 +117,42 @@ class Config:
             schema = self.LORA_SCHEMA[key]
 
         else:
-            return False
+            raise KeyError
 
         expected_type = schema["type"]
 
         # checks value is of same type; also covers bools
         if not isinstance(value, expected_type):
-            return False
+            raise TypeError
 
         # checks int, float, and bytes range
         if isinstance(value, (int, float, bytes)):
             if "min" in schema and value < schema["min"]:
-                return False
+                raise ValueError
             if "max" in schema and value > schema["max"]:
-                return False
+                raise ValueError
 
             # specific to transmit_frequency
             if value == "transmit_frequency":
                 if "min0" in schema and value < schema["min0"]:
-                    return False
+                    raise ValueError
                 if "max1" in schema and value > schema["max1"]:
-                    return False
+                    raise ValueError
                 if (
                     "max0" in schema
                     and value > schema["max0"]
                     and "min1" in schema
                     and value < schema["min1"]
                 ):
-                    return False
+                    raise ValueError
 
         # checks string range
-        elif isinstance(value, str):
+        else:
+            # isinstance(value, str):
             if "min_length" in schema and len(value) < schema["min_lenght"]:
-                return False
+                raise ValueError
             if "max_length" in schema and len(value) < schema["max_length"]:
-                return False
-
-        return True
+                raise ValueError
 
     # permanently updates values
     def save_config(self, key: str, value) -> None:
@@ -166,52 +165,44 @@ class Config:
             f.write(json.dumps(json_data))
 
     # handles temp or permanent updates
-    def update_config(self, key: str, value, temporary: bool) -> bool:
-        # validates key and value
-        if self.validate(key, value):
-            if key in self.CONFIG_SCHEMA:
-                # if permanent, saves to config
-                if not temporary:
-                    self.save_config(key, value)
+    def update_config(self, key: str, value, temporary: bool) -> None:
+        # validates key and value and should raise error if any
+        self.validate(key, value)
 
-                # updates RAM
-                setattr(self, key, value)
-
-            elif key in self.RADIO_SCHEMA:
-                # if permanent, saves to config
-                if not temporary:
-                    with open("config.json", "r") as f:
-                        json_data = json.loads(f.read())
-                    json_data["radio"][key] = value
-                    with open("config.json", "w") as f:
-                        f.write(json.dumps(json_data))
-
-                # updates RAM
-                self.radio["key"] = value
-
-            elif key in self.FSK_SCHEMA:
-                # if permanent, saves to config
-                if not temporary:
-                    with open("config.json", "r") as f:
-                        json_data = json.loads(f.read())
-                    json_data["radio"]["fsk"][key] = value
-                    with open("config.json", "w") as f:
-                        f.write(json.dumps(json_data))
-
-                # updates RAM
-                self.radio["fsk"][key] = value
-
-            else:
-                # key is in self.LORA_SCHEMA
-                # if permanent, saves to config
-                if not temporary:
-                    with open("config.json", "r") as f:
-                        json_data = json.loads(f.read())
-                    json_data["radio"]["lora"][key] = value
-                    with open("config.json", "w") as f:
-                        f.write(json.dumps(json_data))
-
-                # updates RAM
-                self.radio["lora"][key] = value
+        if key in self.CONFIG_SCHEMA:
+            # if permanent, saves to config
+            if not temporary:
+                self.save_config(key, value)
+            # updates RAM
+            setattr(self, key, value)
+        elif key in self.RADIO_SCHEMA:
+            # if permanent, saves to config
+            if not temporary:
+                with open("config.json", "r") as f:
+                    json_data = json.loads(f.read())
+                json_data["radio"][key] = value
+                with open("config.json", "w") as f:
+                    f.write(json.dumps(json_data))
+            # updates RAM
+            self.radio["key"] = value
+        elif key in self.FSK_SCHEMA:
+            # if permanent, saves to config
+            if not temporary:
+                with open("config.json", "r") as f:
+                    json_data = json.loads(f.read())
+                json_data["radio"]["fsk"][key] = value
+                with open("config.json", "w") as f:
+                    f.write(json.dumps(json_data))
+            # updates RAM
+            self.radio["fsk"][key] = value
         else:
-            return False
+            # key is in self.LORA_SCHEMA
+            # if permanent, saves to config
+            if not temporary:
+                with open("config.json", "r") as f:
+                    json_data = json.loads(f.read())
+                json_data["radio"]["lora"][key] = value
+                with open("config.json", "w") as f:
+                    f.write(json.dumps(json_data))
+            # updates RAM
+            self.radio["lora"][key] = value

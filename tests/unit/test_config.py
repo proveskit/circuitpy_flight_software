@@ -143,3 +143,15 @@ def test_bools() -> None:
     assert config.orpheus == json_data["orpheus"], "No match for: orpheus"
     assert config.is_licensed == json_data["is_licensed"], "No match for: is_licensed"
     assert config.turbo_clock == json_data["turbo_clock"], "No match for: turbo_clock"
+
+
+def test_validation_updateable() -> None:
+    pass
+
+
+def test_validation_type() -> None:
+    pass
+
+
+def test_validation_range() -> None:
+    pass

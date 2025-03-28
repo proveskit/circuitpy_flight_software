@@ -202,8 +202,6 @@ class CommandDataHandler:
         value = ""
 
         """
-        can return an e from Exception I find a:
-
         1. KeyError:
             Occurs when trying to access a dictionary element using a key that does not exist.
             - Can use this for when trying to change a value that isn't in config
@@ -216,8 +214,12 @@ class CommandDataHandler:
             Signifies that a function received an argument of the correct type but an inappropriate value, like trying to convert "abc" to an integer.
             - Can use this for when a value is not in range in schema
         """
-        # could do try catch
-        if self.config.update_config(key, value, temporary):
+        try:
+            self.config.update_config(key, value, temporary, self.logger)
             self.logger.info("Updated config value successfully")
-        else:
-            self.logger.warning("An error ocurred while updating config")
+        except KeyError as e:
+            self.logger.error("Value not in config or immutable", e)
+        except TypeError as e:
+            self.logger.error("Value type incorrect", e)
+        except ValueError as e:
+            self.logger.error("Value not in acceptable range", e)
