@@ -119,8 +119,8 @@ class functions:
 
         await self.radio_manager.beacon_radio_message(lora_beacon)
 
-    def joke(self) -> None:
-        self.send(random.choice(self.jokes))
+    async def joke(self) -> None:
+        await self.send(random.choice(self.jokes))
 
     def format_state_of_health(self, hardware: OrderedDict[str, bool]) -> str:
         to_return: str = ""
