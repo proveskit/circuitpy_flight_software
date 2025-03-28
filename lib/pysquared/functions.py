@@ -136,7 +136,7 @@ class functions:
 
         return to_return
 
-    def state_of_health(self) -> None:
+    async def state_of_health(self) -> None:
         self.state_list: list = []
         # list of state information
         try:
@@ -175,7 +175,7 @@ class functions:
             )
             self.state_of_health_part1: bool = False
 
-        self.radio_manager.beacon_radio_message(message)
+        await self.radio_manager.beacon_radio_message(message)
 
     def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
