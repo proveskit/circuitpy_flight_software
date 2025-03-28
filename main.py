@@ -136,7 +136,7 @@ try:
                     await main()
 
                 else:
-                    f.listen()
+                    await f.listen()
 
                 # Small yield to allow other tasks to run
                 await asyncio.sleep(0.1)
