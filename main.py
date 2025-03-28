@@ -74,7 +74,7 @@ try:
 
     async def initial_boot():
         await f.beacon()
-        f.listen()
+        await f.listen()
 
     async def critical_power_operations():
         await initial_boot()
