@@ -71,7 +71,7 @@ class PacketSender:
 
         return False
 
-    def send_data(
+    async def send_data(
         self, data: Union[str, bytearray], progress_interval: int = 10
     ) -> bool:
         """Send data with minimal progress updates"""
@@ -87,7 +87,8 @@ class PacketSender:
                     num_packets=total_packets,
                 )
 
-            if not self.send_packet_with_retry(packet, i):
+            packet_sent = await self.send_packet_with_retry(packet, i)
+            if not packet_sent:
                 self.logger.warning(
                     "Failed to send packet", current_packet=i, num_packets=total_packets
                 )
