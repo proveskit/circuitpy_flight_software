@@ -53,12 +53,12 @@ class PacketSender:
 
         return False
 
-    def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
+    async def send_packet_with_retry(self, packet: bytes, seq_num: int) -> bool:
         """Optimized packet sending with minimal delays"""
         import time
 
         for attempt in range(self.max_retries):
-            self.radio_manager.radio.send(packet)
+            await self.radio_manager.beacon_radio_message(packet)
 
             if self.wait_for_ack(seq_num):
                 # Success - minimal delay before next packet
