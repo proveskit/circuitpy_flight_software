@@ -1,6 +1,8 @@
 import json
 import os
 
+import pytest
+
 from pysquared.config.config import Config
 
 os.path.dirname(__file__)
@@ -146,12 +148,74 @@ def test_bools() -> None:
 
 
 def test_validation_updateable() -> None:
-    pass
+    config = Config(file)
+
+    # KeyError raise
+    with pytest.raises(KeyError):
+        config.validate("not_in_config", "trash")
+
+    # config
+    try:
+        config.validate("cubesat_name", "maia")
+    except KeyError as e:
+        print(e)
+
+    # radio
+    try:
+        config.validate("receiver_id", 11)
+    except KeyError as e:
+        print(e)
+
+    # fsk
+    try:
+        config.validate("ack_delay", 1.5)
+    except KeyError as e:
+        print(e)
+
+    # lora
+    try:
+        config.validate("node_address", 11)
+    except KeyError as e:
+        print(e)
 
 
 def test_validation_type() -> None:
-    pass
+    config = Config(file)
+
+    # TypeError raise
+    with pytest.raises(TypeError):
+        config.validate("cubesat_name", 1)
+
+    # config
+    try:
+        config.validate("cubesat_name", "maia")
+    except KeyError as e:
+        print(e)
+
+    # radio
+    try:
+        config.validate("receiver_id", 11)
+    except KeyError as e:
+        print(e)
+
+    # fsk
+    try:
+        config.validate("ack_delay", 1.5)
+    except KeyError as e:
+        print(e)
+
+    # lora
+    try:
+        config.validate("node_address", 11)
+    except KeyError as e:
+        print(e)
 
 
 def test_validation_range() -> None:
-    pass
+    config = Config(file)
+    with pytest.raises(ValueError):
+        config.validate("callsign", "h")
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)

@@ -149,9 +149,9 @@ class Config:
         # checks string range
         else:
             # isinstance(value, str):
-            if "min_length" in schema and len(value) < schema["min_lenght"]:
+            if "min_length" in schema and len(value) < schema["min_length"]:
                 raise ValueError
-            if "max_length" in schema and len(value) < schema["max_length"]:
+            if "max_length" in schema and len(value) > schema["max_length"]:
                 raise ValueError
 
     # permanently updates values
