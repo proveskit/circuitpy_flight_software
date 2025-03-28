@@ -96,7 +96,7 @@ class functions:
         """
         self.packet_sender.send_data(data)
 
-    def beacon(self) -> None:
+    async def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
 
         try:
@@ -117,7 +117,7 @@ class functions:
                 + f". IHBPFJASTMNE! {self.callsign}"
             )
 
-        self.radio_manager.beacon_radio_message(lora_beacon)
+        await self.radio_manager.beacon_radio_message(lora_beacon)
 
     def joke(self) -> None:
         self.send(random.choice(self.jokes))
