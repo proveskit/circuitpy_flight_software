@@ -46,7 +46,7 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 ##@ Build
 
 .PHONY: build
-build: mpy-cross ## Build the project, store the result in the artifacts directory
+build: uv mpy-cross ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/pysquared"
 	@mkdir -p artifacts/pysquared
 	$(call compile_mpy)
