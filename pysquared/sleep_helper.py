@@ -2,7 +2,6 @@ import gc
 import time
 
 import alarm
-import digitalio
 
 from .logger import Logger
 from .satellite import Satellite
@@ -63,21 +62,9 @@ class SleepHelper:
         gc.collect()
         # all should be off from cubesat powermode
 
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = False
-        else:
-            self.cubesat.enable_rf = False
-
         self.cubesat.f_softboot.toggle(True)
         self.cubesat.watchdog_pet()
         self.safe_sleep(120)
-
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = True
-        else:
-            self.cubesat.enable_rf = True
 
         return True
 
@@ -88,20 +75,8 @@ class SleepHelper:
         gc.collect()
         # all should be off from cubesat powermode
 
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = False
-        else:
-            self.cubesat.enable_rf = False
-
         self.cubesat.f_softboot.toggle(True)
         self.cubesat.watchdog_pet()
         self.safe_sleep(600)
-
-        # checking the type of self.cubesat.enable_rf, as it can be a DigitalInOut object or a bool.
-        if isinstance(self.cubesat.enable_rf, digitalio.DigitalInOut):
-            self.cubesat.enable_rf.value = True
-        else:
-            self.cubesat.enable_rf = True
 
         return True

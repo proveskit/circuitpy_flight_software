@@ -33,9 +33,8 @@ from .nvm.counter import Counter
 from .nvm.flag import Flag
 
 try:
-    from typing import Any, Callable, Optional, OrderedDict, TextIO, Union
+    from typing import Optional, OrderedDict, TextIO, Union
 
-    import circuitpython_typing
 except Exception:
     pass
 
@@ -66,61 +65,6 @@ class Satellite:
         index=register.FLAG, bit_index=6, datastore=microcontroller.nvm
     )
 
-    def safe_init(func: Callable[..., Any]):
-        def wrapper(self, *args, **kwargs):
-            hardware_key: str = kwargs.get("hardware_key", "UNKNOWN")
-            self.logger.debug(
-                "Initializing hardware component", hardware_key=hardware_key
-            )
-
-            try:
-                device: Any = func(self, *args, **kwargs)
-                return device
-
-            except Exception as e:
-                self.logger.error(
-                    "There was an error initializing this hardware component",
-                    e,
-                    hardware_key=hardware_key,
-                )
-            return None
-
-        return wrapper
-
-    @safe_init
-    def init_general_hardware(
-        self,
-        init_func: Callable[..., Any],
-        *args: Any,
-        hardware_key,
-        orpheus_func: Callable[..., Any] = None,
-        **kwargs: Any,
-    ) -> Any:
-        """
-            Args:
-            init_func (Callable[..., Any]): The function used to initialize the hardware.
-            *args (Any): Positional arguments to pass to the `init_func`.
-            hardware_key (str): A unique identifier for the hardware being initialized.
-            orpheus_func (Callable[..., Any], optional): An alternative function to initialize
-                the hardware if the `orpheus` flag is set. Defaults to `None`.
-            **kwargs (Any): Additional keyword arguments to pass to the `init_func`.
-                Must be placed before `hardware_key`.
-
-            Returns:
-                Any: The initialized hardware instance if successful, or `None` if an error occurs.
-
-        Raises:
-                Exception: Any exception raised by the `init_func` or `orpheus_func`
-                will be caught and handled by the `@safe_init` decorator.
-        """
-        if self.orpheus and orpheus_func:
-            return orpheus_func(hardware_key)
-
-        hardware_instance = init_func(*args, **kwargs)
-        self.hardware[hardware_key] = True
-        return hardware_instance
-
-    @safe_init
     def init_rtc(self, hardware_key: str) -> None:
         self.rtc: rv3028.RV3028 = rv3028.RV3028(self.i2c1)
 
@@ -128,7 +72,6 @@ class Satellite:
         self.rtc.configure_backup_switchover(mode="level", interrupt=True)
         self.hardware[hardware_key] = True
 
-    @safe_init
     def init_sd_card(self, hardware_key: str) -> None:
         # Baud rate depends on the card, 4MHz should be safe
         _sd = sdcardio.SDCard(self.spi0, board.SPI0_CS1, baudrate=4000000)
@@ -138,7 +81,6 @@ class Satellite:
         sys.path.append("/sd")
         self.hardware[hardware_key] = True
 
-    @safe_init
     def init_neopixel(self, hardware_key: str) -> None:
         self.neopwr: digitalio.DigitalInOut = digitalio.DigitalInOut(board.NEO_PWR)
         self.neopwr.switch_to_output(value=True)
@@ -148,7 +90,6 @@ class Satellite:
         self.neopixel[0] = (0, 0, 255)
         self.hardware[hardware_key] = True
 
-    @safe_init
     def init_tca_multiplexer(self, hardware_key: str) -> None:
         try:
             self.tca: adafruit_tca9548a.TCA9548A = adafruit_tca9548a.TCA9548A(
@@ -163,17 +104,33 @@ class Satellite:
             self.hardware[hardware_key] = False
             return
 
-    def __init__(self, config: Config, logger: Logger, version: str) -> None:
+    def __init__(
+        self,
+        logger: Logger,
+        config: Config,
+    ) -> None:
+        self.logger: Logger = logger
         self.config: Config = config
-        self.cubesat_name: str = config.cubesat_name
-        """
-        Big init routine as the whole board is brought up. Starting with config variables.
-        """
-        self.legacy: bool = config.legacy
-        self.heating: bool = config.heating
-        self.orpheus: bool = config.orpheus  # maybe change var name
-        self.is_licensed: bool = config.is_licensed
-        self.logger = logger
+
+        self.spi0: busio.SPI = None  # only used for sdcard init
+
+        self.i2c1: busio.I2C = (
+            None  # used for rtc, tca multiplexer imu, and magnetometer
+        )
+        # self.init_general_hardware(
+        #     busio.I2C,
+        #     board.I2C1_SCL,
+        #     board.I2C1_SDA,
+        #     frequency=100000,
+        #     hardware_key="I2C1",
+        # )
+
+        self.imu: LSM6DSOX = self.init_general_hardware(
+            LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
+        )
+        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
+            adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
+        )
 
         """
         Define the normal power modes
@@ -188,22 +145,15 @@ class Satellite:
         self.current_draw: float = config.current_draw
         self.reboot_time: int = config.reboot_time
         self.turbo_clock: bool = config.turbo_clock
+        self.cubesat_name: str = config.cubesat_name
+        self.legacy: bool = config.legacy
+        self.heating: bool = config.heating
+        self.orpheus: bool = config.orpheus  # maybe change var name
+        self.is_licensed: bool = config.is_licensed
 
         """
         Setting up data buffers
         """
-        # TODO(cosmiccodon/blakejameson):
-        # Data_cache, filenumbers, image_packets, and send_buff are variables that are not used in the codebase. They were put here for Orpheus last minute.
-        # We are unsure if these will be used in the future, so we are keeping them here for now.
-        self.data_cache: dict = {}
-        self.filenumbers: dict = {}
-        self.image_packets: int = 0
-        self.uart_baudrate: int = 9600
-        self.buffer: Optional[bytearray] = None
-        self.buffer_size: int = 1
-        self.send_buff: memoryview = memoryview(SEND_BUFF)
-        self.micro: microcontroller = microcontroller
-
         # Confused here, as self.battery_voltage was initialized to 3.3 in line 113(blakejameson)
         # NOTE(blakejameson): After asking Michael about the None variables below last night at software meeting, he mentioned they used
         # None as a state instead of the values to better manage some conditions with Orpheus.
@@ -226,21 +176,9 @@ class Satellite:
 
         self.hardware: OrderedDict[str, bool] = OrderedDict(
             [
-                ("I2C0", False),
-                ("SPI0", False),
-                ("I2C1", False),
-                ("UART", False),
-                ("IMU", False),
-                ("Mag", False),
                 ("SDcard", False),
                 ("NEOPIX", False),
-                ("WDT", False),
                 ("TCA", False),
-                ("Face0", False),
-                ("Face1", False),
-                ("Face2", False),
-                ("Face3", False),
-                ("Face4", False),
                 ("RTC", False),
             ]
         )
@@ -249,98 +187,11 @@ class Satellite:
             self.f_softboot.toggle(False)
 
         """
-        Setting up the watchdog pin.
-        """
-
-        self.watchdog_pin: digitalio.DigitalInOut = digitalio.DigitalInOut(
-            board.WDT_WDI
-        )
-        self.watchdog_pin.direction = digitalio.Direction.OUTPUT
-        self.watchdog_pin.value = False
-
-        """
         Set the CPU Clock Speed
         """
         cpu_freq: int = 125000000 if self.turbo_clock else 62500000
         for cpu in microcontroller.cpus:
             cpu.frequency = cpu_freq
-
-        """
-        Intializing Communication Buses
-        """
-
-        # Alternative Implementations of hardware initialization specific for orpheus
-        def orpheus_skip_i2c(hardware_key: str) -> None:
-            self.logger.debug(
-                "Hardware component not initialized",
-                cubesat=self.cubesat_name,
-                hardware_key=hardware_key,
-            )
-            return None
-
-        def orpheus_init_uart(hardware_key: str):
-            uart: circuitpython_typing.ByteStream = busio.UART(
-                board.I2C0_SDA, board.I2C0_SCL, baudrate=self.uart_baudrate
-            )
-            self.hardware[hardware_key] = True
-            return uart
-
-        self.i2c0: busio.I2C = self.init_general_hardware(
-            busio.I2C,
-            board.I2C0_SCL,
-            board.I2C0_SDA,
-            hardware_key="I2C0",
-            orpheus_func=orpheus_skip_i2c,
-        )
-
-        self.spi0: busio.SPI = self.init_general_hardware(
-            busio.SPI,
-            board.SPI0_SCK,
-            board.SPI0_MOSI,
-            board.SPI0_MISO,
-            hardware_key="SPI0",
-        )
-
-        self.i2c1: busio.I2C = self.init_general_hardware(
-            busio.I2C,
-            board.I2C1_SCL,
-            board.I2C1_SDA,
-            frequency=100000,
-            hardware_key="I2C1",
-        )
-
-        self.uart: circuitpython_typing.ByteStream = self.init_general_hardware(
-            busio.UART,
-            board.TX,
-            board.RX,
-            baud_rate=self.uart_baudrate,
-            hardware_key="UART",
-            orpheus_func=orpheus_init_uart,
-        )
-
-        ######## Temporary Fix for RF_ENAB ########
-        #                                         #
-        if self.legacy:
-            self.enable_rf: digitalio.DigitalInOut = digitalio.DigitalInOut(
-                board.RF_ENAB
-            )
-            # self.enable_rf.switch_to_output(value=False) # if U21
-            self.enable_rf.switch_to_output(value=True)  # if U7
-        else:
-            self.enable_rf: bool = True
-        #                                         #
-        ######## Temporary Fix for RF_ENAB ########
-
-        self.imu: LSM6DSOX = self.init_general_hardware(
-            LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
-        )
-        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
-            adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
-        )
-        self.init_rtc(hardware_key="RTC")
-        self.init_sd_card(hardware_key="SD Card")
-        self.init_neopixel(hardware_key="NEOPIX")
-        self.init_tca_multiplexer(hardware_key="TCA")
 
         """
         Face Initializations
@@ -365,9 +216,6 @@ class Satellite:
                 )
         # set power mode
         self.power_mode: str = "normal"
-
-        # Set current version
-        self.version: str = version
 
     """
     Init Helper Functions
@@ -596,22 +444,18 @@ class Satellite:
         try:
             if "crit" in mode:
                 self.neopixel.brightness = 0
-                self.enable_rf.value = False
                 self.power_mode: str = "critical"
 
             elif "min" in mode:
                 self.neopixel.brightness = 0
-                self.enable_rf.value = False
 
                 self.power_mode: str = "minimum"
 
             elif "norm" in mode:
-                self.enable_rf.value = True
                 self.power_mode: str = "normal"
                 # don't forget to reconfigure radios, gps, etc...
 
             elif "max" in mode:
-                self.enable_rf.value = True
                 self.power_mode: str = "maximum"
         except Exception as e:
             self.logger.error(
