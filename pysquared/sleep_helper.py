@@ -5,7 +5,7 @@ import alarm
 import digitalio
 
 from .logger import Logger
-from .pysquared import Satellite
+from .satellite import Satellite
 
 try:
     from typing import Literal

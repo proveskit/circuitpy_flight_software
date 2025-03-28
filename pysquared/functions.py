@@ -14,7 +14,7 @@ from .hardware.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .packet_manager import PacketManager
 from .packet_sender import PacketSender
-from .pysquared import Satellite
+from .satellite import Satellite
 from .sleep_helper import SleepHelper
 
 try:

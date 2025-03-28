@@ -5,7 +5,7 @@ from .config.config import Config
 from .hardware.rfm9x.manager import RFM9xManager
 from .hardware.rfm9x.modulation import RFM9xModulation
 from .logger import Logger
-from .pysquared import Satellite
+from .satellite import Satellite
 
 try:
     from typing import Any, Union
