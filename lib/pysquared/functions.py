@@ -58,11 +58,11 @@ class functions:
     Satellite Management Functions
     """
 
-    def listen_loiter(self) -> None:
+    async def listen_loiter(self) -> None:
         self.logger.debug("Listening for 10 seconds")
         self.cubesat.watchdog_pet()
         self.radio_manager.radio.receive_timeout = 10
-        self.listen()
+        await self.listen()
         self.cubesat.watchdog_pet()
 
         self.logger.debug("Sleeping for 20 seconds")
