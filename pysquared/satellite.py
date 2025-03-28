@@ -21,7 +21,6 @@ import sdcardio
 from micropython import const
 from storage import VfsFat, mount, umount
 
-import lib.adafruit_lis2mdl as adafruit_lis2mdl  # Magnetometer
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
@@ -127,9 +126,6 @@ class Satellite:
 
         self.imu: LSM6DSOX = self.init_general_hardware(
             LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
-        )
-        self.mangetometer: adafruit_lis2mdl.LIS2MDL = self.init_general_hardware(
-            adafruit_lis2mdl.LIS2MDL, self.i2c1, hardware_key="Mag"
         )
 
         """
@@ -351,15 +347,6 @@ class Satellite:
         except Exception as e:
             self.logger.error(
                 "There was an error retrieving the internal temperature value", e
-            )
-
-    @property
-    def mag(self) -> Union[tuple[float, float, float], None]:
-        try:
-            return self.mangetometer.magnetic
-        except Exception as e:
-            self.logger.error(
-                "There was an error retrieving the magnetometer sensor values", e
             )
 
     @property
