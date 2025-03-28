@@ -101,7 +101,7 @@ try:
     async def main():
         await f.beacon()
         f.listen_loiter()
-        f.state_of_health()
+        await f.state_of_health()
         f.listen_loiter()
         f.all_face_data()
         f.send_face()
