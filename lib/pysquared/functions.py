@@ -297,7 +297,7 @@ class functions:
 
     # Goal for torque is to make a control system
     # that will adjust position towards Earth based on Gyro data
-    def detumble(self, dur: int = 7) -> None:
+    async def detumble(self, dur: int = 7) -> None:
         self.logger.debug("Detumbling")
         self.cubesat.rgb = (255, 255, 255)
 
@@ -346,7 +346,7 @@ class functions:
 
         try:
             self.logger.debug("Attempting")
-            do_detumble()
+            await do_detumble()
         except Exception as e:
             self.logger.error("Detumble error", e)
         self.cubesat.rgb = (100, 100, 50)
