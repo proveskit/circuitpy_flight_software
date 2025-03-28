@@ -100,16 +100,16 @@ try:
 
     async def main():
         await f.beacon()
-        f.listen_loiter()
+        await f.listen_loiter()
         await f.state_of_health()
-        f.listen_loiter()
+        await f.listen_loiter()
         f.all_face_data()
         await f.send_face()
-        f.listen_loiter()
+        await f.listen_loiter()
         await send_imu_data()
-        f.listen_loiter()
+        await f.listen_loiter()
         await f.joke()
-        f.listen_loiter()
+        await f.listen_loiter()
 
     ######################### MAIN LOOP ##############################
     async def main_loop():
