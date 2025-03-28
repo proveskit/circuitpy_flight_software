@@ -177,11 +177,11 @@ class functions:
 
         await self.radio_manager.beacon_radio_message(message)
 
-    def send_face(self) -> None:
+    async def send_face(self) -> None:
         """Calls the data transmit function from the radio manager class"""
 
         self.logger.debug("Sending Face Data")
-        self.radio_manager.beacon_radio_message(
+        await self.radio_manager.beacon_radio_message(
             f"{self.callsign} Y-: {self.facestring[0]} Y+: {self.facestring[1]} X-: {self.facestring[2]} X+: {self.facestring[3]}  Z-: {self.facestring[4]} {self.callsign}"
         )
 
