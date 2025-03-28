@@ -96,7 +96,7 @@ try:
         logger.info("Looking to get imu data...")
         IMUData = []
         IMUData = f.get_imu_data()
-        f.send(IMUData)
+        await f.send(IMUData)
 
     async def main():
         f.beacon()
