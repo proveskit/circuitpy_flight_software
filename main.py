@@ -108,7 +108,7 @@ try:
         f.listen_loiter()
         await send_imu_data()
         f.listen_loiter()
-        f.joke()
+        await f.joke()
         f.listen_loiter()
 
     ######################### MAIN LOOP ##############################
