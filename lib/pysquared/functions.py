@@ -74,14 +74,14 @@ class functions:
     Radio Functions
     """
 
-    def send(self, msg: Union[str, bytearray]) -> None:
+    async def send(self, msg: Union[str, bytearray]) -> None:
         """Calls the RFM9x to send a message. Currently only sends with default settings.
 
         Args:
             msg (String,Byte Array): Pass the String or Byte Array to be sent.
         """
         message: str = f"{self.callsign} " + str(msg) + f" {self.callsign}"
-        self.radio_manager.beacon_radio_message(message)
+        await self.radio_manager.beacon_radio_message(message)
         if self.cubesat.is_licensed:
             self.logger.debug("Sent Packet", packet_message=message)
         else:
