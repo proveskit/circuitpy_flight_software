@@ -128,7 +128,7 @@ class PacketSender:
             self.logger.error("Error handling retransmit request", e)
             return False
 
-    def fast_send_data(
+    async def fast_send_data(
         self,
         data: Union[str, bytearray],
         send_delay: float = 0.5,
@@ -148,7 +148,7 @@ class PacketSender:
                 attempt_num=attempt + 1,
                 max_retries=self.max_retries,
             )
-            self.radio_manager.radio.send(packets[0])
+            await self.radio_manager.beacon_radio_message(packets[0])
 
             if self.wait_for_ack(0):
                 break
@@ -166,7 +166,7 @@ class PacketSender:
                 self.logger.info(
                     "Sending packet", current_packet=i, num_packets=total_packets
                 )
-            self.radio_manager.radio.send(packets[i])
+            await self.radio_manager.beacon_radio_message(packets[i])
             time.sleep(send_delay)
 
         self.logger.info("Waiting for retransmit requests...")
@@ -197,10 +197,10 @@ class PacketSender:
                     break
 
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio_manager.radio.send(packets[seq])
+                await self.radio_manager.beacon_radio_message(packets[seq])
                 time.sleep(0.5)  # Longer delay between retransmitted packets
                 self.logger.info("Retransmitting packet", packet=seq)
-                self.radio_manager.radio.send(packets[seq])
+                await self.radio_manager.beacon_radio_message(packets[seq])
                 time.sleep(0.2)  # Longer delay between retransmitted packets
 
             # Reset timeout and add extra delay after retransmission
