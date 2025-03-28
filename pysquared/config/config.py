@@ -80,9 +80,9 @@ class Config:
             "transmit_frequency": {
                 "type": float,
                 "min0": 435,
-                "max0": 438,
-                "min1": 915,
-                "max1": 915,
+                "max0": 438.0,
+                "min1": 915.0,
+                "max1": 915.0,
             },
         }
 
@@ -133,7 +133,7 @@ class Config:
                 raise ValueError
 
             # specific to transmit_frequency
-            if value == "transmit_frequency":
+            if key == "transmit_frequency":
                 if "min0" in schema and value < schema["min0"]:
                     raise ValueError
                 if "max1" in schema and value > schema["max1"]:
@@ -184,7 +184,7 @@ class Config:
                 with open("config.json", "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
-            self.radio["key"] = value
+            setattr(self.radio, key, value)
         elif key in self.FSK_SCHEMA:
             # if permanent, saves to config
             if not temporary:
@@ -194,7 +194,7 @@ class Config:
                 with open("config.json", "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
-            self.radio["fsk"][key] = value
+            setattr(self.radio.fsk, key, value)
         else:
             # key is in self.LORA_SCHEMA
             # if permanent, saves to config
@@ -205,4 +205,4 @@ class Config:
                 with open("config.json", "w") as f:
                     f.write(json.dumps(json_data))
             # updates RAM
-            self.radio["lora"][key] = value
+            setattr(self.radio.lora, key, value)

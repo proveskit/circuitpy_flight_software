@@ -150,7 +150,7 @@ def test_bools() -> None:
 def test_validation_updateable() -> None:
     config = Config(file)
 
-    # KeyError raise
+    # raises KeyError
     with pytest.raises(KeyError):
         config.validate("not_in_config", "trash")
 
@@ -182,7 +182,7 @@ def test_validation_updateable() -> None:
 def test_validation_type() -> None:
     config = Config(file)
 
-    # TypeError raise
+    # raises TypeError
     with pytest.raises(TypeError):
         config.validate("cubesat_name", 1)
 
@@ -192,30 +192,114 @@ def test_validation_type() -> None:
     except KeyError as e:
         print(e)
 
+
+def test_validation_range() -> None:
+    config = Config(file)
+
+    # raises ValueError
+    with pytest.raises(ValueError):
+        config.validate("callsign", "m")
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    with pytest.raises(ValueError):
+        config.validate("receiver_id", -1)
+    with pytest.raises(ValueError):
+        config.validate("receiver_id", 256)
+
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 0.0)
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 500.0)
+    with pytest.raises(ValueError):
+        config.validate("transmit_frequency", 916.0)
+    try:
+        config.validate("transmit_frequency", 436.0)
+    except ValueError as e:
+        print(e)
+
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    with pytest.raises(ValueError):
+        config.validate("callsign", "more_than_seven")
+
+    # config
+    try:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
     # radio
     try:
-        config.validate("receiver_id", 11)
-    except KeyError as e:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
         print(e)
 
     # fsk
     try:
-        config.validate("ack_delay", 1.5)
-    except KeyError as e:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
         print(e)
 
     # lora
     try:
-        config.validate("node_address", 11)
-    except KeyError as e:
+        config.validate("callsign", "KKYE")
+    except ValueError as e:
         print(e)
 
 
-def test_validation_range() -> None:
+def test_save_config() -> None:
     config = Config(file)
-    with pytest.raises(ValueError):
-        config.validate("callsign", "h")
     try:
-        config.validate("callsign", "KKYE")
+        config.save_config("callsign", "KKYE")
+    except ValueError as e:
+        print(e)
+
+
+def test_update_config() -> None:
+    config = Config(file)
+
+    # config temp
+    try:
+        config.update_config("callsign", "KKYE", False)
+    except ValueError as e:
+        print(e)
+    # config permanent
+    try:
+        config.update_config("callsign", "KKYE", True)
+    except ValueError as e:
+        print(e)
+
+    # radio temp
+    try:
+        config.update_config("receiver_id", 1, False)
+    except ValueError as e:
+        print(e)
+    # radio permanent
+    try:
+        config.update_config("receiver_id", 1, True)
+    except ValueError as e:
+        print(e)
+
+    # fsk temp
+    try:
+        config.update_config("ack_delay", 1.0, False)
+    except ValueError as e:
+        print(e)
+    # fsk permanent
+    try:
+        config.update_config("ack_delay", 1.0, True)
+    except ValueError as e:
+        print(e)
+
+    # lora temp
+    try:
+        config.update_config("broadcast_address", 1, False)
+    except ValueError as e:
+        print(e)
+    # lora permanent
+    try:
+        config.update_config("broadcast_address", 1, True)
     except ValueError as e:
         print(e)
