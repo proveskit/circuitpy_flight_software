@@ -325,7 +325,7 @@ class functions:
                 a.Face4.drive = 52
                 a.drvz_actuate(duration)
 
-        def do_detumble() -> None:
+        async def do_detumble() -> None:
             try:
                 import lib.pysquared.detumble as detumble
 
@@ -338,7 +338,7 @@ class functions:
                     data[0] = tuple(data[0])
                     dipole = detumble.magnetorquer_dipole(data[1], data[0])
                     self.logger.debug("Detumbling", dipole=dipole)
-                    self.send("Detumbling! Gyro, Mag: " + str(data))
+                    await self.send("Detumbling! Gyro, Mag: " + str(data))
                     time.sleep(1)
                     actuate(dipole, dur)
             except Exception as e:
