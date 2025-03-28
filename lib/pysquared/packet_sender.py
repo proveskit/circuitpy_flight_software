@@ -98,7 +98,7 @@ class PacketSender:
         )
         return True
 
-    def handle_retransmit_request(
+    async def handle_retransmit_request(
         self, packets: list[bytes], request_packet: list[str]
     ) -> bool:
         """Handle retransmit request by sending requested packets"""
@@ -117,9 +117,9 @@ class PacketSender:
             for seq in missing_packets:
                 if seq < len(packets):
                     self.logger.info("Retransmitting packet ", packet=seq)
-                    self.radio_manager.radio.send(packets[seq])
+                    await self.radio_manager.beacon_radio_message(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
-                    self.radio_manager.radio.send(packets[seq])
+                    await self.radio_manager.beacon_radio_message(packets[seq])
                     time.sleep(0.2)  # Small delay between retransmitted packets
 
             return True
