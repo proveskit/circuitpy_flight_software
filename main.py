@@ -73,7 +73,7 @@ try:
     f = functions.functions(c, logger, config, sleep_helper, radio_manager)
 
     async def initial_boot():
-        f.beacon()
+        await f.beacon()
         f.listen()
 
     async def critical_power_operations():
