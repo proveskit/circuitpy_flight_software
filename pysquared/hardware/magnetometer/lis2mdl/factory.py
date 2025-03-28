@@ -1,13 +1,11 @@
-from ...logger import Logger
-from ..decorators import with_retries
-from ..exception import HardwareInitializationError
+from ....logger import Logger
+from ...decorators import with_retries
+from ...exception import HardwareInitializationError
 
 try:
-    from lib.adafruit_lis2mdl import LIS2MDL
+    from mocks.circuitpython.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
 except ImportError:
-    pass
-    # from mocks.circuitpython.adafruit_rfm.rfm9x import RFM9x  # type: ignore
-    # from mocks.circuitpython.adafruit_rfm.rfm9xfsk import RFM9xFSK  # type: ignore
+    from lib.adafruit_lis2mdl import LIS2MDL
 
 # Type hinting only
 try:

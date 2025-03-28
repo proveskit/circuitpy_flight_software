@@ -44,6 +44,21 @@ wheels = [
 ]
 
 [[package]]
+name = "adafruit-circuitpython-register"
+version = "1.10.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "adafruit-blinka" },
+    { name = "adafruit-circuitpython-busdevice" },
+    { name = "adafruit-circuitpython-typing" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/70/d5/62e353c8e946afd0de0719161fc3155525d3f63683bf9af78f84062e881e/adafruit_circuitpython_register-1.10.2.tar.gz", hash = "sha256:68e1899351b186f007b26326d01e4c5ed68187b50c059e1e414b53248f80053d", size = 32737 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8b/20/8a5c2fde67638309082a78a928076c6f56ede9b83fa1724069d1817a4872/adafruit_circuitpython_register-1.10.2-py3-none-any.whl", hash = "sha256:2c4fc4261895b669994b9eebb7972a8e31dc0f6971a3847fbbbaa899f0c668eb", size = 14978 },
+]
+
+[[package]]
 name = "adafruit-circuitpython-requests"
 version = "4.1.9"
 source = { registry = "https://pypi.org/simple" }
@@ -270,6 +285,7 @@ name = "pysquared"
 version = "2.0.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "adafruit-circuitpython-register" },
     { name = "adafruit-circuitpython-typing" },
     { name = "circuitpython-stubs" },
     { name = "coverage" },
@@ -279,6 +295,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "adafruit-circuitpython-register", specifier = "==1.10.2" },
     { name = "adafruit-circuitpython-typing", specifier = "==1.11.2" },
     { name = "circuitpython-stubs", specifier = "==9.2.5" },
     { name = "coverage", specifier = "==7.6.10" },

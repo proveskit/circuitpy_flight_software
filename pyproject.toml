@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "adafruit-circuitpython-typing==1.11.2",
+    "adafruit-circuitpython-register==1.10.2",
     "circuitpython-stubs==9.2.5",
     "coverage==7.6.10",
     "pre-commit==4.0.1",
