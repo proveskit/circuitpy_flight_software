@@ -87,14 +87,14 @@ class functions:
         else:
             self.logger.warning("Failed to send packet")
 
-    def send_packets(self, data: Union[str, bytearray]) -> None:
+    async def send_packets(self, data: Union[str, bytearray]) -> None:
         """Sends packets of data over the radio with delay between packets.
 
         Args:
             data (String, Byte Array): Pass the data to be sent.
             delay (float): Delay in seconds between packets
         """
-        self.packet_sender.send_data(data)
+        await self.packet_sender.send_data(data)
 
     async def beacon(self) -> None:
         """Calls the RFM9x to send a beacon."""
