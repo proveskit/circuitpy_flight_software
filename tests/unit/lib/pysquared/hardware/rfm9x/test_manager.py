@@ -118,7 +118,7 @@ def test_get_temperature(
     mock_radio.read_u8.assert_called_once_with(0x5B)
 
 
-def test_beacon_radio_message(
+async def test_beacon_radio_message(
     mock_logger: Logger, mock_use_fsk: Flag, mock_radio_factory: MagicMock, capsys
 ):
     mock_radio = MagicMock(spec=RFMSPI)
@@ -128,8 +128,8 @@ def test_beacon_radio_message(
 
     manager = RFM9xManager(mock_logger, mock_use_fsk, mock_radio_factory)
 
-    manager.beacon_radio_message(None)
+    await manager.beacon_radio_message(None)
     assert "There was an error while beaconing" in capsys.readouterr().out
 
-    manager.beacon_radio_message("Testing beaconing function in radio manager.")
+    await manager.beacon_radio_message("Testing beaconing function in radio manager.")
     assert "I am beaconing" in capsys.readouterr().out
