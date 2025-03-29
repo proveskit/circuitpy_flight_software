@@ -24,7 +24,6 @@ from storage import VfsFat, mount, umount
 import lib.adafruit_tca9548a as adafruit_tca9548a  # I2C Multiplexer
 import lib.neopixel as neopixel  # RGB LED
 import lib.rv3028.rv3028 as rv3028  # Real Time Clock
-from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # IMU
 
 from .config.config import Config  # Configs
 from .nvm import register
@@ -123,10 +122,6 @@ class Satellite:
         #     frequency=100000,
         #     hardware_key="I2C1",
         # )
-
-        self.imu: LSM6DSOX = self.init_general_hardware(
-            LSM6DSOX, i2c_bus=self.i2c1, address=0x6B, hardware_key="IMU"
-        )
 
         """
         Define the normal power modes
@@ -323,31 +318,6 @@ class Satellite:
             )
         except Exception as e:
             self.logger.error("There was a vbus reset error", e)
-
-    @property
-    def gyro(self) -> Union[tuple[float, float, float], None]:
-        try:
-            return self.imu.gyro
-        except Exception as e:
-            self.logger.error("There was an error retrieving the gyro values", e)
-
-    @property
-    def accel(self) -> Union[tuple[float, float, float], None]:
-        try:
-            return self.imu.acceleration
-        except Exception as e:
-            self.logger.error(
-                "There was an error retrieving the accelerometer values", e
-            )
-
-    @property
-    def internal_temperature(self) -> Union[float, None]:
-        try:
-            return self.imu.temperature
-        except Exception as e:
-            self.logger.error(
-                "There was an error retrieving the internal temperature value", e
-            )
 
     @property
     def time(self) -> Union[tuple[int, int, int], None]:

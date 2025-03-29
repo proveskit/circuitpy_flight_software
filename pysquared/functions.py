@@ -10,6 +10,7 @@ import random
 import time
 
 from .config.config import Config
+from .hardware.imu.imu_protocol import InertialMeasurementUnitProto
 from .hardware.magnetometer.magnetometer_protocol import MagnetometerProto
 from .hardware.rfm9x.manager import RFM9xManager
 from .logger import Logger
@@ -33,6 +34,7 @@ class functions:
         sleep_helper: SleepHelper,
         radio_manager: RFM9xManager,
         magnetometer: MagnetometerProto,
+        imu: InertialMeasurementUnitProto,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
@@ -40,6 +42,7 @@ class functions:
         self.sleep_helper = sleep_helper
         self.radio_manager: RFM9xManager = radio_manager
         self.magnetometer: MagnetometerProto = magnetometer
+        self.imu: InertialMeasurementUnitProto = imu
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
@@ -152,7 +155,7 @@ class functions:
                 f"BN:{self.cubesat.boot_count.get()}",
                 f"MT:{self.cubesat.micro.cpu.temperature}",
                 f"RT:{self.radio_manager.get_temperature()}",
-                f"AT:{self.cubesat.internal_temperature}",
+                f"AT:{self.imu.get_temperature()}",
                 f"BT:{self.last_battery_temp}",
                 f"EC:{self.logger.get_error_count()}",
                 f"AB:{int(self.cubesat.f_burned.get())}",
@@ -281,18 +284,13 @@ class functions:
                 tuple[float, float, float],
                 tuple[float, float, float],
             ] = []
-            data.append(self.cubesat.accel)
-            data.append(self.cubesat.gyro)
+            data.append(self.imu.get_acceleration())
+            data.append(self.imu.get_gyro_data())
             data.append(self.magnetometer.get_vector())
         except Exception as e:
             self.logger.error("Error retrieving IMU data", e)
 
         return data
-
-    def OTA(self) -> None:
-        # resets file system to whatever new file is received
-        self.logger.debug("Implement an OTA Function Here")
-        pass
 
     """
     Misc Functions

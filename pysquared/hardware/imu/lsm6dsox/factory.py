@@ -1,7 +1,7 @@
-# try:
-#     from mocks.circuitpython.adafruit_lis2mdl.lis2mdl import LIS2MDL  # type: ignore
-# except ImportError:
-from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
+try:
+    from mocks.circuitpython.adafruit_lsm6ds.lsm6dsox import LSM6DSOX  # type: ignore
+except ImportError:
+    from lib.adafruit_lsm6ds.lsm6dsox import LSM6DSOX
 
 from ....logger import Logger
 from ...decorators import with_retries
@@ -42,19 +42,6 @@ class LSM6DSOXFactory(InertialMeasurementUnitProto):
             self._imu: LSM6DSOX = LSM6DSOX(i2c, address)
         except Exception as e:
             raise HardwareInitializationError("Failed to initialize IMU") from e
-
-    def get_vector(self) -> tuple[float, float, float] | None:
-        """Get the magnetic field vector from the magnetometer.
-
-        :return: A tuple containing the x, y, and z magnetic field values in Gauss or None if not available.
-        :rtype: tuple[float, float, float] | None
-
-        :raises Exception: If there is an error retrieving the values.
-        """
-        try:
-            return self._imu.magnetic
-        except Exception as e:
-            self._log.error("Error retrieving magnetometer sensor values", e)
 
     def get_gyro_data(self) -> tuple[float, float, float] | None:
         """Get the gyroscope data from the inertial measurement unit.
