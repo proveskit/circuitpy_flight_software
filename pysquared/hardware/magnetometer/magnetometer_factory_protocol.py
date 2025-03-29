@@ -9,10 +9,6 @@ CircuitPython does not support Protocols directly, but this class can still be u
 https://docs.python.org/3/library/typing.html#typing.Protocol
 """
 
-from lib.adafruit_lis2mdl import LIS2MDL
 
-
-class MagnetometerFactoryProto:
-    def create(self) -> LIS2MDL: ...
-
+class MagnetometerProto:
     def get_vector(self) -> tuple[float, float, float]: ...
