@@ -68,7 +68,7 @@ def test_get_vector_failure(mock_i2c, mock_logger):
 
     assert vector is None
     assert mock_logger.error.call_count == 1
-    call_args, call_kwargs = mock_logger.error.call_args
+    call_args, _ = mock_logger.error.call_args
     assert call_args[0] == "Error retrieving magnetometer sensor values"
     assert isinstance(call_args[1], RuntimeError)
     assert str(call_args[1]) == "Simulated retrieval error"
