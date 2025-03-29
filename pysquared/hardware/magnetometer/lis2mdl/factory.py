@@ -35,20 +35,21 @@ class LIS2MDLFactory(MagnetometerProto):
         :raises HardwareInitializationError: If the magnetometer fails to initialize.
         """
         self._log: Logger = logger
-        self._i2c: I2C = i2c
 
         try:
             self._log.debug("Initializing magnetometer")
-            self._magnetometer: LIS2MDL = LIS2MDL(self._i2c)
+            self._magnetometer: LIS2MDL = LIS2MDL(i2c)
         except Exception as e:
             raise HardwareInitializationError(
                 "Failed to initialize magnetometer"
             ) from e
 
-    def get_vector(self) -> tuple[float, float, float]:
+    def get_vector(self) -> tuple[float, float, float] | None:
         """Get the magnetic field vector from the magnetometer.
 
-        :return: A tuple containing the x, y, and z magnetic field values in Gauss.
+        :return: A tuple containing the x, y, and z magnetic field values in Gauss or None if not available.
+        :rtype: tuple[float, float, float] | None
+
         :raises Exception: If there is an error retrieving the values.
         """
         try:

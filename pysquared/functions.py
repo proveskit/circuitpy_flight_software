@@ -333,6 +333,7 @@ class functions:
                 import pysquared.detumble as detumble
 
                 for _ in range(3):
+                    # Hmmm cubesat.IMU.Gyroscope and cubesat.IMU.Magnetometer don't exist
                     data = [self.cubesat.IMU.Gyroscope, self.cubesat.IMU.Magnetometer]
                     data[0] = list(data[0])
                     for x in range(3):
