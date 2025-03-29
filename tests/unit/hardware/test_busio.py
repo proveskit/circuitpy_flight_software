@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from microcontroller import Pin
 
-from pysquared.hardware.busio import initialize_spi_bus
+from pysquared.hardware.busio import initialize_i2c_bus, initialize_spi_bus
 from pysquared.hardware.exception import HardwareInitializationError
 from pysquared.logger import Logger
 
@@ -61,4 +61,50 @@ def test_initialize_spi_bus_failure(mock_spi: MagicMock):
 
     # Assertions
     assert mock_spi.call_count == 3  # Called 3 times due to retries
+    mock_logger.debug.assert_called()
+
+
+@patch("pysquared.hardware.busio.I2C")
+def test_initialize_i2c_bus_success(mock_i2c: MagicMock):
+    # Mock the logger
+    mock_logger = MagicMock(spec=Logger)
+
+    # Mock pins
+    mock_scl = MagicMock(spec=Pin)
+    mock_sda = MagicMock(spec=Pin)
+
+    # Mock I2C instance
+    mock_i2c_instance = mock_i2c.return_value
+
+    # Test parameters
+    frequency = 200000
+
+    # Call fn under test
+    result = initialize_i2c_bus(mock_logger, mock_scl, mock_sda, frequency)
+
+    # Assertions
+    mock_i2c.assert_called_once_with(mock_scl, mock_sda, frequency=frequency)
+    mock_logger.debug.assert_called_once()
+    assert result == mock_i2c_instance
+
+
+@pytest.mark.slow
+@patch("pysquared.hardware.busio.I2C")
+def test_initialize_i2c_bus_failure(mock_i2c: MagicMock):
+    # Mock the logger
+    mock_logger = MagicMock(spec=Logger)
+
+    # Mock pins
+    mock_scl = MagicMock(spec=Pin)
+    mock_sda = MagicMock(spec=Pin)
+
+    # Mock I2C instance to raise an exception
+    mock_i2c.side_effect = Exception("Simulated failure")
+
+    # Call the function and assert exception
+    with pytest.raises(HardwareInitializationError):
+        initialize_i2c_bus(mock_logger, mock_scl, mock_sda)
+
+    # Assertions
+    assert mock_i2c.call_count == 3  # Called 3 times due to retries
     mock_logger.debug.assert_called()

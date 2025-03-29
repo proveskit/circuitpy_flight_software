@@ -1,4 +1,4 @@
-from busio import SPI
+from busio import I2C, SPI
 from microcontroller import Pin
 
 from ..logger import Logger
@@ -45,5 +45,31 @@ def initialize_spi_bus(
         spi.configure(baudrate, phase, polarity, bits)
         spi.unlock()
         return spi
+    except Exception as e:
+        raise HardwareInitializationError("Failed to initialize spi") from e
+
+
+@with_retries(max_attempts=3, initial_delay=1)
+def initialize_i2c_bus(
+    logger: Logger,
+    scl: Pin,
+    sda: Pin = None,
+    frequency: Optional[int] = 100000,
+) -> I2C:
+    """Initializes a I2C bus"
+
+    :param Logger logger: The logger instance to log messages.
+    :param Pin scl: The pin to use for the scl signal.
+    :param Pin sda: The pin to use for the sda signal.
+    :param int frequency: The baudrate of the I2C bus (default is 100000).
+
+    :raises HardwareInitializationError: If the I2C bus fails to initialize.
+
+    :return ~busio.I2C: The initialized I2C object.
+    """
+    logger.debug("Initializing i2c")
+
+    try:
+        return I2C(scl, sda, frequency=frequency)
     except Exception as e:
         raise HardwareInitializationError("Failed to initialize spi") from e

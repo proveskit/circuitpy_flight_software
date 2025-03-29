@@ -115,6 +115,7 @@ class Satellite:
         self.i2c1: busio.I2C = (
             None  # used for rtc, tca multiplexer imu, and magnetometer
         )
+        board.I2C1_SCL
         # self.init_general_hardware(
         #     busio.I2C,
         #     board.I2C1_SCL,
