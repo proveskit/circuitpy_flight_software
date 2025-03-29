@@ -10,6 +10,7 @@ import random
 import time
 
 from .config.config import Config
+from .hardware.magnetometer.magnetometer_protocol import MagnetometerProto
 from .hardware.rfm9x.manager import RFM9xManager
 from .logger import Logger
 from .packet_manager import PacketManager
@@ -31,12 +32,14 @@ class functions:
         config: Config,
         sleep_helper: SleepHelper,
         radio_manager: RFM9xManager,
+        magnetometer: MagnetometerProto,
     ) -> None:
         self.cubesat: Satellite = cubesat
         self.logger: Logger = logger
         self.config: Config = config
         self.sleep_helper = sleep_helper
         self.radio_manager: RFM9xManager = radio_manager
+        self.magnetometer: MagnetometerProto = magnetometer
 
         self.logger.info("Initializing Functionalities")
         self.packet_manager: PacketManager = PacketManager(
@@ -280,7 +283,7 @@ class functions:
             ] = []
             data.append(self.cubesat.accel)
             data.append(self.cubesat.gyro)
-            data.append(self.cubesat.mag)
+            data.append(self.magnetometer.get_vector())
         except Exception as e:
             self.logger.error("Error retrieving IMU data", e)
 
